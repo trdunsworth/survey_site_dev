@@ -1,0 +1,678 @@
+{
+  "title": "NENA Survey",
+  "sections": [
+    {
+      "title": "PSAP Classification",
+      "questions": [
+        {
+          "id": 1,
+          "text": "Classify the service area:",
+          "options": [
+            "Urban",
+            "Rural",
+            "Suburban",
+            "Mixed",
+            "Uncertain"
+          ],
+          "type": "radio"
+        },
+        {
+          "id": 2,
+          "text": "What is the base population serviced by the PSAP:",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 3,
+          "text": "What is the peak population serviced by the PSAP:",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 4,
+          "text": "What are most common factors contiubting to the population variation:",
+          "options": [
+            "Daytime Increase (Worker Influx)",
+            "Seasonal Peaks",
+            "Event Peaks",
+            "None",
+            "Other"
+          ],
+          "type": "radio"
+        },
+        {
+          "id": 5,
+          "text": "Select the PSAP classification:",
+          "options": [
+            "Primary",
+            "Secondary"
+          ],
+          "type": "radio"
+        },
+        {
+          "id": 6,
+          "text": "What services does the PSAP provide:",
+          "options": [
+            "Call Taking",
+            "Dispatching",
+            "Walk Up",
+            "SMS/Text"
+          ],
+          "type": "radio"
+        },
+        {
+          "id": 7,
+          "text": "Please list any additional services that you proivde:",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 8,
+          "text": "What is the PSAP operational governance:",
+          "options": [
+            "Law Enforcement (PD/SO)",
+            "Fire Department",
+            "EMS Agency",
+            "Independent",
+            "Private",
+            "Other"
+          ],
+          "type": "radio"
+        },
+        {
+          "id": 9,
+          "text": "What agencies does the PSAP serve:",
+          "options": [
+            "Police",
+            "Fire",
+            "EMS",
+            "Sheriff",
+            "Animal Control",
+            "Other (Please Specify)"
+          ],
+          "type": "radio"
+        },
+        {
+          "id": 10,
+          "text": "How many agencies do the PSAP serve:",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 11,
+          "text": "Types of calls answered by PSAP:",
+          "options": [
+            "9-1-1",
+            "Admin",
+            "10-digit Emergency",
+            "SMS/Text",
+            "TTY/TDD",
+            "Other (Please Specify)"
+          ],
+          "type": "radio"
+        },
+        {
+          "id": 12,
+          "text": "Total of 9-1-1 calls answered in the last calendar year",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 13,
+          "text": "Total of all 10-digit emergency calls answered in the last calendar year",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 14,
+          "text": "Total of all non-emergency calls answered in the last calendar year",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 15,
+          "text": "Total of all SMS/Text sessions answered in the last calendar year",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 16,
+          "text": "Total of all TTY/TDD sessions answered in the last calendar year",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 17,
+          "text": "Total number of Law Enforcement events processed in the last calendar year",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 18,
+          "text": "Total number of Fire events processed in the last calendar year",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 19,
+          "text": "Total number of EMS events processed in the last calendar year",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 20,
+          "text": "Total number of other events processed in the last calendar year",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 21,
+          "text": "Estimated radio keyups in the last calendar year.",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 22,
+          "text": "Average number of radio keyups per hour in the last calendar year.",
+          "options": [],
+          "type": "number"
+        }
+      ]
+    },
+    {
+      "title": "Telecommunicator staff numbers",
+      "questions": [
+        {
+          "id": 23,
+          "text": "Total number of shifts",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 24,
+          "text": "Number of call takers employed per shift",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 25,
+          "text": "Number of radio dispatchers employed per shift",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 26,
+          "text": "Number of supervisors employed per shift",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 27,
+          "text": "Number of executive and administrative personnel in the PSAP",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 28,
+          "text": "Number of IT support staff in the PSAP",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 29,
+          "text": "Number of full time shifts",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 30,
+          "text": "Number of part time shifts",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 31,
+          "text": "Number of temporary shifts",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 32,
+          "text": "What is your optimum number of staff (if fully staffed)?",
+          "options": [],
+          "type": "number"
+        }
+      ]
+    },
+    {
+      "title": "Operations information",
+      "questions": [
+        {
+          "id": 33,
+          "text": "Name of CAD vendor",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 34,
+          "text": "Name of Phone vendor",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 35,
+          "text": "Additional software used",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 36,
+          "text": "Notification Process used",
+          "options": [
+            "Automated Station Alerting System",
+            "Telephone",
+            "App",
+            "Text",
+            "Radio",
+            "Pager",
+            "Other"
+          ],
+          "type": "radio"
+        }
+      ]
+    },
+    {
+      "title": "Call Center Data",
+      "questions": [
+        {
+          "id": 37,
+          "text": "Do you monitor 9-1-1 call answering times",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 38,
+          "text": "Do you monitor 9-1-1 call processing times",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 39,
+          "text": "Do you monitor admin line call answering times",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 40,
+          "text": "Do you monitor admin line call processing times",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 41,
+          "text": "Percentage of 9-1-1/10-digit emergency calls answered in 10 seconds or less",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 42,
+          "text": "Percentage of 9-1-1/10-digit emergency calls answered in 15 seconds or less",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 43,
+          "text": "Percentage of 9-1-1/10-digit emergency calls answered in 20 seconds or less",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 44,
+          "text": "Percentage of 9-1-1/10-digit emergency calls answered in 40 seconds or less",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 45,
+          "text": "Percentage of 9-1-1/10-digit emergency calls answered in 60 seconds or less",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 46,
+          "text": "Percentage of Admin/Non-Emergency calls answered in 10 seconds or less",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 47,
+          "text": "Percentage of Admin/Non-Emergency calls answered in 15 seconds or less",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 48,
+          "text": "Percentage of Admin/Non-Emergency calls answered in 20 seconds or less",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 49,
+          "text": "Percentage of Admin/Non-Emergency calls answered in 40 seconds or less",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 50,
+          "text": "Percentage of Admin/Non-Emergency calls answered in 60 seconds or less",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 51,
+          "text": "Do you have SLAs to partner agencies",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 52,
+          "text": "Percentage of Law Enforcement Emergency calls dispatched within the SLA",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 53,
+          "text": "Percentage of Fire Department Emergency calls dispatched within the SLA",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 54,
+          "text": "Percentage of EMS Emergency calls dispatched within the SLA",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 55,
+          "text": "Percentage of Law Enforcement Non-Emergency calls dispatched within the SLA",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 56,
+          "text": "Percentage of Fire Department Non-Emergency calls dispatched wiithin the SLA",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 57,
+          "text": "Percentage of Medical Non-Emergency calls dispatched within the SLA",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 62,
+          "text": "Does your PSAP publish call answering times",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 63,
+          "text": "Does your PSAP publish dispatch times",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 64,
+          "text": "Do you have a written standard for call answering times",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 65,
+          "text": "Do you have a written standard for call processing times",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 66,
+          "text": "What written standards do you use for call answering and processing times",
+          "options": [
+            "NFPA",
+            "APCO",
+            "NENA",
+            "CFAI",
+            "ISO",
+            "Internal",
+            "Other (Please specify)"
+          ],
+          "type": "radio"
+        },
+        {
+          "id": 67,
+          "text": "Do you employ a prioritization system to triage events",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 68,
+          "text": "Which software do you use for triaging events.",
+          "options": [
+            "IAED",
+            "APCO",
+            "Total Response",
+            "Internal",
+            "Other (Please Specify)"
+          ],
+          "type": "radio"
+        },
+        {
+          "id": 69,
+          "text": "Please identify any centre limitations or barriers to meeting standards that exist",
+          "options": [
+            "Staffing",
+            "Equipment",
+            "Technology",
+            "Environmental",
+            "Facility",
+            "Other (Please Specify)"
+          ],
+          "type": "radio"
+        },
+        {
+          "id": 70,
+          "text": "What is the median call processing <!-- From phone pick up to ready to take another call --> time per telecommunicator for law calls (in seconds)?",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 71,
+          "text": "What is the median call processing <!-- From phone pick up to ready to take another call --> time per telecommunicator for fire calls (in seconds)?",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 72,
+          "text": "What is the median call processing <!-- From phone pick up to ready to take another call --> time per telecommunicator for medical calls (in seconds)?",
+          "options": [],
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "title": "Radio Data",
+      "questions": [
+        {
+          "id": 73,
+          "text": "How many radio talk channels do you monitor?",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 74,
+          "text": "How many are actively monitored?",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 75,
+          "text": "How many are passively monitored?",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 76,
+          "text": "How many are designated as primary channels?",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 77,
+          "text": "How many are designated as secondary channels?",
+          "options": [],
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "title": "New Technologies",
+      "questions": [
+        {
+          "id": 78,
+          "text": "How many calls are transferred for processing (medical triage, etc)",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 79,
+          "text": "Do you employ an AI assistant to screen non-emergency calls?",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 80,
+          "text": "If so, what percentage of calls have been off-loaded?",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 81,
+          "text": "Do you audit the calls being off-loaded?",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 82,
+          "text": "If so, how many hours per week are dedicated to auditing the calls?",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 83,
+          "text": "Do you have AI assistance in QA/QI?",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 84,
+          "text": "If so, how many hours per week are dedicated to QA/QI?",
+          "options": [],
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "title": "Future Technology",
+      "questions": [
+        {
+          "id": 85,
+          "text": "Do you plan to implement an AI assistant to screen non-emergency calls?",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 86,
+          "text": "If so, what percentage of calls do you plan to off-load?",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 87,
+          "text": "Do you plan to audit the calls being off-loaded?",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 88,
+          "text": "Do you plan to have AI assistance in QA/QI?",
+          "options": [],
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "title": "Training",
+      "questions": [
+        {
+          "id": 89,
+          "text": "How long is your training program for new telecommunicators?",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 90,
+          "text": "How many hours per week are dedicated to training?",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 91,
+          "text": "Do you have a dedicated training staff?",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 92,
+          "text": "If so, how many staff are dedicated to training?",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 93,
+          "text": "How many telecommunicators are trainers?",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 94,
+          "text": "How many hours per week do they spend training new telecommunicators?",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 95,
+          "text": "Do you have a continuing education/continuous training program?",
+          "options": [],
+          "type": "text"
+        },
+        {
+          "id": 96,
+          "text": "How many hours per week are spent in continuing education/continuous training?",
+          "options": [],
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "title": "Additional Duties",
+      "questions": [
+        {
+          "id": 97,
+          "text": "Please list any additional duties for which your center is responsible or performs and the number of hours per week that each duty consumes (examples may include NCIC entries, inmate duties, analyses, reports, warrant processing, etc.)?",
+          "options": [],
+          "type": "number"
+        }
+      ]
+    }
+  ]
+}

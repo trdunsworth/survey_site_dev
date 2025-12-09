@@ -1,0 +1,42 @@
+[
+    {
+        "term": "PSAP",
+        "definition": "Public Safety Answering Point. A facility equipped and staffed to receive 9-1-1 calls."
+    },
+    {
+        "term": "CAD",
+        "definition": "Computer Aided Dispatch. Systems used by dispatchers to track status and location of resources."
+    },
+    {
+        "term": "SLA",
+        "definition": "Service Level Agreement. A commitment between a service provider and a client."
+    },
+    {
+        "term": "TTY/TDD",
+        "definition": "Teletypewriter / Telecommunications Device for the Deaf."
+    },
+    {
+        "term": "IAED",
+        "definition": "International Academies of Emergency Dispatch."
+    },
+    {
+        "term": "APCO",
+        "definition": "Association of Public-Safety Communications Officials."
+    },
+    {
+        "term": "NENA",
+        "definition": "National Emergency Number Association."
+    },
+    {
+        "term": "CFAI",
+        "definition": "Commission on Fire Accreditation International."
+    },
+    {
+        "term": "QA/QI",
+        "definition": "Quality Assurance / Quality Improvement."
+    },
+    {
+        "term": "Ten-Digit Emergency",
+        "definition": "Emergency calls received on a standard 10-digit phone line rather than the 9-1-1 network."
+    }
+]
