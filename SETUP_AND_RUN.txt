@@ -1,0 +1,296 @@
+================================================================================
+NENA SURVEY APPLICATION - SETUP AND RUN GUIDE
+================================================================================
+
+PROJECT OVERVIEW
+================================================================================
+This is a React-based survey application with database integration for storing
+and analyzing NENA 9-1-1 operation survey responses.
+
+Technology Stack:
+- Frontend: React + Vite (Port 5173)
+- Backend: Express.js API (Port 3001)
+- Database: LowDB (JSON-based, stored in server/survey_responses.json)
+- Styling: Custom CSS with NENA red/white corporate colors
+
+
+INITIAL SETUP (First Time Only)
+================================================================================
+
+1. Install Dependencies
+   -----------------------
+   cd /home/tdunsworth/Documents/GitHub/survey_site_dev
+   npm install
+
+   This installs:
+   - React and React-DOM (frontend)
+   - Express and CORS (backend API)
+   - LowDB (database)
+   - Concurrently (run multiple servers)
+   - Vite (build tool)
+
+
+RUNNING THE APPLICATION
+================================================================================
+
+Option 1: Run Both Frontend & Backend Together (Recommended)
+--------------------------------------------------------------
+npm run dev:all
+
+This starts:
+- Frontend at http://localhost:5173
+- Backend API at http://localhost:3001
+
+Option 2: Run Frontend and Backend Separately
+----------------------------------------------
+Terminal 1 (Frontend):
+npm run dev
+
+Terminal 2 (Backend):
+npm run server
+
+
+ACCESSING THE APPLICATION
+================================================================================
+
+1. Survey Interface:
+   http://localhost:5173
+
+2. API Endpoints:
+   - All submissions: http://localhost:3001/api/submissions
+   - Export to CSV: http://localhost:3001/api/export/csv
+
+
+STOPPING THE APPLICATION
+================================================================================
+
+If running with npm run dev:all:
+   Press Ctrl+C in the terminal
+
+If running separately:
+   Press Ctrl+C in each terminal window
+
+
+DATABASE INFORMATION
+================================================================================
+
+Location: server/survey_responses.json
+
+Structure:
+{
+  "submissions": [
+    {
+      "submission_id": "survey_1234567890_abc123",
+      "created_at": "2025-12-10T20:30:00.000Z",
+      "completed": true/false
+    }
+  ],
+  "answers": [
+    {
+      "submission_id": "survey_1234567890_abc123",
+      "question_id": 1,
+      "answer": "Less than 10,000",
+      "created_at": "2025-12-10T20:30:15.000Z"
+    }
+  ]
+}
+
+
+KEY FEATURES
+================================================================================
+
+1. Auto-Save
+   - Answers are automatically saved to the database as users type
+   - No data loss if browser is closed
+
+2. Question Types Supported
+   - Text input (type: "text")
+   - Number input (type: "number")
+   - Textarea (type: "textarea")
+   - Radio buttons (type: "radio") - single selection
+   - Checkboxes (type: "checkbox") - multiple selection
+   - Dropdown/Select (type: "select") - single selection from dropdown
+
+3. Color Scheme
+   - NENA corporate red (#C8102E) and white
+   - Red header, buttons, and accent elements
+   - White backgrounds with red borders
+
+
+DATA EXPORT AND ANALYSIS
+================================================================================
+
+Export All Submissions to CSV:
+curl http://localhost:3001/api/export/csv > responses.csv
+
+View All Submissions (JSON):
+curl http://localhost:3001/api/submissions
+
+Get Specific Submission:
+curl http://localhost:3001/api/submissions/{submission_id}
+
+
+PROJECT FILE STRUCTURE
+================================================================================
+
+survey_site_dev/
+├── src/
+│   ├── components/
+│   │   ├── SurveyForm.jsx    (Main survey component with DB integration)
+│   │   ├── Question.jsx      (Question renderer for all types)
+│   │   ├── Header.jsx        (Red header with NENA branding)
+│   │   ├── Footer.jsx        (Footer component)
+│   │   ├── Layout.jsx        (Layout wrapper)
+│   │   ├── Glossary.jsx      (Glossary panel)
+│   │   └── Tooltip.jsx       (Tooltip component)
+│   ├── data/
+│   │   ├── survey_data.json  (Survey questions - 96 questions)
+│   │   └── glossary_data.json (Term definitions)
+│   ├── App.jsx
+│   ├── main.jsx
+│   └── index.css             (NENA red/white styling)
+├── server/
+│   ├── server.js             (Express API server)
+│   ├── database.js           (Database operations)
+│   └── survey_responses.json (Database file - created automatically)
+├── package.json
+├── vite.config.js
+└── index.html
+
+
+EDITING SURVEY QUESTIONS
+================================================================================
+
+To modify questions, edit: src/data/survey_data.json
+
+Example question formats:
+
+Text Input:
+{
+  "id": 1,
+  "text": "Question text here",
+  "options": [],
+  "type": "text"
+}
+
+Radio Buttons (single selection):
+{
+  "id": 2,
+  "text": "Select one option:",
+  "options": ["Option A", "Option B", "Option C"],
+  "type": "radio"
+}
+
+Checkboxes (multiple selection):
+{
+  "id": 3,
+  "text": "Select all that apply:",
+  "options": ["Option A", "Option B", "Option C"],
+  "type": "checkbox"
+}
+
+Dropdown/Select:
+{
+  "id": 4,
+  "text": "Choose from dropdown:",
+  "options": ["Option A", "Option B", "Option C"],
+  "type": "select"
+}
+
+
+TROUBLESHOOTING
+================================================================================
+
+Problem: Port 5173 or 3001 already in use
+Solution: 
+   Find and kill the process:
+   lsof -ti:5173 | xargs kill -9
+   lsof -ti:3001 | xargs kill -9
+
+Problem: Dependencies not installed
+Solution:
+   rm -rf node_modules package-lock.json
+   npm install
+
+Problem: Database file corrupted
+Solution:
+   Delete server/survey_responses.json (it will be recreated)
+   Backup first if you need the data!
+
+Problem: Can't access API from frontend
+Solution:
+   - Ensure backend is running on port 3001
+   - Check CORS is enabled in server/server.js
+   - Verify API_URL in src/components/SurveyForm.jsx
+
+
+UPGRADING TO PRODUCTION DATABASE
+================================================================================
+
+To upgrade from LowDB to PostgreSQL/MySQL:
+
+1. Install database driver:
+   npm install pg        (for PostgreSQL)
+   npm install mysql2    (for MySQL)
+
+2. Replace server/database.js with appropriate database client
+
+3. Update connection string in environment variables
+
+4. Deploy to cloud database service (AWS RDS, Azure Database, etc.)
+
+
+DEPLOYMENT
+================================================================================
+
+Build for Production:
+npm run build
+
+This creates an optimized build in the /dist folder
+
+Deploy Frontend:
+- Upload /dist folder to static hosting (Vercel, Netlify, AWS S3, etc.)
+
+Deploy Backend:
+- Deploy server/ folder to Node.js hosting (Heroku, AWS, Azure, etc.)
+- Set environment variables for database and CORS origins
+
+
+CONTACT & DOCUMENTATION
+================================================================================
+
+Main README: README.md
+Database Documentation: README_DATABASE.md
+Survey Questions: NENA Survey.md
+
+For help with:
+- React: https://react.dev
+- Vite: https://vitejs.dev
+- Express: https://expressjs.com
+- LowDB: https://github.com/typicode/lowdb
+
+
+QUICK START COMMANDS SUMMARY
+================================================================================
+
+# First time setup
+npm install
+
+# Run application (both servers)
+npm run dev:all
+
+# Run frontend only
+npm run dev
+
+# Run backend only
+npm run server
+
+# Build for production
+npm run build
+
+# Export survey data
+curl http://localhost:3001/api/export/csv > responses.csv
+
+================================================================================
+END OF SETUP AND RUN GUIDE
+================================================================================

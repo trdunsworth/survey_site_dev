@@ -15,7 +15,7 @@ const Header = () => {
 
 const styles = {
     header: {
-        backgroundColor: 'var(--nena-blue)',
+        backgroundColor: 'var(--nena-red)',
         color: 'white',
         padding: '1rem 0',
         boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
@@ -36,7 +36,7 @@ const styles = {
         color: 'white'
     },
     surveyText: {
-        color: 'var(--nena-gold)',
+        color: 'white',
         fontSize: '1.2rem',
         fontWeight: 'normal'
     }

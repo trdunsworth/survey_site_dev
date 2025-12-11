@@ -1,7 +1,8 @@
 :root {
-  /* Branding Colors */
-  --nena-blue: #005596;
-  --nena-gold: #F2A900;
+  /* NENA Branding Colors - Red and White */
+  --nena-red: #C8102E;
+  --nena-dark-red: #A00D24;
+  --nena-light-red: #E8D5D9;
   --nena-grey: #666666;
   --nena-light-grey: #f4f4f4;
 
@@ -33,7 +34,7 @@ body {
 }
 
 a {
-  color: var(--nena-blue);
+  color: var(--nena-red);
   text-decoration: none;
 }
 
@@ -58,18 +59,18 @@ button {
 }
 
 button.primary {
-  background-color: var(--nena-blue);
+  background-color: var(--nena-red);
   color: white;
 }
 
 button.primary:hover {
-  background-color: #00447a;
-  /* Darker shade */
+  background-color: var(--nena-dark-red);
 }
 
 button.secondary {
-  background-color: var(--nena-gold);
-  color: var(--text-primary);
+  background-color: white;
+  color: var(--nena-red);
+  border: 2px solid var(--nena-red);
 }
 
 input,
@@ -92,7 +93,7 @@ textarea {
 
 .section-header {
   margin-bottom: 2rem;
-  border-bottom: 2px solid var(--nena-gold);
+  border-bottom: 3px solid var(--nena-red);
   padding-bottom: 1rem;
   display: flex;
   justify-content: space-between;
@@ -118,7 +119,7 @@ textarea {
 
 .question-number {
   font-weight: bold;
-  color: var(--nena-blue);
+  color: var(--nena-red);
   margin-right: 0.5rem;
 }
 
@@ -139,6 +140,29 @@ textarea {
   width: auto;
 }
 
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.checkbox-label input {
+  width: auto;
+}
+
+.agency-item {
+  margin-bottom: 0.75rem;
+}
+
+.agency-item input {
+  width: 100%;
+}
+
+.agency-item input[type="checkbox"] {
+  width: auto;
+}
+
 .pagination-controls {
   display: flex;
   justify-content: space-between;
@@ -155,7 +179,7 @@ textarea {
 
 .progress-bar {
   height: 100%;
-  background: var(--nena-blue);
+  background: var(--nena-red);
   transition: width 0.3s ease;
 }
 
@@ -165,9 +189,9 @@ textarea {
 }
 
 .tooltip-trigger {
-  border-bottom: 1px dotted var(--nena-blue);
+  border-bottom: 1px dotted var(--nena-red);
   cursor: help;
-  color: var(--nena-blue);
+  color: var(--nena-red);
 }
 
 .tooltip-popup {
@@ -204,7 +228,7 @@ textarea {
   position: fixed;
   bottom: 2rem;
   right: 2rem;
-  background: var(--nena-blue);
+  background: var(--nena-red);
   color: white;
   z-index: 1000;
   border-radius: 2rem;
@@ -215,8 +239,8 @@ textarea {
 }
 
 .glossary-toggle:hover {
-  background: var(--nena-gold);
-  color: var(--text-primary);
+  background: var(--nena-dark-red);
+  color: white;
 }
 
 .glossary-panel {
@@ -252,5 +276,5 @@ textarea {
 
 .glossary-list h3 {
   margin-top: 0;
-  color: var(--nena-blue);
+  color: var(--nena-red);
 }
