@@ -1,40 +1,40 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import Tooltip from './Tooltip';
 import glossaryData from '../data/glossary_data.json';
+import type { Question as QuestionType, AnswerValue, QuestionOption, AgencyData, GlossaryItem } from '../types';
 
-const Question = ({ question, value, onChange }) => {
+interface QuestionProps {
+    question: QuestionType;
+    value: AnswerValue | undefined;
+    onChange: (questionId: string | number, value: AnswerValue) => void;
+}
+
+const typedGlossaryData = glossaryData as GlossaryItem[];
+
+const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
     const { id, text, type, options } = question;
 
-    const isOtherOption = (opt) => /\bother\b/i.test(opt);
-    const selectedRadioValue = typeof value === 'object' && value !== null ? value.option : value;
+    const isOtherOption = (opt: string): boolean => /\bother\b/i.test(opt);
+    const selectedRadioValue = typeof value === 'object' && value !== null && 'option' in value ? value.option : value;
 
     // Helper to highlight terms
-    const renderTextWithTooltips = (displayText) => {
+    const renderTextWithTooltips = (displayText: string): (string | ReactNode)[] => {
         // Sort terms by length descending to match longest phrases first
-        const sortedTerms = [...glossaryData].sort((a, b) => b.term.length - a.term.length);
+        const sortedTerms = [...typedGlossaryData].sort((a, b) => b.term.length - a.term.length);
 
-        // Create a regex pattern
-        // precise matching for acronyms to avoid partial word matches (e.g. "ISO" inside "isolation")
-        // This is a naive implementation; for production, use a more robust parser.
-        // We'll use word boundaries \b for checking.
-
-        let parts = [displayText];
+        let parts: (string | ReactNode)[] = [displayText];
 
         sortedTerms.forEach(item => {
             const term = item.term;
             const definition = item.definition;
             const regex = new RegExp(`\\b(${term})\\b`, 'gi');
 
-            const newParts = [];
+            const newParts: (string | ReactNode)[] = [];
             parts.forEach(part => {
                 if (typeof part === 'string') {
-                    // Split by regex
                     const split = part.split(regex);
-                    // If split has length > 1, we found matches
                     if (split.length > 1) {
                         for (let i = 0; i < split.length; i++) {
-                            // Determine if this part is the match
-                            // split indices: 0=non-match, 1=match, 2=non-match... (if capturing group used)
                             const segment = split[i];
                             if (segment.toLowerCase() === term.toLowerCase()) {
                                 newParts.push(
@@ -59,24 +59,25 @@ const Question = ({ question, value, onChange }) => {
         return parts;
     };
 
-    const renderInput = () => {
+    const renderInput = (): ReactNode => {
         switch (type) {
             case 'textarea':
                 return (
                     <textarea
                         id={`q-${id}`}
-                        value={value || ''}
+                        value={typeof value === 'string' ? value : ''}
                         onChange={(e) => onChange(id, e.target.value)}
                         rows={4}
                     />
                 );
             case 'radio':
+                if (!options) return null;
                 return (
                     <div className="options-group">
                         {options.map((opt, idx) => {
                             const isOther = isOtherOption(opt);
                             const isSelected = selectedRadioValue === opt;
-                            const otherText = typeof value === 'object' && value !== null ? value.otherText || '' : '';
+                            const otherText = typeof value === 'object' && value !== null && 'otherText' in value ? value.otherText || '' : '';
 
                             return (
                                 <div key={idx} className="radio-label">
@@ -88,7 +89,7 @@ const Question = ({ question, value, onChange }) => {
                                             checked={isSelected}
                                             onChange={() => {
                                                 if (isOther) {
-                                                    onChange(id, { option: opt, otherText });
+                                                    onChange(id, { option: opt, otherText } as QuestionOption);
                                                 } else {
                                                     onChange(id, opt);
                                                 }
@@ -101,7 +102,7 @@ const Question = ({ question, value, onChange }) => {
                                             type="text"
                                             placeholder="Please specify"
                                             value={otherText}
-                                            onChange={(e) => onChange(id, { option: opt, otherText: e.target.value })}
+                                            onChange={(e) => onChange(id, { option: opt, otherText: e.target.value } as QuestionOption)}
                                             style={{ marginLeft: '1.9rem', marginTop: '0.35rem' }}
                                         />
                                     )}
@@ -111,16 +112,17 @@ const Question = ({ question, value, onChange }) => {
                     </div>
                 );
             case 'checkbox':
+                if (!options) return null;
                 const currentVals = Array.isArray(value) ? value : [];
-                const getOptionKey = (v) => (typeof v === 'object' && v !== null ? v.option : v);
+                const getOptionKey = (v: string | QuestionOption): string => (typeof v === 'object' && v !== null ? v.option : v);
 
                 return (
                     <div className="options-group">
                         {options.map((opt, idx) => {
                             const isOther = isOtherOption(opt);
-                            const matching = currentVals.find(v => getOptionKey(v) === opt);
+                            const matching = currentVals.find(v => getOptionKey(v as string | QuestionOption) === opt);
                             const isChecked = Boolean(matching);
-                            const otherText = typeof matching === 'object' && matching !== null ? matching.otherText || '' : '';
+                            const otherText = typeof matching === 'object' && matching !== null && 'otherText' in matching ? matching.otherText || '' : '';
 
                             return (
                                 <div key={idx} className="checkbox-label">
@@ -132,10 +134,10 @@ const Question = ({ question, value, onChange }) => {
                                             checked={isChecked}
                                             onChange={(e) => {
                                                 if (e.target.checked) {
-                                                    const newEntry = isOther ? { option: opt, otherText } : opt;
+                                                    const newEntry: string | QuestionOption = isOther ? { option: opt, otherText } : opt;
                                                     onChange(id, [...currentVals, newEntry]);
                                                 } else {
-                                                    onChange(id, currentVals.filter(v => getOptionKey(v) !== opt));
+                                                    onChange(id, currentVals.filter(v => getOptionKey(v as string | QuestionOption) !== opt));
                                                 }
                                             }}
                                         />
@@ -148,8 +150,8 @@ const Question = ({ question, value, onChange }) => {
                                             value={otherText}
                                             onChange={(e) => {
                                                 const updated = currentVals.map(v => {
-                                                    if (getOptionKey(v) === opt) {
-                                                        return { option: opt, otherText: e.target.value };
+                                                    if (getOptionKey(v as string | QuestionOption) === opt) {
+                                                        return { option: opt, otherText: e.target.value } as QuestionOption;
                                                     }
                                                     return v;
                                                 });
@@ -164,10 +166,11 @@ const Question = ({ question, value, onChange }) => {
                     </div>
                 );
             case 'select':
+                if (!options) return null;
                 return (
                     <select
                         id={`q-${id}`}
-                        value={value || ''}
+                        value={typeof value === 'string' ? value : ''}
                         onChange={(e) => onChange(id, e.target.value)}
                     >
                         <option value="">-- Select an option --</option>
@@ -179,7 +182,8 @@ const Question = ({ question, value, onChange }) => {
                     </select>
                 );
             case 'agencies-with-count':
-                const agenciesList = Array.isArray(value) ? value : [];
+                if (!options) return null;
+                const agenciesList = (Array.isArray(value) ? value : []) as AgencyData[];
                 
                 return (
                     <div className="options-group">
@@ -200,7 +204,7 @@ const Question = ({ question, value, onChange }) => {
                                             checked={isChecked}
                                             onChange={(e) => {
                                                 if (e.target.checked) {
-                                                    const newEntry = { agency, count: '', ...(isOther && { otherType: '' }) };
+                                                    const newEntry: AgencyData = { agency, count: '', ...(isOther && { otherType: '' }) };
                                                     onChange(id, [...agenciesList, newEntry]);
                                                 } else {
                                                     onChange(id, agenciesList.filter(a => 
@@ -255,7 +259,7 @@ const Question = ({ question, value, onChange }) => {
                     <input
                         type="number"
                         id={`q-${id}`}
-                        value={value || ''}
+                        value={typeof value === 'string' ? value : ''}
                         onChange={(e) => onChange(id, e.target.value)}
                     />
                 );
@@ -265,7 +269,7 @@ const Question = ({ question, value, onChange }) => {
                     <input
                         type="text"
                         id={`q-${id}`}
-                        value={value || ''}
+                        value={typeof value === 'string' ? value : ''}
                         onChange={(e) => onChange(id, e.target.value)}
                     />
                 );

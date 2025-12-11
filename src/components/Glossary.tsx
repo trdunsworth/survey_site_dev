@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import glossaryData from '../data/glossary_data.json';
+import type { GlossaryItem } from '../types';
 
-const Glossary = () => {
-    const [isOpen, setIsOpen] = useState(false);
+const typedGlossaryData = glossaryData as GlossaryItem[];
+
+const Glossary: React.FC = () => {
+    const [isOpen, setIsOpen] = useState<boolean>(false);
 
     return (
         <>
@@ -16,7 +19,7 @@ const Glossary = () => {
             <div className={`glossary-panel ${isOpen ? 'open' : ''}`}>
                 <h3>Glossary</h3>
                 <ul className="glossary-list">
-                    {glossaryData.map((item, idx) => (
+                    {typedGlossaryData.map((item, idx) => (
                         <li key={idx}>
                             <strong>{item.term}</strong>: {item.definition}
                         </li>

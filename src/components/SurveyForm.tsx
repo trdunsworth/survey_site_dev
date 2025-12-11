@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import Question from './Question';
 import surveyData from '../data/survey_data.json';
-import glossaryData from '../data/glossary_data.json';
+import type { SurveyData, Answers, AnswerValue } from '../types';
 
 const API_URL = 'http://localhost:3001/api';
 
-const SurveyForm = () => {
-    const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
-    const [answers, setAnswers] = useState({});
-    const [glossaryRes, setGlossaryRes] = useState(null); // Term to show def for
-    const [submissionId, setSubmissionId] = useState(null);
-    const [isSaving, setIsSaving] = useState(false);
+const typedSurveyData = surveyData as SurveyData;
 
-    const sections = surveyData.sections;
+const SurveyForm: React.FC = () => {
+    const [currentSectionIndex, setCurrentSectionIndex] = useState<number>(0);
+    const [answers, setAnswers] = useState<Answers>({});
+    const [submissionId, setSubmissionId] = useState<string | null>(null);
+    const [isSaving, setIsSaving] = useState<boolean>(false);
+
+    const sections = typedSurveyData.sections;
     const currentSection = sections[currentSectionIndex];
 
     // Generate submission ID on mount
@@ -28,7 +29,7 @@ const SurveyForm = () => {
         }).catch(err => console.error('Failed to create submission:', err));
     }, []);
 
-    const handleAnswerChange = async (questionId, value) => {
+    const handleAnswerChange = async (questionId: string | number, value: AnswerValue): Promise<void> => {
         setAnswers(prev => ({
             ...prev,
             [questionId]: value
@@ -48,17 +49,34 @@ const SurveyForm = () => {
         }
     };
 
-    const handleNext = () => {
+    const handleNext = (): void => {
         if (currentSectionIndex < sections.length - 1) {
             setCurrentSectionIndex(currentSectionIndex + 1);
             window.scrollTo(0, 0);
         }
     };
 
-    const handlePrev = () => {
+    const handlePrev = (): void => {
         if (currentSectionIndex > 0) {
             setCurrentSectionIndex(currentSectionIndex - 1);
             window.scrollTo(0, 0);
+        }
+    };
+
+    const handleSubmit = async (): Promise<void> => {
+        if (submissionId) {
+            setIsSaving(true);
+            try {
+                await fetch(`${API_URL}/submissions/${submissionId}/complete`, {
+                    method: 'POST'
+                });
+                alert('Survey submitted successfully! Thank you for your participation.');
+            } catch (err) {
+                console.error('Failed to complete submission:', err);
+                alert('Survey data saved locally. Thank you!');
+            } finally {
+                setIsSaving(false);
+            }
         }
     };
 
@@ -103,22 +121,7 @@ const SurveyForm = () => {
                 ) : (
                     <button 
                         className="primary" 
-                        onClick={async () => {
-                            if (submissionId) {
-                                setIsSaving(true);
-                                try {
-                                    await fetch(`${API_URL}/submissions/${submissionId}/complete`, {
-                                        method: 'POST'
-                                    });
-                                    alert('Survey submitted successfully! Thank you for your participation.');
-                                } catch (err) {
-                                    console.error('Failed to complete submission:', err);
-                                    alert('Survey data saved locally. Thank you!');
-                                } finally {
-                                    setIsSaving(false);
-                                }
-                            }
-                        }}
+                        onClick={handleSubmit}
                         disabled={isSaving}
                     >
                         {isSaving ? 'Submitting...' : 'Submit'}

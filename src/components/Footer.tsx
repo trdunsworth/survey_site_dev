@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Footer = () => {
+const Footer: React.FC = () => {
     return (
         <footer style={styles.footer}>
             <div className="container">
@@ -10,7 +10,7 @@ const Footer = () => {
     );
 };
 
-const styles = {
+const styles: { [key: string]: React.CSSProperties } = {
     footer: {
         backgroundColor: 'var(--nena-grey)',
         color: 'white',

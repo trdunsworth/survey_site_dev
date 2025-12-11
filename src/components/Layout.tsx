@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import Header from './Header';
 import Footer from './Footer';
 import Glossary from './Glossary';
 
-const Layout = ({ children }) => {
+interface LayoutProps {
+    children: ReactNode;
+}
+
+const Layout: React.FC<LayoutProps> = ({ children }) => {
     return (
         <div style={styles.wrapper}>
             <Header />
@@ -18,7 +22,7 @@ const Layout = ({ children }) => {
     );
 };
 
-const styles = {
+const styles: { [key: string]: React.CSSProperties } = {
     wrapper: {
         display: 'flex',
         flexDirection: 'column',
@@ -27,7 +31,7 @@ const styles = {
     main: {
         flex: 1,
         padding: '2rem 0',
-        position: 'relative' // For glossary positioning if needed
+        position: 'relative'
     }
 };
 

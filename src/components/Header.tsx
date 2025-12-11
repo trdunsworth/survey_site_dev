@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Header = () => {
+const Header: React.FC = () => {
     return (
         <header style={styles.header}>
             <div className="container" style={styles.container}>
@@ -13,7 +13,7 @@ const Header = () => {
     );
 };
 
-const styles = {
+const styles: { [key: string]: React.CSSProperties } = {
     header: {
         backgroundColor: 'var(--nena-red)',
         color: 'white',
@@ -29,7 +29,6 @@ const styles = {
         fontSize: '1.5rem',
         fontWeight: 'bold',
         display: 'flex',
-        alignItems: 'center',
         gap: '0.5rem'
     },
     nenaText: {
@@ -37,7 +36,6 @@ const styles = {
     },
     surveyText: {
         color: 'white',
-        fontSize: '1.2rem',
         fontWeight: 'normal'
     }
 };
