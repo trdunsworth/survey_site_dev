@@ -49,7 +49,81 @@ const SurveyForm: React.FC = () => {
         }
     };
 
+    const validateRequiredFields = (): boolean => {
+        for (const question of currentSection.questions) {
+            if (question.required) {
+                const answer = answers[question.id];
+                
+                // Check if answer exists and is not empty
+                if (answer === undefined || answer === null || answer === '') {
+                    alert(`Question ${question.id} is required. Please provide an answer.`);
+                    return false;
+                }
+                
+                // For arrays (checkbox, agencies-with-count), check if not empty
+                if (Array.isArray(answer) && answer.length === 0) {
+                    alert(`Question ${question.id} is required. Please select at least one option.`);
+                    return false;
+                }
+                
+                // For objects (radio with other), check if has value
+                if (typeof answer === 'object' && answer !== null && 'option' in answer) {
+                    if (!answer.option) {
+                        alert(`Question ${question.id} is required. Please select an option.`);
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    };
+
+    const validateOtherFields = (): boolean => {
+        for (const question of currentSection.questions) {
+            const answer = answers[question.id];
+            
+            // Check radio buttons with "Other"
+            if (question.type === 'radio' && typeof answer === 'object' && answer !== null && 'option' in answer) {
+                const isOther = /\bother\b/i.test(answer.option);
+                if (isOther && (!answer.otherText || answer.otherText.trim() === '')) {
+                    alert(`Please specify details for the "Other" option in question ${question.id}.`);
+                    return false;
+                }
+            }
+            
+            // Check checkboxes with "Other"
+            if (question.type === 'checkbox' && Array.isArray(answer)) {
+                for (const item of answer) {
+                    if (typeof item === 'object' && item !== null && 'option' in item) {
+                        const isOther = /\bother\b/i.test(item.option);
+                        if (isOther && (!item.otherText || item.otherText.trim() === '')) {
+                            alert(`Please specify details for the "Other" option in question ${question.id}.`);
+                            return false;
+                        }
+                    }
+                }
+            }
+            
+            // Check agencies-with-count with "Other"
+            if (question.type === 'agencies-with-count' && Array.isArray(answer)) {
+                for (const item of answer) {
+                    if (typeof item === 'object' && item !== null && 'agency' in item) {
+                        const isOther = /\bother\b/i.test(item.agency);
+                        if (isOther && (!item.otherType || item.otherType.trim() === '')) {
+                            alert(`Please specify the agency type for the "Other" option in question ${question.id}.`);
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    };
+
     const handleNext = (): void => {
+        if (!validateRequiredFields() || !validateOtherFields()) {
+            return;
+        }
         if (currentSectionIndex < sections.length - 1) {
             setCurrentSectionIndex(currentSectionIndex + 1);
             window.scrollTo(0, 0);
@@ -64,6 +138,9 @@ const SurveyForm: React.FC = () => {
     };
 
     const handleSubmit = async (): Promise<void> => {
+        if (!validateRequiredFields() || !validateOtherFields()) {
+            return;
+        }
         if (submissionId) {
             setIsSaving(true);
             try {

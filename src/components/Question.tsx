@@ -104,6 +104,7 @@ const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
                                             value={otherText}
                                             onChange={(e) => onChange(id, { option: opt, otherText: e.target.value } as QuestionOption)}
                                             style={{ marginLeft: '1.9rem', marginTop: '0.35rem' }}
+                                            required
                                         />
                                     )}
                                 </div>
@@ -158,6 +159,7 @@ const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
                                                 onChange(id, updated);
                                             }}
                                             style={{ marginLeft: '1.9rem', marginTop: '0.35rem' }}
+                                            required
                                         />
                                     )}
                                 </div>
@@ -231,6 +233,7 @@ const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
                                                         });
                                                         onChange(id, updated);
                                                     }}
+                                                    required
                                                 />
                                             )}
                                             <input
@@ -281,6 +284,8 @@ const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
             <label className="question-label" htmlFor={`q-${id}`}>
                 <span className="question-number">{id}. </span>
                 {renderTextWithTooltips(text)}
+                {question.required && <span style={{ color: '#e74c3c', marginLeft: '0.25rem', fontWeight: 'bold' }}>*</span>}
+                {question.required && <span style={{ color: '#e74c3c', fontSize: '0.85em', marginLeft: '0.5rem', fontStyle: 'italic' }}>(Required)</span>}
             </label>
             <div className="input-wrapper">
                 {renderInput()}

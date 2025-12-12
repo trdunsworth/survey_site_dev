@@ -53,7 +53,8 @@
             "Primary",
             "Secondary"
           ],
-          "type": "radio"
+          "type": "radio",
+          "required": true
         },
         {
           "id": 5,

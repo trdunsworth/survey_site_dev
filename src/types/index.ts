@@ -25,6 +25,7 @@ export interface Question {
   text: string;
   type: 'text' | 'textarea' | 'radio' | 'checkbox' | 'select' | 'number' | 'agencies-with-count' | string;
   options?: string[];
+  required?: boolean;
 }
 
 export interface Section {
