@@ -1,9 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Question from './Question';
 import surveyData from '../data/survey_data.json';
 import type { SurveyData, Answers, AnswerValue } from '../types';
-
-const API_URL = 'http://localhost:3001/api';
+import { useSubject, useSubscription, useObservable } from '../hooks/useObservable';
+import {
+    createAutoSaveStream,
+    createSubmission,
+    completeSubmission,
+    networkStatus$,
+    OfflineSaveQueue,
+    type AnswerChange,
+} from '../services/surveyService';
 
 const typedSurveyData = surveyData as SurveyData;
 
@@ -12,6 +19,16 @@ const SurveyForm: React.FC = () => {
     const [answers, setAnswers] = useState<Answers>({});
     const [submissionId, setSubmissionId] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState<boolean>(false);
+    const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+
+    // RxJS Subject for answer changes
+    const answerChange$ = useSubject<AnswerChange>();
+
+    // Offline queue for when network is unavailable
+    const offlineQueue = useMemo(() => new OfflineSaveQueue(), []);
+
+    // Network status
+    const isOnline = useObservable(networkStatus$, navigator.onLine);
 
     const sections = typedSurveyData.sections;
     const currentSection = sections[currentSectionIndex];
@@ -21,33 +38,79 @@ const SurveyForm: React.FC = () => {
         const id = `survey_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         setSubmissionId(id);
         
-        // Create submission in database
-        fetch(`${API_URL}/submissions`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ submissionId: id })
-        }).catch(err => console.error('Failed to create submission:', err));
+        // Create submission in database using RxJS
+        const subscription = createSubmission(id).subscribe({
+            next: (result) => {
+                if (result.success) {
+                    console.log('Submission created successfully');
+                } else {
+                    console.error('Failed to create submission:', result.error);
+                }
+            },
+        });
+
+        return () => subscription.unsubscribe();
     }, []);
 
-    const handleAnswerChange = async (questionId: string | number, value: AnswerValue): Promise<void> => {
+    // Set up auto-save stream with RxJS
+    useEffect(() => {
+        const autoSave$ = createAutoSaveStream(answerChange$);
+        
+        const subscription = autoSave$.subscribe({
+            next: (result) => {
+                if (result.success) {
+                    setSaveStatus('saved');
+                    setTimeout(() => setSaveStatus('idle'), 2000);
+                } else {
+                    setSaveStatus('error');
+                    setTimeout(() => setSaveStatus('idle'), 3000);
+                }
+            },
+        });
+
+        return () => subscription.unsubscribe();
+    }, [answerChange$]);
+
+    // Process offline queue when network comes back online
+    useEffect(() => {
+        if (isOnline && offlineQueue.getQueueSize() > 0) {
+            const subscription = offlineQueue.processQueue().subscribe({
+                next: (results) => {
+                    const successCount = results.filter((r) => r.success).length;
+                    console.log(`Processed ${successCount}/${results.length} queued answers`);
+                },
+            });
+
+            return () => subscription.unsubscribe();
+        }
+    }, [isOnline, offlineQueue]);
+
+    const handleAnswerChange = useCallback((questionId: string | number, value: AnswerValue): void => {
+        // Update local state immediately (optimistic update)
         setAnswers(prev => ({
             ...prev,
             [questionId]: value
         }));
 
-        // Auto-save answer to database
+        // Emit to RxJS stream for debounced auto-save
         if (submissionId) {
-            try {
-                await fetch(`${API_URL}/answers`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ submissionId, questionId, answer: value })
-                });
-            } catch (err) {
-                console.error('Failed to save answer:', err);
+            const change: AnswerChange = {
+                submissionId,
+                questionId,
+                answer: value,
+            };
+
+            if (isOnline) {
+                // Online: send to auto-save stream
+                answerChange$.next(change);
+                setSaveStatus('saving');
+            } else {
+                // Offline: add to queue
+                offlineQueue.add(change);
+                setSaveStatus('error');
             }
         }
-    };
+    }, [submissionId, answerChange$, isOnline, offlineQueue]);
 
     const validateRequiredFields = (): boolean => {
         for (const question of currentSection.questions) {
@@ -137,23 +200,32 @@ const SurveyForm: React.FC = () => {
         }
     };
 
-    const handleSubmit = async (): Promise<void> => {
+    const handleSubmit = (): void => {
         if (!validateRequiredFields() || !validateOtherFields()) {
             return;
         }
         if (submissionId) {
             setIsSaving(true);
-            try {
-                await fetch(`${API_URL}/submissions/${submissionId}/complete`, {
-                    method: 'POST'
-                });
-                alert('Survey submitted successfully! Thank you for your participation.');
-            } catch (err) {
-                console.error('Failed to complete submission:', err);
-                alert('Survey data saved locally. Thank you!');
-            } finally {
-                setIsSaving(false);
-            }
+            
+            // Use RxJS observable for submission
+            const subscription = completeSubmission(submissionId).subscribe({
+                next: (result) => {
+                    setIsSaving(false);
+                    if (result.success) {
+                        alert('Survey submitted successfully! Thank you for your participation.');
+                    } else {
+                        alert('Survey data saved locally. Thank you!');
+                    }
+                },
+                error: (err) => {
+                    setIsSaving(false);
+                    console.error('Failed to complete submission:', err);
+                    alert('Survey data saved locally. Thank you!');
+                },
+            });
+
+            // Note: In production, you might want to store this subscription
+            // to unsubscribe if component unmounts during submission
         }
     };
 
@@ -164,6 +236,22 @@ const SurveyForm: React.FC = () => {
         <div className="survey-form">
             <div className="progress-bar-container">
                 <div className="progress-bar" style={{ width: `${progress}%` }}></div>
+            </div>
+
+            {/* Network and save status indicator */}
+            <div style={{ 
+                padding: '8px 12px', 
+                marginBottom: '12px', 
+                borderRadius: '4px',
+                backgroundColor: !isOnline ? '#fff3cd' : saveStatus === 'saved' ? '#d4edda' : saveStatus === 'error' ? '#f8d7da' : saveStatus === 'saving' ? '#cfe2ff' : 'transparent',
+                color: !isOnline ? '#856404' : saveStatus === 'saved' ? '#155724' : saveStatus === 'error' ? '#721c24' : saveStatus === 'saving' ? '#084298' : 'inherit',
+                fontSize: '14px',
+                display: (!isOnline || saveStatus !== 'idle') ? 'block' : 'none'
+            }}>
+                {!isOnline ? '⚠️ Offline - Your answers will be saved when connection is restored' :
+                 saveStatus === 'saving' ? '💾 Saving...' :
+                 saveStatus === 'saved' ? '✓ Saved' :
+                 saveStatus === 'error' ? '⚠️ Save failed - retrying...' : ''}
             </div>
 
             <div className="section-header">
