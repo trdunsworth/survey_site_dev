@@ -12,7 +12,9 @@ import {
 } from 'rxjs/operators';
 import type { AnswerValue } from '../types';
 
-const API_URL = 'http://localhost:3001/api';
+// Frontend API base URL is configurable via Vite env
+// Defaults to '/api' so it can be reverse-proxied under the site
+const API_URL = (import.meta as any).env?.VITE_API_URL ?? '/api';
 
 export interface AnswerChange {
   submissionId: string;

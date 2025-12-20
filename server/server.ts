@@ -4,12 +4,14 @@ import { saveResponse, createSubmission, markSubmissionComplete, getSubmission, 
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+// Optional API base path to support subfolder hosting (e.g., '/survey')
+const API_BASE = process.env.API_BASE || '';
 
 app.use(cors());
 app.use(express.json());
 
 // Create a new submission
-app.post('/api/submissions', (req: Request, res: Response): void => {
+app.post(`${API_BASE}/api/submissions`, (req: Request, res: Response): void => {
   try {
     const { submissionId } = req.body;
     createSubmission(submissionId);
@@ -21,7 +23,7 @@ app.post('/api/submissions', (req: Request, res: Response): void => {
 });
 
 // Save individual answer
-app.post('/api/answers', (req: Request, res: Response): void => {
+app.post(`${API_BASE}/api/answers`, (req: Request, res: Response): void => {
   try {
     const { submissionId, questionId, answer } = req.body;
     saveResponse(submissionId, questionId, answer);
@@ -33,7 +35,7 @@ app.post('/api/answers', (req: Request, res: Response): void => {
 });
 
 // Submit (complete) survey
-app.post('/api/submissions/:submissionId/complete', (req: Request, res: Response): void => {
+app.post(`${API_BASE}/api/submissions/:submissionId/complete`, (req: Request, res: Response): void => {
   try {
     const { submissionId } = req.params;
     markSubmissionComplete(submissionId);
@@ -45,7 +47,7 @@ app.post('/api/submissions/:submissionId/complete', (req: Request, res: Response
 });
 
 // Get a specific submission
-app.get('/api/submissions/:submissionId', async (req: Request, res: Response): Promise<void> => {
+app.get(`${API_BASE}/api/submissions/:submissionId`, async (req: Request, res: Response): Promise<void> => {
   try {
     const { submissionId } = req.params;
     const submission = await getSubmission(submissionId);
@@ -61,7 +63,7 @@ app.get('/api/submissions/:submissionId', async (req: Request, res: Response): P
 });
 
 // Get all submissions (for analysis)
-app.get('/api/submissions', async (req: Request, res: Response): Promise<void> => {
+app.get(`${API_BASE}/api/submissions`, async (req: Request, res: Response): Promise<void> => {
   try {
     const submissions = await getAllSubmissions();
     res.json(submissions);
@@ -72,7 +74,7 @@ app.get('/api/submissions', async (req: Request, res: Response): Promise<void> =
 });
 
 // Export data for analysis (CSV format)
-app.get('/api/export/csv', async (req: Request, res: Response): Promise<void> => {
+app.get(`${API_BASE}/api/export/csv`, async (req: Request, res: Response): Promise<void> => {
   try {
     const submissions = await getAllSubmissions();
     // Simple CSV export - can be enhanced

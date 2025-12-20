@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Question from './Question';
 import surveyData from '../data/survey_data.json';
 import type { SurveyData, Answers, AnswerValue } from '../types';
-import { useSubject, useSubscription, useObservable } from '../hooks/useObservable';
+import { useSubject, useObservable } from '../hooks/useObservable';
 import {
     createAutoSaveStream,
     createSubmission,
@@ -208,7 +208,7 @@ const SurveyForm: React.FC = () => {
             setIsSaving(true);
             
             // Use RxJS observable for submission
-            const subscription = completeSubmission(submissionId).subscribe({
+            completeSubmission(submissionId).subscribe({
                 next: (result) => {
                     setIsSaving(false);
                     if (result.success) {
