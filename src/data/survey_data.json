@@ -2,6 +2,17 @@
   "title": "NENA Survey",
   "sections": [
     {
+      "title": "Welcome",
+      "questions": [
+        {
+          "id": 0,
+          "text": "Thank you for participating in the NENA 2024 PSAP Survey. We know that your time is valuable and we appreciate you sharing your data with us. The information you share will help NENA better understand staffing and call processing realities throughout the industry and support meaningful solutions, advocacy, and future planning for the 9-1-1 community.\n\nThe survey will take approximately 30-45 minutes and consists of 99 question. Your voice matters, and your participation makes a difference.",
+          "options": [],
+          "type": "info"
+        }
+      ]
+    },
+    {
       "title": "PSAP Classification",
       "questions": [
         {
@@ -58,7 +69,7 @@
         },
         {
           "id": 5,
-          "text": "What services does the PSAP provide:",
+          "text": "What services does the PSAP provide (select one or more):",
           "options": [
             "Call Taking",
             "Dispatching",
@@ -69,7 +80,7 @@
         },
         {
           "id": 6,
-          "text": "Please list any additional services that you proivde:",
+          "text": "Please list any additional services that you provide:",
           "options": [],
           "type": "text"
         },
@@ -119,67 +130,67 @@
       "questions": [
         {
           "id": 10,
-          "text": "Total of 9-1-1 calls answered in the last calendar year",
+          "text": "Total of 9-1-1 calls answered in the last calendar year:",
           "options": [],
           "type": "number"
         },
         {
           "id": 11,
-          "text": "Total of all 10-digit emergency calls answered in the last calendar year",
+          "text": "Total of all 10-digit emergency calls answered in the last calendar year:",
           "options": [],
           "type": "number"
         },
         {
           "id": 12,
-          "text": "Total of all non-emergency calls answered in the last calendar year",
+          "text": "Total of all non-emergency calls answered in the last calendar year:",
           "options": [],
           "type": "number"
         },
         {
           "id": 13,
-          "text": "Total of all SMS/Text sessions answered in the last calendar year",
+          "text": "Total of all SMS/Text sessions answered in the last calendar year:",
           "options": [],
           "type": "number"
         },
         {
           "id": 14,
-          "text": "Total of all TTY/TDD sessions answered in the last calendar year",
+          "text": "Total of all TTY/TDD sessions answered in the last calendar year:",
           "options": [],
           "type": "number"
         },
         {
           "id": 15,
-          "text": "Total number of Law Enforcement events processed in the last calendar year",
+          "text": "Total number of Law Enforcement events processed in the last calendar year:",
           "options": [],
           "type": "number"
         },
         {
           "id": 16,
-          "text": "Total number of Fire events processed in the last calendar year",
+          "text": "Total number of Fire events processed in the last calendar year:",
           "options": [],
           "type": "number"
         },
         {
           "id": 17,
-          "text": "Total number of EMS events processed in the last calendar year",
+          "text": "Total number of EMS events processed in the last calendar year:",
           "options": [],
           "type": "number"
         },
         {
           "id": 18,
-          "text": "Total number of other events processed in the last calendar year",
+          "text": "Total number of other events processed in the last calendar year:",
           "options": [],
           "type": "number"
         },
         {
           "id": 19,
-          "text": "Estimated radio keyups in the last calendar year.",
+          "text": "Estimated radio keyups in the last calendar year:",
           "options": [],
           "type": "text"
         },
         {
           "id": 20,
-          "text": "Average number of radio keyups per hour in the last calendar year.",
+          "text": "Average number of radio keyups per hour in the last calendar year:",
           "options": [],
           "type": "number"
         },
@@ -323,26 +334,42 @@
         {
           "id": 40,
           "text": "Do you monitor 9-1-1 call answering times",
-          "options": [],
-          "type": "text"
+          "options": [
+            "Yes",
+            "No",
+            "Uncertain"
+          ],
+          "type": "radio"
         },
         {
           "id": 41,
           "text": "Do you monitor 9-1-1 call processing times",
-          "options": [],
-          "type": "text"
+          "options": [
+            "Yes",
+            "No",
+            "Uncertain"
+          ],
+          "type": "radio"
         },
         {
           "id": 42,
           "text": "Do you monitor admin line call answering times",
-          "options": [],
-          "type": "text"
+          "options": [
+            "Yes",
+            "No",
+            "Uncertain"
+          ],
+          "type": "radio"
         },
         {
           "id": 43,
           "text": "Do you monitor admin line call processing times",
-          "options": [],
-          "type": "text"
+          "options": [
+            "Yes",
+            "No",
+            "Uncertain"
+          ],
+          "type": "radio"
         },
         {
           "id": 44,
@@ -487,8 +514,11 @@
         {
           "id": 66,
           "text": "Do you employ a prioritization system to triage events",
-          "options": [],
-          "type": "text"
+          "options": [
+            "Yes",
+            "No"
+          ],
+          "type": "radio"
         },
         {
           "id": 67,
@@ -500,7 +530,13 @@
             "Internal",
             "Other (Please Specify)"
           ],
-          "type": "radio"
+          "type": "radio",
+          "showIf": {
+            "questionId": 66,
+            "anyOf": [
+              "Yes"
+            ]
+          }
         },
         {
           "id": 68,
@@ -606,14 +642,22 @@
         {
           "id": 82,
           "text": "Do you have AI assistance in QA/QI?",
-          "options": [],
-          "type": "text"
+          "options": [
+            "Yes",
+            "No"
+          ],
+          "type": "radio"
         },
         {
           "id": 83,
           "text": "If so, how many hours per week are dedicated to QA/QI?",
           "options": [],
-          "type": "text"
+          "type": "text",
+          "showIf": {
+            "questionId": 82,
+            "anyOf": [
+              "Yes"
+            ]
         }
       ]
     },
@@ -707,6 +751,17 @@
           "text": "Please list any additional duties for which your center is responsible or performs and the number of hours per week that each duty consumes (examples may include NCIC entries, inmate duties, analyses, reports, warrant processing, etc.)?",
           "options": [],
           "type": "number"
+        }
+      ]
+    },
+    {
+      "title": "Closing",
+      "questions": [
+        {
+          "id": 97,
+          "text": "Thank you for completing the NENA 2024 PSAP Survey. Your participation is greatly appreciated and will help NENA better understand staffing and call processing standards. Your feedback is valuable throughout the industry and support meaningful solutions, advocacy, and future planning for the 9-1-1 community.",
+          "options": [],
+          "type": "info"
         }
       ]
     }

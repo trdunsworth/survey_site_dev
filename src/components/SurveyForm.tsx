@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Question from './Question';
 import surveyData from '../data/survey_data.json';
-import type { SurveyData, Answers, AnswerValue } from '../types';
+import type { SurveyData, Answers, AnswerValue, Question as QuestionType } from '../types';
 import { useSubject, useObservable } from '../hooks/useObservable';
 import {
     createAutoSaveStream,
@@ -32,6 +32,30 @@ const SurveyForm: React.FC = () => {
 
     const sections = typedSurveyData.sections;
     const currentSection = sections[currentSectionIndex];
+
+    const normalizeAnswer = (answer: AnswerValue | undefined): string[] => {
+        if (answer === undefined || answer === null) return [];
+        if (Array.isArray(answer)) {
+            return answer.map((item) => {
+                if (typeof item === 'object' && item !== null) {
+                    if ('option' in item && typeof item.option === 'string') return item.option;
+                    if ('agency' in item && typeof (item as any).agency === 'string') return (item as any).agency;
+                }
+                return String(item);
+            });
+        }
+        if (typeof answer === 'object') {
+            if ('option' in answer && typeof answer.option === 'string') return [answer.option];
+            if ('agency' in (answer as any) && typeof (answer as any).agency === 'string') return [(answer as any).agency];
+        }
+        return [String(answer)];
+    };
+
+    const isQuestionVisible = useCallback((question: QuestionType): boolean => {
+        if (!question.showIf) return true;
+        const dependencyAnswers = normalizeAnswer(answers[question.showIf.questionId]);
+        return dependencyAnswers.some((val) => question.showIf!.anyOf.includes(val));
+    }, [answers]);
 
     // Generate submission ID on mount
     useEffect(() => {
@@ -114,6 +138,7 @@ const SurveyForm: React.FC = () => {
 
     const validateRequiredFields = (): boolean => {
         for (const question of currentSection.questions) {
+            if (!isQuestionVisible(question)) continue;
             if (question.required) {
                 const answer = answers[question.id];
                 
@@ -143,6 +168,7 @@ const SurveyForm: React.FC = () => {
 
     const validateOtherFields = (): boolean => {
         for (const question of currentSection.questions) {
+            if (!isQuestionVisible(question)) continue;
             const answer = answers[question.id];
             
             // Check radio buttons with "Other"
@@ -260,14 +286,16 @@ const SurveyForm: React.FC = () => {
             </div>
 
             <div className="questions-list">
-                {currentSection.questions.map(q => (
-                    <Question
-                        key={q.id}
-                        question={q}
-                        value={answers[q.id]}
-                        onChange={handleAnswerChange}
-                    />
-                ))}
+                {currentSection.questions
+                    .filter(isQuestionVisible)
+                    .map(q => (
+                        <Question
+                            key={q.id}
+                            question={q}
+                            value={answers[q.id]}
+                            onChange={handleAnswerChange}
+                        />
+                    ))}
             </div>
 
             <div className="pagination-controls">

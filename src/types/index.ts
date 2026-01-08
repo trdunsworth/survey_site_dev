@@ -26,6 +26,10 @@ export interface Question {
   type: 'text' | 'textarea' | 'radio' | 'checkbox' | 'select' | 'number' | 'agencies-with-count' | string;
   options?: string[];
   required?: boolean;
+  showIf?: {
+    questionId: string | number;
+    anyOf: string[];
+  };
 }
 
 export interface Section {
