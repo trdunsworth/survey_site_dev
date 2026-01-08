@@ -88,14 +88,39 @@
           "id": 7,
           "text": "What is the PSAP operational governance:",
           "options": [
-            "Law Enforcement (PD/SO)",
-            "Fire Department",
-            "EMS Agency",
-            "Independent",
+            "Federal Government (Airport, Tribal, LEO, Miliary, Other)",
+            "State Government  (LEO, Other)",
+            "County Government (Sheriff, Fire, EMS, Other)",
+            "Municipal Government (Fire, EMS, LEO, Other)",
+            "Independent Tax Funded Authority",
             "Private",
             "Other (Please Specify)"
           ],
           "type": "radio"
+        },
+        {
+          "id": 7.1,
+          "text": "Which specific agencies fall under this governance:",
+          "options": [
+            "Police",
+            "Sheriff",
+            "Fire",
+            "EMS",
+            "Airport",
+            "Tribal",
+            "Military",
+            "Other (Please Specify)"
+          ],
+          "type": "checkbox",
+          "showIf": {
+            "questionId": 7,
+            "anyOf": [
+              "Federal Government (Airport, Tribal, LEO, Miliary, Other)",
+              "State Government  (LEO, Other)",
+              "County Government (Sheriff, Fire, EMS, Other)",
+              "Municipal Government (Fire, EMS, LEO, Other)"
+            ]
+          }
         },
         {
           "id": 8,
@@ -659,6 +684,7 @@
               "Yes"
             ]
         }
+      }
       ]
     },
     {

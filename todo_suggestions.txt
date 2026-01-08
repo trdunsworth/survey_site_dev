@@ -1,0 +1,185 @@
+At the top under the header on the first page, I would suggest a short introduction (why we're asking them to complete this) that includes an estimated time to complete the survey and maybe total number of questions so they know what to expect.
+Overall consistency: Some Qs end with a colon and some do not, some are asked as questions and end with a questions mark, some are asked as a question but end without a question mark.
+Q19: Should we reword this be more specific? Ask what their schedule is (8, 10, 12, 24 and/or use the names of the various schedule options.)  
+Q35: Perhaps change to "Admin Phone" since Q37 is asking about CHE.  Maybe add a Q asking for the logging recorder vendor if that's useful to know?
+Q38: Should we specify "responder notification"? There's also Reverse 911, Code RED, and the like that some centers use for citizen notifications.
+Q40-43: Would it be cleaner to make these a drop-down Y/N, and if Y have the follow up Qs 44-53 then pop as appropriate for each question?
+Q66: Do we want to ask about prioritizing for each discipline? Some just prioritize law calls. Or are we hoping they use the free-text field to explain that?
+Q68: The word center is spelled the British way ("centre").
+Q78: Could be a Y/N drop down with Q79-81 showing up as sub questions if Y is selected.  If N is selected, Q84-86 could then show up as sub questions.
+Q82: Same suggestion.
+Q96: I would include something like "If you do not track the number of hours, please provide an estimate."
+Maybe after the last Q have a short thank you message.
+
+Here’s a very lightly edited version of the notes I took. Apologies that it might be semi shorthand.:
+
+ 
+
+#7 Mark’s Suggestion from a previous discussion reiterated in the chat reference to his PSAP not being quite encompassed by the options
+ 
+
+Kevin Bayer – Outgoing calls may not be addressed in this survey
+Most telephony has reporting for this so it should not be a tough metric to find
+ 
+
+Kevin  - #21 transferred in? vs Transferrerd out – Determined that calls transferred in might not be measurable accurately
+ 
+
+#25 – Mark Jones call takers vs day and night may be different – others agreed that they have staffing levels that are dependent on hour of the day
+ 
+
+#35 and 37 Derek Rader – Service provider on #35 LSE or similar wording to differentiate and avoid confusion (glossary entries?)
+ 
+
+#68  – “centre” mentioned jokingly, we are possibly wishing we were Canadian – Another option for limitations on this question (#68) might be funding
+ 
+
+#72 – talk groups per dispatcher or overall? Maybe another option or this could be determined by dividing staff / overall talk groups – Kevin Bayer  
+ 
+
+#73-74 actively monitored / passively monitored – glossary additions for “actively” and “passively” – Chet
+Primary and secondary channels and what is meant by those terms as well
+ 
+
+#79 – AI implemented for less than a year/ maybe note for follow up a over time frame
+ 
+
+#83 – If so how many hours are you dedicating to Q? – Corinne asked should it be if “no” – Chet - Possibly a better solution is to just ask the number of hours dedicated to QA/QI without the qualification.
+ 
+
+Are they using AI to offload any other processes that we haven’t asked about?
+ 
+
+A date of implementation for ani AI would also be helpful – craig
+ 
+
+Craig – are we going to capture contact information for follow up requests?
+ 
+
+90’s – Dedicated training staff – what do we mean specifically by dedicated. Is that all they are doing? Possibly a candidate for a glossary entry.
+ 
+
+Are these staff performing New hire training classroom? Performed in house? On-line vs in-house academy vs outside academy
+Florida has a 232 hour training – some centers have their own academy if they’re big enough others use the state’s academy
+ 
+
+#96 – additional duties – only takes a numeric – Tonya mentioned it might be possible to add check boxes with an hours/wk drop down menu to the right of them for things like: records requests / QA/QI / NCIC / window duties, etc. 
+Tonya –for items like this it might limit the number of free text options with drop downs – unknown if it is more time consuming to do it free text and parse the data on back end or to limit the options and make it the data more succinct but it takes more set up on the deployment.
+ 
+
+Audrey -  A save function is needed (it looks like it is in the works)
+ 
+
+Final thoughts were some Distribution questions – What are our plans for getting this to people effectively and avoiding duplication? state coordinators for states that have have them could help with that possible (Mark Jones). Possibly some use of NENA EPRC (or a similar style DB) to verify info and pub/adverts in The Call etc to gain participation.
+
+SInce talking about staffing...people vs AI.
+	
+2026-01-07 13:25:00 From Craig Nettles to Everyone:
+	If new technologies have not been implemented for the full year, there should be some way to note that for follow up if need be
+	
+2026-01-07 13:25:09 From Corinne Walser to Everyone:
+	Sorry...my mic isn't working.
+	
+2026-01-07 13:26:00 From Tonya Beasley to Everyone:
+	Quick tidbit, right before this meeting started, I posted some notes to our Discussion Board to save us all a little time.
+	
+2026-01-07 13:26:27 From Tonya Beasley to Everyone:
+	Going back to what Audrey said, would an active date of AI be beneficial?
+	
+2026-01-07 13:26:40 From Tonya Beasley to Everyone:
+	There go Craig!
+	
+2026-01-07 13:28:03 From Craig Nettles to Everyone:
+	Speaking of follow up, are we asking to capture contact info just in case we have some follow up questions or clarifications?
+	
+2026-01-07 13:31:22 From Tonya Beasley to Everyone:
+	Great question, Kevin! - online vs. in-house vs. academy
+	
+2026-01-07 13:32:35 From Mark Jones to Everyone:
+	Thats how we work, in house
+	
+2026-01-07 13:32:48 From Mark Jones to Everyone:
+	Still have to document the required hours
+	
+2026-01-07 13:33:14 From Tonya Beasley to Everyone:
+	Training is so incredibly different state to state...
+	
+2026-01-07 13:33:26 From Kevin Bayer to Everyone:
+	And from PSAP to PSAP!
+	
+2026-01-07 13:33:38 From Tonya Beasley to Everyone:
+	Truth!
+	
+2026-01-07 13:37:55 From Tonya Beasley to Everyone:
+	Idea for Survey Introduction: Thank you for participating in the NENA Staffing Survey.  We know your time is valuable, and we appreciate you sharing your perspective.  The information gathered will help NENA better understand staffing realities across PSAPs and support meaningful solutions, advocacy, and future planning for the 9-1-1 community.
+	The survey takes approximately XX-XX minutes to complete and consists of XX questions. Your voice matters, and your 
+	
+	#4 – I do love how this question is marked REQUIRED.  Are there other questions that should be marked this way as well?
+
+#5 – There are many questions like this one that read MULTIPLE CHOICE.  I suggest we change that to Choose 1 or more for clarity.
+
+#6 – Simple typo:  provide – to – provide
+
+Yearly Call Counts (10 thru #23)
+
+#10 thru #18 – Suggest a period at the end of each sentence.
+
+Telecommunicator Staff Numbers (24 thru #33)
+
+#24 thru #32 – Suggest a period at the end of each sentence.
+
+#25 – Suggest we ask a minimum number of call takers per shift and a maximum number of call takers per shift.
+
+#25 – If group agrees, maybe ask if you IT staff is a Telecommunicator or Telecommunicator Supervisor.
+
+Operations Information (34 thru #37)
+
+For the sake of efficiency and/or time, is a drop-down option for some of these questions easier to compute than text input?  Especially top 3-5 vendors in any category with another option that can be filled it.
+
+#39 – Is Notification Process how all calls for serviced received instead of used?  This could just be me, but I didn't really understand the question.
+
+a.      (Change MULTIPLE CHOICE to Choose 1 or more:)
+
+b.     Automated Station Alerting System – clarity needed. 
+
+a.      This could be an actual alarm panel within dispatch.  For example, direct to dispatch alarm system with lifts stations due to high water or power loss.  T
+
+b.     This could be any intelligent agency platform.  (Vendor like RapidSOS)
+
+c.      This could also be severe weather notification or evacuation notification.  Our "tornado" alarm system and this two in one feature with a pre-recorded message for take shelter immediately or a mic to select a certain area to evacuate for situations like hazmat incident/train derailment.
+
+Call Center Data (40 thru 71)
+
+#40 thru #43 – Could this be a YES or NO choice instead of Text Input?
+
+a.      If YES, then how maybe text input then.
+
+#54 – Type it like:  Service Level Agreements (SLA)
+
+Note: Could also mean Mutual Aide Agreements (MAA) or Mutual Aide Box Alarm System (MABAS)  so I'm not sure if this should be changed entirely.  Ask group?
+
+#55 thru #60 – may be a silly question but:  Percentage of what exactly??
+
+#61 & #62 – Could this be a YES or NI choice instead of Text Input?  Curious what the purpose of these questions are also. Publish to whom?
+
+#63- Is this question asking do you have a written standard for how many time a 911 call rings?
+
+#64 – I may be overthinking this one too.  Like #63, is this question asking do you have a written standard for how long a dispatcher should be on a 911 call?
+
+#68 – Maybe a better way of asking would be:  Please identify the MOST important limitation your agency/center is experiencing to meet your standards.
+
+(Been a long day so, my apologies if I'm asking silly questions)
+
+Radio Data (72 thru #76)
+
+New Technologies (77 thru #83)
+
+Future Technology (84 thru #87)
+
+Training (88 thru #95)
+
+#88 – Next to the Text Input should we add a drop down for Days, Weeks, or Months?
+
+Additional Duties (96)
+
+-          How does this question help if its in a Numeric Input?  Would it be easier to have a Choose 1 or more with some of the provided examples that you gave.

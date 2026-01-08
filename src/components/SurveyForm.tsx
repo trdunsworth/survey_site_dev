@@ -7,6 +7,7 @@ import {
     createAutoSaveStream,
     createSubmission,
     completeSubmission,
+    loadSubmission,
     networkStatus$,
     OfflineSaveQueue,
     type AnswerChange,
@@ -14,12 +15,20 @@ import {
 
 const typedSurveyData = surveyData as SurveyData;
 
+// Helper to get URL parameter
+const getUrlParam = (name: string): string | null => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(name);
+};
+
 const SurveyForm: React.FC = () => {
     const [currentSectionIndex, setCurrentSectionIndex] = useState<number>(0);
     const [answers, setAnswers] = useState<Answers>({});
     const [submissionId, setSubmissionId] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState<boolean>(false);
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [showResumeLink, setShowResumeLink] = useState<boolean>(false);
 
     // RxJS Subject for answer changes
     const answerChange$ = useSubject<AnswerChange>();
@@ -57,24 +66,110 @@ const SurveyForm: React.FC = () => {
         return dependencyAnswers.some((val) => question.showIf!.anyOf.includes(val));
     }, [answers]);
 
-    // Generate submission ID on mount
+    // Generate submission ID on mount or resume existing
     useEffect(() => {
-        const id = `survey_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        setSubmissionId(id);
+        // Check URL for resume ID
+        const resumeId = getUrlParam('id');
         
-        // Create submission in database using RxJS
-        const subscription = createSubmission(id).subscribe({
-            next: (result) => {
-                if (result.success) {
-                    console.log('Submission created successfully');
-                } else {
-                    console.error('Failed to create submission:', result.error);
+        // Check localStorage for existing ID
+        const storedId = localStorage.getItem('survey_submission_id');
+        
+        if (resumeId) {
+            // Resume from URL
+            console.log('Resuming survey from URL:', resumeId);
+            setIsLoading(true);
+            
+            loadSubmission(resumeId).subscribe({
+                next: (result) => {
+                    if (result.success && result.data) {
+                        if (!result.data.completed) {
+                            setSubmissionId(resumeId);
+                            setAnswers(result.data.answers || {});
+                            
+                            // Restore section progress
+                            const storedSection = localStorage.getItem(`survey_section_${resumeId}`);
+                            if (storedSection) {
+                                setCurrentSectionIndex(parseInt(storedSection, 10));
+                            }
+                            
+                            localStorage.setItem('survey_submission_id', resumeId);
+                            console.log('Successfully resumed survey');
+                        } else {
+                            console.log('Survey already completed');
+                            alert('This survey has already been completed.');
+                        }
+                    } else {
+                        console.error('Failed to load submission:', result.error);
+                        alert('Could not resume survey. Starting a new one.');
+                        startNewSurvey();
+                    }
+                    setIsLoading(false);
+                },
+                error: (err) => {
+                    console.error('Error loading submission:', err);
+                    alert('Could not resume survey. Starting a new one.');
+                    startNewSurvey();
+                    setIsLoading(false);
                 }
-            },
-        });
-
-        return () => subscription.unsubscribe();
+            });
+        } else if (storedId) {
+            // Resume from localStorage
+            console.log('Resuming survey from localStorage:', storedId);
+            setIsLoading(true);
+            
+            loadSubmission(storedId).subscribe({
+                next: (result) => {
+                    if (result.success && result.data && !result.data.completed) {
+                        setSubmissionId(storedId);
+                        setAnswers(result.data.answers || {});
+                        
+                        // Restore section progress
+                        const storedSection = localStorage.getItem(`survey_section_${storedId}`);
+                        if (storedSection) {
+                            setCurrentSectionIndex(parseInt(storedSection, 10));
+                        }
+                        
+                        console.log('Successfully resumed survey from localStorage');
+                    } else {
+                        startNewSurvey();
+                    }
+                    setIsLoading(false);
+                },
+                error: () => {
+                    startNewSurvey();
+                    setIsLoading(false);
+                }
+            });
+        } else {
+            // Start new survey
+            startNewSurvey();
+            setIsLoading(false);
+        }
+        
+        function startNewSurvey() {
+            const id = `survey_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            setSubmissionId(id);
+            localStorage.setItem('survey_submission_id', id);
+            
+            // Create submission in database using RxJS
+            createSubmission(id).subscribe({
+                next: (result) => {
+                    if (result.success) {
+                        console.log('Submission created successfully');
+                    } else {
+                        console.error('Failed to create submission:', result.error);
+                    }
+                },
+            });
+        }
     }, []);
+    
+    // Save section progress to localStorage
+    useEffect(() => {
+        if (submissionId) {
+            localStorage.setItem(`survey_section_${submissionId}`, currentSectionIndex.toString());
+        }
+    }, [currentSectionIndex, submissionId]);
 
     // Set up auto-save stream with RxJS
     useEffect(() => {
@@ -238,6 +333,9 @@ const SurveyForm: React.FC = () => {
                 next: (result) => {
                     setIsSaving(false);
                     if (result.success) {
+                        // Clear localStorage on successful submission
+                        localStorage.removeItem('survey_submission_id');
+                        localStorage.removeItem(`survey_section_${submissionId}`);
                         alert('Survey submitted successfully! Thank you for your participation.');
                     } else {
                         alert('Survey data saved locally. Thank you!');
@@ -254,15 +352,126 @@ const SurveyForm: React.FC = () => {
             // to unsubscribe if component unmounts during submission
         }
     };
+    
+    // Copy resume link to clipboard
+    const copyResumeLink = (): void => {
+        if (submissionId) {
+            const resumeUrl = `${window.location.origin}${window.location.pathname}?id=${submissionId}`;
+            navigator.clipboard.writeText(resumeUrl).then(() => {
+                alert('Resume link copied to clipboard! Save this link to continue your survey later.');
+            }).catch(() => {
+                alert(`Resume link: ${resumeUrl}`);
+            });
+        }
+    };
 
     // Calculate progress
     const progress = Math.round(((currentSectionIndex + 1) / sections.length) * 100);
+
+    // Show loading state
+    if (isLoading) {
+        return (
+            <div className="survey-form" style={{ textAlign: 'center', padding: '40px' }}>
+                <p>Loading survey...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="survey-form">
             <div className="progress-bar-container">
                 <div className="progress-bar" style={{ width: `${progress}%` }}></div>
             </div>
+
+            {/* Resume link banner */}
+            {submissionId && !showResumeLink && (
+                <div style={{
+                    padding: '12px',
+                    marginBottom: '12px',
+                    backgroundColor: '#e7f3ff',
+                    borderRadius: '4px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                }}>
+                    <span style={{ fontSize: '14px', color: '#004085' }}>
+                        💡 Want to finish this survey later?
+                    </span>
+                    <button
+                        onClick={() => setShowResumeLink(true)}
+                        style={{
+                            padding: '6px 12px',
+                            fontSize: '13px',
+                            backgroundColor: '#0066cc',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '3px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Get Resume Link
+                    </button>
+                </div>
+            )}
+
+            {/* Resume link display */}
+            {showResumeLink && submissionId && (
+                <div style={{
+                    padding: '16px',
+                    marginBottom: '12px',
+                    backgroundColor: '#d4edda',
+                    borderRadius: '4px',
+                    border: '1px solid #c3e6cb'
+                }}>
+                    <div style={{ marginBottom: '8px', fontWeight: 'bold', color: '#155724' }}>
+                        📋 Your Resume Link
+                    </div>
+                    <div style={{
+                        padding: '8px',
+                        backgroundColor: 'white',
+                        borderRadius: '3px',
+                        marginBottom: '8px',
+                        fontSize: '13px',
+                        wordBreak: 'break-all',
+                        fontFamily: 'monospace'
+                    }}>
+                        {`${window.location.origin}${window.location.pathname}?id=${submissionId}`}
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                            onClick={copyResumeLink}
+                            style={{
+                                padding: '6px 12px',
+                                fontSize: '13px',
+                                backgroundColor: '#28a745',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '3px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Copy Link
+                        </button>
+                        <button
+                            onClick={() => setShowResumeLink(false)}
+                            style={{
+                                padding: '6px 12px',
+                                fontSize: '13px',
+                                backgroundColor: '#6c757d',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '3px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Close
+                        </button>
+                    </div>
+                    <div style={{ marginTop: '8px', fontSize: '12px', color: '#155724' }}>
+                        ℹ️ Bookmark or save this link to continue your survey from any device.
+                    </div>
+                </div>
+            )}
 
             {/* Network and save status indicator */}
             <div style={{ 
@@ -282,7 +491,49 @@ const SurveyForm: React.FC = () => {
 
             <div className="section-header">
                 <h2>{currentSection.title}</h2>
-                <span className="step-indicator">Section {currentSectionIndex + 1} of {sections.length}</span>
+                <span className="step-indicator">
+                    Section {currentSectionIndex + 1} of {sections.length}
+                    {/* Section navigation with completion indicators */}
+                    <div style={{ 
+                        marginTop: '12px', 
+                        display: 'flex', 
+                        gap: '6px', 
+                        justifyContent: 'center',
+                        flexWrap: 'wrap'
+                    }}>
+                        {sections.map((section, idx) => {
+                            const hasAnswers = section.questions.some(q => 
+                                answers[q.id] !== undefined && answers[q.id] !== null && answers[q.id] !== ''
+                            );
+                            const isCurrent = idx === currentSectionIndex;
+                            
+                            return (
+                                <div
+                                    key={idx}
+                                    style={{
+                                        width: '24px',
+                                        height: '24px',
+                                        borderRadius: '50%',
+                                        backgroundColor: isCurrent ? '#0066cc' : hasAnswers ? '#28a745' : '#e0e0e0',
+                                        color: isCurrent || hasAnswers ? 'white' : '#666',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '11px',
+                                        fontWeight: 'bold',
+                                        cursor: 'pointer',
+                                        border: isCurrent ? '2px solid #004085' : 'none',
+                                        boxSizing: 'border-box'
+                                    }}
+                                    title={`${section.title}${hasAnswers ? ' (has answers)' : ''}`}
+                                    onClick={() => setCurrentSectionIndex(idx)}
+                                >
+                                    {hasAnswers && !isCurrent ? '✓' : idx + 1}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </span>
             </div>
 
             <div className="questions-list">

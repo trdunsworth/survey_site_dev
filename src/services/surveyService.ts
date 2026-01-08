@@ -132,6 +132,55 @@ export function completeSubmission(submissionId: string): Observable<SaveResult>
 }
 
 /**
+ * Load an existing submission by ID
+ */
+export function loadSubmission(submissionId: string): Observable<{
+  success: boolean;
+  data?: {
+    submission_id: string;
+    created_at: string;
+    completed: boolean;
+    answers: Record<string, any>;
+  };
+  error?: string;
+}> {
+  return new Observable<{
+    success: boolean;
+    data?: {
+      submission_id: string;
+      created_at: string;
+      completed: boolean;
+      answers: Record<string, any>;
+    };
+    error?: string;
+  }>((observer) => {
+    fetch(`${API_URL}/submissions/${submissionId}`)
+      .then((response) => {
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error('Submission not found');
+          }
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        observer.next({ success: true, data });
+        observer.complete();
+      })
+      .catch((err) => {
+        observer.error(err);
+      });
+  }).pipe(
+    retry({ count: 2, delay: 1000 }),
+    catchError((err) => {
+      console.error('Failed to load submission:', err);
+      return of({ success: false, error: err.message });
+    })
+  );
+}
+
+/**
  * Creates a debounced auto-save stream
  * - Debounces input by 500ms
  * - Only saves if value actually changed
