@@ -5,7 +5,7 @@
 
 ## Medium Priority
 - [ ] Review the introdcution text to ensure that it aligns with the latest project goals.
-- [ ] 
+- [ ] Review the survey completion text for approval by the working group.
 
 ## Low Priority
 - [ ] Task description here
