@@ -1,0 +1,88 @@
+================================================================================
+NENA SURVEY APPLICATION - DEPLOYMENT GUIDE
+================================================================================
+
+DEPLOYMENT COMMAND SEQUENCE
+================================================================================
+
+Step 1: Install Dependencies
+------------------------------
+npm install
+
+
+Step 2: Type Checking
+------------------------------
+npm run type-check
+
+
+Step 3: Linting (Optional but Recommended)
+------------------------------
+npm run lint
+
+
+Step 4: Build Frontend (React/Vite)
+------------------------------
+npm run build
+
+This generates the dist/ folder with static files ready for web hosting.
+
+
+Step 5: Build Server (TypeScript Compilation)
+------------------------------
+npm run build:server
+
+This compiles the backend server code from TypeScript to JavaScript.
+
+
+QUICK DEPLOYMENT (One Command)
+================================================================================
+
+Run all steps in sequence:
+
+npm install && npm run type-check && npm run lint && npm run build && npm run build:server
+
+
+DEPLOYMENT ARTIFACTS
+================================================================================
+
+After successful build:
+
+1. Frontend:
+   - Location: dist/
+   - Upload these files to your web hosting
+
+2. Server:
+   - Compiled files ready for Node.js runtime
+   - Requires Node.js environment on your server
+
+3. Database:
+   - Location: server/survey_responses.json
+   - Persists user survey submissions
+   - Must be accessible to backend server
+
+
+DEPLOYMENT CHECKLIST
+================================================================================
+
+[ ] npm install - dependencies installed
+[ ] npm run type-check - no TypeScript errors
+[ ] npm run lint - code passes linting rules
+[ ] npm run build - frontend built successfully (dist/ folder created)
+[ ] npm run build:server - server built successfully
+[ ] dist/ folder ready for upload
+[ ] Database file (server/survey_responses.json) backed up
+[ ] Backend server ready to deploy
+[ ] Verify dist/ contains all necessary files (index.html, assets, etc.)
+
+
+NOTES
+================================================================================
+
+- Frontend (dist/) can be hosted on any static file server
+- Backend (server/) requires Node.js runtime
+- Ensure backend API endpoints are accessible from your frontend domain
+- Keep server/survey_responses.json in a safe location (critical data)
+- Consider environment variables for production configuration
+
+
+================================================================================
