@@ -10,7 +10,7 @@ import {
   map,
   startWith,
 } from 'rxjs/operators';
-import type { AnswerValue } from '../types';
+import type { AnswerValue, TokenConsumeResult, TokenIssueResult } from '../types';
 
 // Frontend API base URL is configurable via Vite env
 // Defaults to '/api' so it can be reverse-proxied under the site
@@ -140,6 +140,10 @@ export function loadSubmission(submissionId: string): Observable<{
     submission_id: string;
     created_at: string;
     completed: boolean;
+    survey_version: string;
+    current_section_index: number;
+    last_question_id: string | null;
+    updated_at: string;
     answers: Record<string, any>;
   };
   error?: string;
@@ -150,6 +154,10 @@ export function loadSubmission(submissionId: string): Observable<{
       submission_id: string;
       created_at: string;
       completed: boolean;
+      survey_version: string;
+      current_section_index: number;
+      last_question_id: string | null;
+      updated_at: string;
       answers: Record<string, any>;
     };
     error?: string;
@@ -176,6 +184,101 @@ export function loadSubmission(submissionId: string): Observable<{
     catchError((err) => {
       console.error('Failed to load submission:', err);
       return of({ success: false, error: err.message });
+    })
+  );
+}
+
+/**
+ * Consume a one-time resume token.
+ * Returns the resume context (target version + section) on success, or a
+ * failure result with a generic reason code on failure.
+ */
+export function consumeToken(rawToken: string): Observable<TokenConsumeResult> {
+  return new Observable<TokenConsumeResult>((observer) => {
+    fetch(`${API_URL}/tokens/consume`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: rawToken }),
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.json();
+      })
+      .then((data) => {
+        observer.next(data as TokenConsumeResult);
+        observer.complete();
+      })
+      .catch((err) => observer.error(err));
+  }).pipe(
+    retry({ count: 1, delay: 500 }),
+    catchError((err) => {
+      console.error('Failed to consume token:', err);
+      return of({ success: false, reason: 'error' as const });
+    })
+  );
+}
+
+/**
+ * Issue a resume token for a given submission, pointing at a target survey
+ * version and section index.
+ */
+export function issueToken(
+  sourceSubmissionId: string,
+  targetSurveyVersion: string,
+  targetSectionIndex: number,
+): Observable<TokenIssueResult> {
+  return new Observable<TokenIssueResult>((observer) => {
+    fetch(`${API_URL}/tokens/issue`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sourceSubmissionId, targetSurveyVersion, targetSectionIndex }),
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.json();
+      })
+      .then((data) => {
+        observer.next(data as TokenIssueResult);
+        observer.complete();
+      })
+      .catch((err) => observer.error(err));
+  }).pipe(
+    catchError((err) => {
+      console.error('Failed to issue token:', err);
+      return of({ success: false, error: err.message as string });
+    })
+  );
+}
+
+/**
+ * Persist the current section index and optional last question ID on the
+ * server. This supplements localStorage for cross-device resume support.
+ */
+export function saveProgress(
+  submissionId: string,
+  currentSectionIndex: number,
+  lastQuestionId?: string,
+): Observable<SaveResult> {
+  return new Observable<SaveResult>((observer) => {
+    fetch(`${API_URL}/submissions/${submissionId}/progress`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentSectionIndex, lastQuestionId }),
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.json();
+      })
+      .then(() => {
+        observer.next({ success: true });
+        observer.complete();
+      })
+      .catch((err) => observer.error(err));
+  }).pipe(
+    retry({ count: 2, delay: 1000 }),
+    catchError((err) => {
+      console.error('Failed to save progress:', err);
+      return of({ success: false, error: err.message as string });
     })
   );
 }

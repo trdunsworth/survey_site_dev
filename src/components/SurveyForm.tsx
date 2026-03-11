@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Question from './Question';
 import surveyData from '../data/survey_data.json';
+import surveyData20260311 from '../data/survey_data_20260311.json';
 import type { SurveyData, Answers, AnswerValue, Question as QuestionType } from '../types';
 import { useSubject, useObservable } from '../hooks/useObservable';
 import {
@@ -8,12 +9,18 @@ import {
     createSubmission,
     completeSubmission,
     loadSubmission,
+    consumeToken,
+    saveProgress,
     networkStatus$,
     OfflineSaveQueue,
     type AnswerChange,
 } from '../services/surveyService';
 
-const typedSurveyData = surveyData as SurveyData;
+/** Map of version keys to their corresponding survey data. */
+const SURVEY_VERSIONS: Record<string, SurveyData> = {
+    'default':   surveyData as SurveyData,
+    '20260311':  surveyData20260311 as SurveyData,
+};
 
 // Helper to get URL parameter
 const getUrlParam = (name: string): string | null => {
@@ -29,6 +36,10 @@ const SurveyForm: React.FC = () => {
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [showResumeLink, setShowResumeLink] = useState<boolean>(false);
+    /** Key into SURVEY_VERSIONS — drives which survey data file is displayed. */
+    const [surveyVersion, setSurveyVersion] = useState<string>('default');
+    /** Set when a ?t= token is present but invalid/expired/consumed. */
+    const [tokenError, setTokenError] = useState<string | null>(null);
 
     // RxJS Subject for answer changes
     const answerChange$ = useSubject<AnswerChange>();
@@ -39,7 +50,12 @@ const SurveyForm: React.FC = () => {
     // Network status
     const isOnline = useObservable(networkStatus$, navigator.onLine);
 
-    const sections = typedSurveyData.sections;
+    const activeSurveyData = useMemo(
+        () => SURVEY_VERSIONS[surveyVersion] ?? SURVEY_VERSIONS['default'],
+        [surveyVersion]
+    );
+
+    const sections = activeSurveyData.sections;
     const currentSection = sections[currentSectionIndex];
 
     const normalizeAnswer = (answer: AnswerValue | undefined): string[] => {
@@ -68,6 +84,49 @@ const SurveyForm: React.FC = () => {
 
     // Generate submission ID on mount or resume existing
     useEffect(() => {
+        // ── 1. Token-based resume (?t=...) ────────────────────────────────────
+        // A ?t= token is issued by the server and carries routing context
+        // (target version + section). It is consumed on first use.
+        const tokenParam = getUrlParam('t');
+        if (tokenParam) {
+            setIsLoading(true);
+            consumeToken(tokenParam).subscribe({
+                next: (result) => {
+                    if (result.success && result.context) {
+                        const { targetSurveyVersion, targetSectionIndex, sourceSubmissionId } = result.context;
+                        loadSubmission(sourceSubmissionId).subscribe({
+                            next: (loadResult) => {
+                                if (loadResult.success && loadResult.data && !loadResult.data.completed) {
+                                    setSubmissionId(sourceSubmissionId);
+                                    setAnswers(loadResult.data.answers || {});
+                                    setCurrentSectionIndex(targetSectionIndex);
+                                    setSurveyVersion(targetSurveyVersion);
+                                    localStorage.setItem('survey_submission_id', sourceSubmissionId);
+                                    localStorage.setItem(
+                                        `survey_section_${sourceSubmissionId}`,
+                                        targetSectionIndex.toString()
+                                    );
+                                    console.log('Resumed via token:', sourceSubmissionId, targetSurveyVersion);
+                                } else {
+                                    startNewSurvey();
+                                }
+                                setIsLoading(false);
+                            },
+                            error: () => { startNewSurvey(); setIsLoading(false); },
+                        });
+                    } else {
+                        // Generic fallback — don't expose the specific failure reason in UI
+                        setTokenError(result.reason ?? 'invalid');
+                        startNewSurvey();
+                        setIsLoading(false);
+                    }
+                },
+                error: () => { setTokenError('error'); startNewSurvey(); setIsLoading(false); },
+            });
+            return; // Don't fall through to the ?id= / localStorage logic
+        }
+
+        // ── 2. Submission-ID resume (?id=...) or localStorage fallback ────────
         // Check URL for resume ID
         const resumeId = getUrlParam('id');
         
@@ -85,13 +144,16 @@ const SurveyForm: React.FC = () => {
                         if (!result.data.completed) {
                             setSubmissionId(resumeId);
                             setAnswers(result.data.answers || {});
-                            
-                            // Restore section progress
-                            const storedSection = localStorage.getItem(`survey_section_${resumeId}`);
-                            if (storedSection) {
-                                setCurrentSectionIndex(parseInt(storedSection, 10));
+                            if (result.data.survey_version) {
+                                setSurveyVersion(result.data.survey_version);
                             }
-                            
+                            // Prefer server-side section index (cross-device)
+                            const serverSection = result.data.current_section_index;
+                            const localSection  = localStorage.getItem(`survey_section_${resumeId}`);
+                            const sectionToUse  = (serverSection > 0)
+                                ? serverSection
+                                : localSection ? parseInt(localSection, 10) : 0;
+                            setCurrentSectionIndex(sectionToUse);
                             localStorage.setItem('survey_submission_id', resumeId);
                             console.log('Successfully resumed survey');
                         } else {
@@ -122,13 +184,16 @@ const SurveyForm: React.FC = () => {
                     if (result.success && result.data && !result.data.completed) {
                         setSubmissionId(storedId);
                         setAnswers(result.data.answers || {});
-                        
-                        // Restore section progress
-                        const storedSection = localStorage.getItem(`survey_section_${storedId}`);
-                        if (storedSection) {
-                            setCurrentSectionIndex(parseInt(storedSection, 10));
+                        if (result.data.survey_version) {
+                            setSurveyVersion(result.data.survey_version);
                         }
-                        
+                        // Prefer server-side section index (cross-device)
+                        const serverSection = result.data.current_section_index;
+                        const localSection  = localStorage.getItem(`survey_section_${storedId}`);
+                        const sectionToUse  = (serverSection > 0)
+                            ? serverSection
+                            : localSection ? parseInt(localSection, 10) : 0;
+                        setCurrentSectionIndex(sectionToUse);
                         console.log('Successfully resumed survey from localStorage');
                     } else {
                         startNewSurvey();
@@ -169,6 +234,15 @@ const SurveyForm: React.FC = () => {
         if (submissionId) {
             localStorage.setItem(`survey_section_${submissionId}`, currentSectionIndex.toString());
         }
+    }, [currentSectionIndex, submissionId]);
+
+    // Sync section progress to the server for cross-device resume support.
+    // Runs after every section change (debounced implicitly by the effect deps).
+    useEffect(() => {
+        if (submissionId) {
+            saveProgress(submissionId, currentSectionIndex).subscribe();
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentSectionIndex, submissionId]);
 
     // Set up auto-save stream with RxJS
@@ -382,6 +456,37 @@ const SurveyForm: React.FC = () => {
             <div className="progress-bar-container">
                 <div className="progress-bar" style={{ width: `${progress}%` }}></div>
             </div>
+
+            {/* Token error banner — shown when a ?t= link was invalid/expired */}
+            {tokenError && (
+                <div style={{
+                    padding: '12px 16px',
+                    marginBottom: '12px',
+                    backgroundColor: '#f8d7da',
+                    borderRadius: '4px',
+                    border: '1px solid #f5c6cb',
+                    color: '#721c24',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                }}>
+                    <span style={{ fontSize: '14px' }}>
+                        {tokenError === 'expired'
+                            ? '⚠️ This resume link has expired. A new survey has been started.'
+                            : '⚠️ This resume link is invalid or has already been used. A new survey has been started.'}
+                    </span>
+                    <button
+                        onClick={() => setTokenError(null)}
+                        style={{
+                            background: 'none', border: 'none', cursor: 'pointer',
+                            fontSize: '18px', color: '#721c24', padding: '0 4px', lineHeight: 1,
+                        }}
+                        aria-label="Dismiss"
+                    >
+                        ×
+                    </button>
+                </div>
+            )}
 
             {/* Resume link banner */}
             {submissionId && !showResumeLink && (

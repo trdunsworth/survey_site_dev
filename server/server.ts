@@ -1,6 +1,16 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
-import { saveResponse, createSubmission, markSubmissionComplete, getSubmission, getAllSubmissions } from './database';
+import { initDb } from './db';
+import {
+  saveResponse,
+  createSubmission,
+  markSubmissionComplete,
+  saveSubmissionProgress,
+  getSubmission,
+  getAllSubmissions,
+  issueResumeToken,
+  consumeResumeToken,
+} from './database';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -11,10 +21,11 @@ app.use(cors());
 app.use(express.json());
 
 // Create a new submission
+// Accepts optional `surveyVersion` to tag which survey data file this belongs to.
 app.post(`${API_BASE}/api/submissions`, (req: Request, res: Response): void => {
   try {
-    const { submissionId } = req.body;
-    createSubmission(submissionId);
+    const { submissionId, surveyVersion } = req.body;
+    createSubmission(submissionId, surveyVersion ?? 'default');
     res.json({ success: true, submissionId });
   } catch (error) {
     console.error('Error creating submission:', error);
@@ -31,6 +42,23 @@ app.post(`${API_BASE}/api/answers`, (req: Request, res: Response): void => {
   } catch (error) {
     console.error('Error saving answer:', error);
     res.status(500).json({ error: 'Failed to save answer' });
+  }
+});
+
+// Save section-level progress (server-side; supplements localStorage)
+app.put(`${API_BASE}/api/submissions/:submissionId/progress`, (req: Request, res: Response): void => {
+  try {
+    const { submissionId } = req.params;
+    const { currentSectionIndex, lastQuestionId } = req.body;
+    if (typeof currentSectionIndex !== 'number') {
+      res.status(400).json({ error: 'currentSectionIndex must be a number' });
+      return;
+    }
+    saveSubmissionProgress(submissionId, currentSectionIndex, lastQuestionId);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error saving progress:', error);
+    res.status(500).json({ error: 'Failed to save progress' });
   }
 });
 
@@ -92,6 +120,71 @@ app.get(`${API_BASE}/api/export/csv`, async (req: Request, res: Response): Promi
     res.status(500).json({ error: 'Failed to export data' });
   }
 });
+
+// ── Token endpoints ────────────────────────────────────────────────────────────────
+
+/**
+ * Issue a resume token that carries a user from their current submission to a
+ * specific version and section of the survey.
+ *
+ * Body: { sourceSubmissionId, targetSurveyVersion, targetSectionIndex }
+ */
+app.post(`${API_BASE}/api/tokens/issue`, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { sourceSubmissionId, targetSurveyVersion, targetSectionIndex } = req.body;
+
+    if (!sourceSubmissionId || typeof sourceSubmissionId !== 'string') {
+      res.status(400).json({ error: 'sourceSubmissionId is required' });
+      return;
+    }
+
+    const result = await issueResumeToken(
+      sourceSubmissionId,
+      targetSurveyVersion ?? 'default',
+      typeof targetSectionIndex === 'number' ? targetSectionIndex : 0,
+    );
+
+    res.json({ success: true, ...result });
+  } catch (error) {
+    console.error('Error issuing token:', error);
+    res.status(500).json({ error: 'Failed to issue token' });
+  }
+});
+
+/**
+ * Consume a resume token.
+ * Returns the resume context on success; a generic error on any failure so
+ * callers cannot distinguish between "bad token" and "already used".
+ *
+ * Body: { token }
+ */
+app.post(`${API_BASE}/api/tokens/consume`, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { token } = req.body;
+
+    if (!token || typeof token !== 'string') {
+      res.status(400).json({ success: false, reason: 'invalid' });
+      return;
+    }
+
+    const context = await consumeResumeToken(token);
+
+    if (!context) {
+      // Return a generic 200 (not 401/403) to avoid leaking token state
+      res.json({ success: false, reason: 'invalid' });
+      return;
+    }
+
+    res.json({ success: true, context });
+  } catch (error) {
+    console.error('Error consuming token:', error);
+    res.status(500).json({ success: false, reason: 'error' });
+  }
+});
+
+// ── Startup ──────────────────────────────────────────────────────────────────────
+
+await initDb();
 
 app.listen(PORT, () => {
   console.log(`Survey API server running on http://localhost:${PORT}`);
