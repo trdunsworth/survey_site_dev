@@ -23,6 +23,8 @@ export type AnswerValue =
 export interface Question {
   id: string | number;
   text: string;
+  description?: string;
+  data_location?: string;
   type: 'text' | 'textarea' | 'radio' | 'checkbox' | 'select' | 'number' | 'agencies-with-count' | string;
   options?: string[];
   required?: boolean;

@@ -6,7 +6,7 @@
       "questions": [
         {
           "id": 0,
-          "text": "Thank you for participating in the NENA 2024 PSAP Survey. We know that your time is valuable and we appreciate you sharing your data with us. The information you share will help NENA better understand staffing and call processing realities throughout the industry and support meaningful solutions, advocacy, and future planning for the 9-1-1 community.\n\nThe survey will take approximately 30-45 minutes and consists of 99 question. Your voice matters, and your participation makes a difference.",
+          "text": "The National Emergency Number Association (NENA) is conducting this survey to collect data from Public Safety Answering Points (PSAP) in the United States and Canada to evaluate and update call processing and staffing guidelines in response to evolving operational demands, emerging technologies, and increasing service complexity. The results will identify national trends, challenges, and effective practices to support data-driven decisions and the development of practical modern staffing recommendations that enhance efficiency, sustainability, and service quality. The survey takes approximately 20 to 30 minutes to complete. Participants are encouraged to have relevant staffing, call volume, and organization available, and may use the 'Save' feature to return later if needed. The deadline for completion is 07/31/2026. This initial phase focuses on core operations such as call processing, dispatching, and frontline FTE staffing. Future phases will include support and administrative functions. Broad participation is essential to ensure representative results. All responses will be analyzed in aggregate to support research and guideline development. ",
           "options": [],
           "type": "info"
         }
@@ -17,7 +17,8 @@
       "questions": [
         {
           "id": 1,
-          "text": "While the survey is anonymous, to assist in gathering data that can be used at a State or Provincial level, we would like to capture the state your PSAP is located in. Please select your state or province from the list below:",
+          "text": "Please select your state or province from the list below:",
+          "description": "While the survey is anonymous, to assist in gathering data that can be used at a State or Provincial level, we would like to capture the state your PSAP is located in.",
           "options": [
             "Alabama",
             "Alaska",
@@ -97,7 +98,9 @@
       "questions": [
         {
           "id": 2,
-          "text": "What is the base population serviced by the PSAP:",
+          "text": "What is the base population serviced by the PSAP?",
+          "description": "The base population allows us to see the population that is regularly serviced by the PSAP.",
+          "data_location": "This data can be gathered from your governing organization's census data",
           "options": [
             "Less than 10,000",
             "10,000 - 25,000",
@@ -112,7 +115,9 @@
         },
         {
           "id": 3,
-          "text": "What is the peak population serviced by the PSAP:",
+          "text": "What is the peak population serviced by the PSAP?",
+          "description": "The peak population allows us to see the influence of visitors and transient populations on PSAP operations.",
+          "data_location": "This data can be gathered from your governing organization's census data",
           "options": [
             "Less than 10,000",
             "10,000 - 25,000",
@@ -127,7 +132,9 @@
         },
         {
           "id": 4,
-          "text": "What are most common factors contiubting to the population variation:",
+          "text": "What are most common factors contiubting to the population variation? (Select all that apply)",
+          "description": "Understanding the factors that contribute to population variation can help identify operational challenges and staffing needs.",
+          "data_location": "This data can be gathered from your governing organization's demographic knowledge.",
           "options": [
             "Daytime Increase (Worker Influx)",
             "Seasonal Peaks",
@@ -140,17 +147,18 @@
         {
           "id": 5,
           "text": "Select the PSAP classification:",
+          "description": "We would like this data to determine the differences in operations and staffing between PSAP classifications.",
           "options": [
             "Primary",
             "Secondary",
-            "Tertiary"
+            "Other"
           ],
-          "type": "radio",
-          "required": true
+          "type": "radio"
         },
         {
           "id": 6,
           "text": "What services does the PSAP provide (select one or more):",
+          "description": "This allows the working groups to understand the variety of services provided by PSAPs and how that may influence operaations and staffing.",
           "options": [
             "Call Taking",
             "Dispatching",
@@ -205,7 +213,7 @@
         },
         {
           "id": 9,
-          "text": "What agencies does the PSAP serve and how many of each:",
+          "text": "What agencies does the PSAP answer calls and dispatch for and how many of each?",
           "options": [
             "Police",
             "Fire",

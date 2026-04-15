@@ -117,6 +117,24 @@ textarea {
   font-weight: 500;
 }
 
+.question-description {
+  display: block;
+  margin-top: 0.5rem;
+  margin-left: 1.8rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+  font-style: italic;
+}
+
+.question-data-location {
+  display: block;
+  margin-top: 0.4rem;
+  margin-left: 1.8rem;
+  color: var(--text-secondary);
+  font-weight: 700;
+  font-style: italic;
+}
+
 .question-number {
   font-weight: bold;
   color: var(--nena-red);

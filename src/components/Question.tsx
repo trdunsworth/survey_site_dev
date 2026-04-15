@@ -12,7 +12,15 @@ interface QuestionProps {
 const typedGlossaryData = glossaryData as GlossaryItem[];
 
 const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
-    const { id, text, type, options } = question;
+    const { id, text, description, data_location, type, options } = question;
+
+    const plainDescription = description
+        ? description
+            .replace(/<br\s*\/?>/gi, '\n')
+            .replace(/<\/p>/gi, '\n')
+            .replace(/<[^>]*>/g, '')
+            .trim()
+        : '';
 
     const isOtherOption = (opt: string): boolean => /\bother\b/i.test(opt);
     const selectedRadioValue = typeof value === 'object' && value !== null && 'option' in value ? value.option : value;
@@ -288,6 +296,16 @@ const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
                 </span>
                 {question.required && <span style={{ color: '#e74c3c', marginLeft: '0.25rem', fontWeight: 'bold' }}>*</span>}
                 {question.required && <span style={{ color: '#e74c3c', fontSize: '0.85em', marginLeft: '0.5rem', fontStyle: 'italic' }}>(Required)</span>}
+                {plainDescription && (
+                    <span className="question-description" style={{ whiteSpace: 'pre-line' }}>
+                        {plainDescription}
+                    </span>
+                )}
+                {data_location && (
+                    <span className="question-data-location" style={{ whiteSpace: 'pre-line' }}>
+                        {data_location}
+                    </span>
+                )}
             </label>
             <div className="input-wrapper">
                 {renderInput()}
