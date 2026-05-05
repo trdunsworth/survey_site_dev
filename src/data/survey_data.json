@@ -170,12 +170,14 @@
         {
           "id": 7,
           "text": "Please list any additional services that you provide:",
+          "description": "We would like to know what services beyond calltaking and dispatching that you provide to understand the variety of services provided by PSAPs and how that may influence operations and staffing.",
           "options": [],
           "type": "text"
         },
         {
           "id": 8,
           "text": "What is the PSAP operational governance:",
+          "description": "This allows us to understand how to compare the same types of PSAPs and how their staffing needs may change due to other factors.",
           "options": [
             "Federal Government (Airport, Tribal, LEO, Miliary, Other)",
             "State Government  (LEO, Other)",
@@ -214,6 +216,7 @@
         {
           "id": 9,
           "text": "What agencies does the PSAP answer calls and dispatch for and how many of each?",
+          "description": "We would like to know how many agencies a PSAP handles during the course of their business",
           "options": [
             "Police",
             "Fire",
@@ -227,6 +230,7 @@
         {
           "id": 10,
           "text": "Types of calls answered by PSAP:",
+          "description": "Knowing the typf or traffic that the PSAP handles will help with creating models that address the work that the center does",
           "options": [
             "9-1-1",
             "Admin",
@@ -245,72 +249,84 @@
         {
           "id": 11,
           "text": "Total of 9-1-1 calls answered in the last calendar year:",
+          "data_location": "This information should come from your phone software.",
           "options": [],
           "type": "number"
         },
         {
           "id": 12,
           "text": "Total of all 10-digit emergency calls answered in the last calendar year:",
+          "data_location": "If you have 10-digit emergency lines, the call volume will be found in your phone software. If you do not, them leave this blank",
           "options": [],
           "type": "number"
         },
         {
           "id": 13,
           "text": "Total of all non-emergency calls answered in the last calendar year:",
+          "data_location": "This information should come from your phone software.",
           "options": [],
           "type": "number"
         },
         {
           "id": 14,
           "text": "Total of all SMS/Text sessions answered in the last calendar year:",
+          "data_location": "This information should come from your phone software.",
           "options": [],
           "type": "number"
         },
         {
           "id": 15,
           "text": "Total of all TTY/TDD sessions answered in the last calendar year:",
+          "data_location": "This information should come from your phone software.",
           "options": [],
           "type": "number"
         },
         {
           "id": 16,
           "text": "Total number of Law Enforcement events processed in the last calendar year:",
+          "data_location": "This data should come from your Computer Aided Dispatch (CAD) software.",
           "options": [],
           "type": "number"
         },
         {
           "id": 17,
           "text": "Total number of Fire events processed in the last calendar year:",
+          "data_location": "This data should come from your Computer Aided Dispatch (CAD) software.",
           "options": [],
           "type": "number"
         },
         {
           "id": 18,
           "text": "Total number of EMS events processed in the last calendar year:",
+          "data_location": "This data should come from your Computer Aided Dispatch (CAD) software.",
           "options": [],
           "type": "number"
         },
         {
           "id": 19,
           "text": "Total number of other events processed in the last calendar year:",
+          "data_location": "This data may come from your Computer Aided Dispatch (CAD) software or other relevant sources.",
           "options": [],
           "type": "number"
         },
         {
           "id": 20,
           "text": "Estimated radio keyups in the last calendar year:",
+          "data_location": "This information should come from your radio communication logs or other relevant sources.",
           "options": [],
           "type": "text"
         },
         {
           "id": 21,
           "text": "Average number of radio keyups per hour in the last calendar year:",
+          "data_location": "This information should come from your radio communication logs or other relevant sources.",
           "options": [],
           "type": "number"
         },
         {
           "id": 22,
           "text": "How many calls were transferred in the last calendar year?",
+          "data_location": "This data should come from your Computer Aided Dispatch (CAD) software.",
           "options": [],
           "type": "number"
         },
