@@ -230,7 +230,7 @@
         {
           "id": 10,
           "text": "Types of calls answered by PSAP:",
-          "description": "Knowing the typf or traffic that the PSAP handles will help with creating models that address the work that the center does",
+          "description": "Knowing the type or traffic that the PSAP handles will help with creating models that address the work that the center does",
           "options": [
             "9-1-1",
             "Admin",
@@ -333,12 +333,14 @@
         {
           "id": 23,
           "text": "Of the calls transferred, how many were transferred to a secondary PSAP?",
+          "data_location": "This data may be sourced from your Computer Aided Dispatch (CAD) software and/or your phone software.",
           "options": [],
           "type": "number"
         },
         {
           "id": 24,
           "text": "Of the calls transferred, how many were transferred due to misrouting?",
+          "data_location": "This data should come from your Computer Aided Dispatch (CAD) incident comments.",
           "options": [],
           "type": "number"
         }
