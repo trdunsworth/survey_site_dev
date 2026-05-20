@@ -11,6 +11,8 @@
 - [ ] Define and enforce canonical resume mechanism for users (submission ID vs one-time token) and expose only one user-facing path.
 - [ ] Add API security hardening before deployment: restricted CORS origins, payload size limits, basic rate limiting, and secure headers.
 - [ ] Add automated tests for critical flows: save answer, resume by ID/token, progress restore, submit completion, and invalid payload rejection.
+- [ ] Update the README.md file for instructions and clarity.
+- [ ] Follow up with Brandon Abley about hosting and Mother Duck access.
 
 ## Medium Priority
 
@@ -22,6 +24,8 @@
 - [ ] Add environment-driven configuration documentation (`PORT`, `API_BASE`, `VITE_API_URL`, CORS origin list).
 - [ ] Resolve documentation drift: several docs still reference LowDB/JSON while runtime uses sql.js SQLite.
 - [ ] Decide on and document migration plan for legacy JS server files (`server/server.js`, `server/database.js`) to avoid accidental use.
+- [ ] Add info text to Question ID 30.
+- [ ] Identify possible pilot PSAPs for testing and feedback.
 
 ## Low Priority
 
@@ -71,7 +75,7 @@
 #### Nice-to-Have (2-4 hours)
 
 1. **Email resume links** - Allow users to email themselves a resume link
-2. **Expiration logic** - Auto-delete incomplete submissions after X days
+2. **Expiration logic** - Auto-delete incomplete submissions after 7 days
 3. **Progress bar enhancement** - Show actual completion percentage
 
 ### Implementation Difficulty

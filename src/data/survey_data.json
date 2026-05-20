@@ -6,8 +6,7 @@
       "questions": [
         {
           "id": 0,
-          "text": "The National Emergency Number Association (NENA) is conducting this survey to collect data from Public Safety Answering Points (PSAP) in the United States and Canada to evaluate and update call processing and staffing guidelines in response to evolving operational demands, emerging technologies, and increasing service complexity. The results will identify national trends, challenges, and effective practices to support data-driven decisions and the development of practical modern staffing recommendations that enhance efficiency, sustainability, and service quality. The survey takes approximately 20 to 30 minutes to complete. Participants are encouraged to have relevant staffing, call volume, and organization available, and may use the 'Save' feature to return later if needed. The deadline for completion is 07/31/2026. This initial phase focuses on core operations such as call processing, dispatching, and frontline FTE staffing. Future phases will include support and administrative functions. Broad participation is essential to ensure representative results. All responses will be analyzed in aggregate to support research and guideline development. ",
-          "options": [],
+          "text": "The National Emergency Number Association (NENA) is conducting this survey to collect data from Public Safety Answering Points (PSAP) in the United States and Canada to evaluate and update call processing and staffing guidelines in response to evolving operational demands, emerging technologies, and increasing service complexity. The results will identify national trends, challenges, and effective practices to support data-driven decisions and the development of practical modern staffing recommendations that enhance efficiency, sustainability, and service quality. The survey takes approximately 20 to 30 minutes to complete. Participants are encouraged to have relevant staffing, call volume, and organization available, and may use the 'Save' feature to return later if needed. The deadline for completion is 07/31/2026. This initial phase focuses on core operations such as call processing, dispatching, and frontline Full Time Equivalent (FTE) staffing. Future phases will include support and administrative functions. Broad participation is essential to ensure representative results. All responses will be analyzed in aggregate to support research and guideline development. ",
           "type": "info"
         }
       ]
@@ -456,7 +455,7 @@
         },
         {
           "id": 38,
-          "text": "What is the average number of calls handled per telecommunicator FTE per shift?",
+          "text": "What is the average number of calls handled per telecommunicator FTE per hour?",
           "description": "This will allow us to understand how staffing levels may influence the number of calls handled per telecommunicator and how that may influence service quality.",
           "data_location": "This information should come from your phone software or your Computer Aided Dispatch (CAD) software.",
           "options": [],
@@ -470,7 +469,6 @@
         {
           "id": 39,
           "text": "Thank you for completing the NENA 2024 PSAP Survey. Your participation is greatly appreciated and will help NENA better understand staffing and call processing standards. Your feedback is valuable throughout the industry and support meaningful solutions, advocacy, and future planning for the 9-1-1 community.",
-          "options": [],
           "type": "info"
         }
       ]
