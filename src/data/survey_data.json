@@ -336,40 +336,129 @@
           "data_location": "This data may be sourced from your Computer Aided Dispatch (CAD) software and/or your phone software.",
           "options": [],
           "type": "number"
-        },
-        {
-          "id": 24,
-          "text": "Of the calls transferred, how many were transferred due to misrouting?",
-          "data_location": "This data should come from your Computer Aided Dispatch (CAD) incident comments.",
-          "options": [],
-          "type": "number"
         }
       ]
     },
     {
       "title": "Telecommunicator staff numbers",
       "questions": [
-         {
+        {
+          "id": 24,
+          "text": "Number of Funded Operational FTEs (Full Time Equivalents)",
+          "description": "We would like to know the number of telecommunicator and supervisor positions you currently have in your budget.",
+          "options": [],
+          "type": "number"
+        },
+        {
           "id": 25,
-          "text": "Number of Budgeted FTEs (Full Time Equivalents)",
+          "text": "Number of Telecommunicator FTEs in use",
+          "description": "We also would like to know how many of those budgeted positions are currently hired and working.",
           "options": [],
           "type": "number"
         },
         {
           "id": 26,
-          "text": "What is your optimum number of FTEs (if fully staffed)?",
+          "text": "Number of Supervisor FTEs in use",
+          "description": "We also would like to know how many of those budgeted supervisor positions are currently hired and working.",
           "options": [],
           "type": "number"
         },
         {
           "id": 27,
-          "text": "Total number of shifts",
+          "text": "What is your optimum number of Telecommunicator FTEs (if fully staffed)?",
+          "description": "This allows us to gauge the distribution of expected staffing levels when compared to the call volume and other operational factors.",
           "options": [],
           "type": "number"
         },
         {
           "id": 28,
-          "text": "Number of FTEs per shift",
+          "text": "What is your optimum number of Supervisor FTEs (if fully staffed)?",
+          "description": "This allows us to gauge the distribution of expected staffing levels when compared to the call volume and other operational factors.", 
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 29,
+          "text": "What is the length of shifts in hours?",
+          "description": "This allows us to understand the distribution of shift lengths and how that may influence staffing needs and scheduling practices.",
+          "options": [
+            "8",
+            "10",
+            "12",
+            "Other (Please Specify)"
+          ],
+          "type": "radio"
+        },
+        {
+          "id": 30,
+          "text": "Minimum number of telecommunicator FTEs per shift",
+          "descriptions": "This allows us to understand what your centre considers to be viable minimal staffing levels for telecommunicators and how that may influence scheduling practices and service quality.",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 31,
+          "text": "Minimum number of supervisor FTEs per shift",
+          "description": "This allows us to understand what your centre considers to be viable minimal staffing levels for supervisors and how that may influence scheduling practices and service quality.",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 32,
+          "text": "Maximum number of telecommunicator FTEs per shift",
+          "description": "This allows us to understand what your centre considers to be maximum staffing levels for telecommunicators and how that may influence scheduling practices and service quality.",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 33,
+          "text": "Maximum number of supervisor FTEs per shift",
+          "description": "This allows us to understand what your centre considers to be maximum staffing levels for supervisors and how that may influence scheduling practices and service quality.",
+          "options": [],
+          "type": "number"
+        }
+      ]
+    },
+    {
+      "title": "Performance Metrics",
+      "questions": [
+        {
+          "id": 34,
+          "text": "What is your average phone answer time for 9-1-1 calls in seconds? (From presentation to answer)",
+          "description": "This will allow us to understand how staffing levels may influence phone answer times and how that may influence service quality.",
+          "data_location": "This information should come from your phone software.",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 35,
+          "text": "What is your average phone answer time for non-emergency calls in seconds? (From presentation to answer)",
+          "description": "This will allow us to understand how staffing levels may influence phone answer times and how that may influence service quality.",
+          "data_location": "This information should come from your phone software.",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 36,
+          "text": "What is your average call processing time for 9-1-1 calls in seconds? (From answer to dispatch)",
+          "description": "This will allow us to understand how staffing levels may influence call processing times and how that may influence service quality.",
+          "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 37,
+          "text": "What is your average call processing time for non-emergency calls in seconds? (From answer to dispatch)",
+          "description": "This will allow us to understand how staffing levels may influence call processing times and how that may influence service quality.",
+          "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id": 38,
+          "text": "What is the average number of calls handled per telecommunicator FTE per shift?",
+          "description": "This will allow us to understand how staffing levels may influence the number of calls handled per telecommunicator and how that may influence service quality.",
+          "data_location": "This information should come from your phone software or your Computer Aided Dispatch (CAD) software.",
           "options": [],
           "type": "number"
         }
@@ -379,7 +468,7 @@
       "title": "Closing",
       "questions": [
         {
-          "id": 29,
+          "id": 39,
           "text": "Thank you for completing the NENA 2024 PSAP Survey. Your participation is greatly appreciated and will help NENA better understand staffing and call processing standards. Your feedback is valuable throughout the industry and support meaningful solutions, advocacy, and future planning for the 9-1-1 community.",
           "options": [],
           "type": "info"

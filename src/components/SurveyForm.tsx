@@ -21,6 +21,7 @@ const SURVEY_VERSIONS: Record<string, SurveyData> = {
     'default':   surveyData as SurveyData,
     '20260311':  surveyData20260311 as SurveyData,
 };
+const POSITIVE_NUMERIC_OTHER_QUESTION_IDS = new Set(['29', 29]);
 
 // Helper to get URL parameter
 const getUrlParam = (name: string): string | null => {
@@ -346,6 +347,14 @@ const SurveyForm: React.FC = () => {
                 if (isOther && (!answer.otherText || answer.otherText.trim() === '')) {
                     alert(`Please specify details for the "Other" option in question ${question.id}.`);
                     return false;
+                }
+
+                if (isOther && POSITIVE_NUMERIC_OTHER_QUESTION_IDS.has(question.id)) {
+                    const numericValue = Number(answer.otherText);
+                    if (!Number.isFinite(numericValue) || numericValue <= 0) {
+                        alert(`Please enter a positive numeric value for question ${question.id}.`);
+                        return false;
+                    }
                 }
             }
             

@@ -10,6 +10,7 @@ interface QuestionProps {
 }
 
 const typedGlossaryData = glossaryData as GlossaryItem[];
+const NUMERIC_OTHER_QUESTION_IDS = new Set(['29', 29]);
 
 const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
     const { id, text, description, data_location, type, options } = question;
@@ -86,6 +87,7 @@ const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
                             const isOther = isOtherOption(opt);
                             const isSelected = selectedRadioValue === opt;
                             const otherText = typeof value === 'object' && value !== null && 'otherText' in value ? value.otherText || '' : '';
+                            const requiresNumericOther = isOther && NUMERIC_OTHER_QUESTION_IDS.has(id);
 
                             return (
                                 <div key={idx} className="radio-label">
@@ -107,8 +109,10 @@ const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
                                     </label>
                                     {isOther && isSelected && (
                                         <input
-                                            type="text"
-                                            placeholder="Please specify"
+                                            type={requiresNumericOther ? 'number' : 'text'}
+                                            placeholder={requiresNumericOther ? 'Enter positive number of hours' : 'Please specify'}
+                                            min={requiresNumericOther ? '0.0000001' : undefined}
+                                            step={requiresNumericOther ? 'any' : undefined}
                                             value={otherText}
                                             onChange={(e) => onChange(id, { option: opt, otherText: e.target.value } as QuestionOption)}
                                             style={{ marginLeft: '1.9rem', marginTop: '0.35rem' }}
