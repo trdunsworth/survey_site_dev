@@ -11,6 +11,7 @@ import {
   issueResumeToken,
   consumeResumeToken,
 } from './database';
+import { validateAnswer } from './answerValidator';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -25,6 +26,14 @@ app.use(express.json());
 app.post(`${API_BASE}/api/submissions`, (req: Request, res: Response): void => {
   try {
     const { submissionId, surveyVersion } = req.body;
+    if (typeof submissionId !== 'string' || !/^[\w-]{1,128}$/.test(submissionId)) {
+      res.status(400).json({ error: 'Invalid submissionId' });
+      return;
+    }
+    if (surveyVersion !== undefined && typeof surveyVersion !== 'string') {
+      res.status(400).json({ error: 'surveyVersion must be a string' });
+      return;
+    }
     createSubmission(submissionId, surveyVersion ?? 'default');
     res.json({ success: true, submissionId });
   } catch (error) {
@@ -37,7 +46,23 @@ app.post(`${API_BASE}/api/submissions`, (req: Request, res: Response): void => {
 app.post(`${API_BASE}/api/answers`, (req: Request, res: Response): void => {
   try {
     const { submissionId, questionId, answer } = req.body;
-    saveResponse(submissionId, questionId, answer);
+
+    if (typeof submissionId !== 'string' || !/^[\w-]{1,128}$/.test(submissionId)) {
+      res.status(400).json({ error: 'Invalid submissionId' });
+      return;
+    }
+    if (questionId === undefined || questionId === null) {
+      res.status(400).json({ error: 'questionId is required' });
+      return;
+    }
+
+    const validation = validateAnswer(questionId, answer);
+    if (!validation.valid) {
+      res.status(400).json({ error: validation.reason });
+      return;
+    }
+
+    saveResponse(submissionId, String(questionId), validation.sanitized);
     res.json({ success: true });
   } catch (error) {
     console.error('Error saving answer:', error);

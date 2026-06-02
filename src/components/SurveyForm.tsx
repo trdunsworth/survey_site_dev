@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Question from './Question';
 import surveyData from '../data/survey_data.json';
 import surveyData20260311 from '../data/survey_data_20260311.json';
-import type { SurveyData, Answers, AnswerValue, Question as QuestionType } from '../types';
+import type { SurveyData, Answers, AnswerValue, Question as QuestionType, ResumeContext } from '../types';
 import { useSubject, useObservable } from '../hooks/useObservable';
 import {
     createAutoSaveStream,
@@ -10,6 +10,7 @@ import {
     completeSubmission,
     loadSubmission,
     consumeToken,
+    issueToken,
     saveProgress,
     networkStatus$,
     OfflineSaveQueue,
@@ -29,14 +30,17 @@ const getUrlParam = (name: string): string | null => {
     return params.get(name);
 };
 
-const SurveyForm: React.FC = () => {
+const SurveyForm: React.FC<{ resumeContext?: ResumeContext }> = ({ resumeContext }) => {
     const [currentSectionIndex, setCurrentSectionIndex] = useState<number>(0);
     const [answers, setAnswers] = useState<Answers>({});
     const [submissionId, setSubmissionId] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState<boolean>(false);
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [showResumeLink, setShowResumeLink] = useState<boolean>(false);
+    const [showSaveCode, setShowSaveCode] = useState<boolean>(false);
+    const [saveCode, setSaveCode] = useState<string | null>(null);
+    const [saveCodeUrl, setSaveCodeUrl] = useState<string | null>(null);
+    const [isGeneratingCode, setIsGeneratingCode] = useState<boolean>(false);
     /** Key into SURVEY_VERSIONS — drives which survey data file is displayed. */
     const [surveyVersion, setSurveyVersion] = useState<string>('default');
     /** Set when a ?t= token is present but invalid/expired/consumed. */
@@ -84,7 +88,36 @@ const SurveyForm: React.FC = () => {
     }, [answers]);
 
     // Generate submission ID on mount or resume existing
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
+        // ── 0. resumeContext prop (pre-consumed token from SurveyLanding) ─────
+        // SurveyLanding already consumed the token and passes its context here,
+        // so we load the submission directly without consuming the token again.
+        if (resumeContext) {
+            const { targetSurveyVersion, targetSectionIndex, sourceSubmissionId } = resumeContext;
+            setIsLoading(true);
+            loadSubmission(sourceSubmissionId).subscribe({
+                next: (loadResult) => {
+                    if (loadResult.success && loadResult.data && !loadResult.data.completed) {
+                        setSubmissionId(sourceSubmissionId);
+                        setAnswers(loadResult.data.answers || {});
+                        setCurrentSectionIndex(targetSectionIndex);
+                        setSurveyVersion(targetSurveyVersion);
+                        localStorage.setItem('survey_submission_id', sourceSubmissionId);
+                        localStorage.setItem(
+                            `survey_section_${sourceSubmissionId}`,
+                            targetSectionIndex.toString()
+                        );
+                    } else {
+                        startNewSurvey();
+                    }
+                    setIsLoading(false);
+                },
+                error: () => { startNewSurvey(); setIsLoading(false); },
+            });
+            return;
+        }
+
         // ── 1. Token-based resume (?t=...) ────────────────────────────────────
         // A ?t= token is issued by the server and carries routing context
         // (target version + section). It is consumed on first use.
@@ -436,16 +469,36 @@ const SurveyForm: React.FC = () => {
         }
     };
     
-    // Copy resume link to clipboard
-    const copyResumeLink = (): void => {
-        if (submissionId) {
-            const resumeUrl = `${window.location.origin}${window.location.pathname}?id=${submissionId}`;
-            navigator.clipboard.writeText(resumeUrl).then(() => {
-                alert('Resume link copied to clipboard! Save this link to continue your survey later.');
-            }).catch(() => {
-                alert(`Resume link: ${resumeUrl}`);
-            });
-        }
+    // Issue a one-time resume token and display it as a save code
+    const generateSaveCode = (): void => {
+        if (!submissionId || isGeneratingCode) return;
+        setIsGeneratingCode(true);
+        issueToken(submissionId, surveyVersion, currentSectionIndex).subscribe({
+            next: (result) => {
+                setIsGeneratingCode(false);
+                if (result.success && result.token) {
+                    setSaveCode(result.token);
+                    setSaveCodeUrl(
+                        `${window.location.origin}${window.location.pathname}?t=${result.token}`
+                    );
+                    setShowSaveCode(true);
+                } else {
+                    alert('Could not generate a save code. Please try again.');
+                }
+            },
+            error: () => {
+                setIsGeneratingCode(false);
+                alert('Could not generate a save code. Please check your connection.');
+            },
+        });
+    };
+
+    const copySaveCode = (): void => {
+        if (saveCode) navigator.clipboard.writeText(saveCode).catch(() => {});
+    };
+
+    const copySaveUrl = (): void => {
+        if (saveCodeUrl) navigator.clipboard.writeText(saveCodeUrl).catch(() => {});
     };
 
     // Calculate progress
@@ -497,8 +550,8 @@ const SurveyForm: React.FC = () => {
                 </div>
             )}
 
-            {/* Resume link banner */}
-            {submissionId && !showResumeLink && (
+            {/* Save-code banner — shown while no code is displayed yet */}
+            {submissionId && !showSaveCode && (
                 <div style={{
                     padding: '12px',
                     marginBottom: '12px',
@@ -512,7 +565,8 @@ const SurveyForm: React.FC = () => {
                         💡 Want to finish this survey later?
                     </span>
                     <button
-                        onClick={() => setShowResumeLink(true)}
+                        onClick={generateSaveCode}
+                        disabled={isGeneratingCode}
                         style={{
                             padding: '6px 12px',
                             fontSize: '13px',
@@ -520,16 +574,17 @@ const SurveyForm: React.FC = () => {
                             color: 'white',
                             border: 'none',
                             borderRadius: '3px',
-                            cursor: 'pointer'
+                            cursor: isGeneratingCode ? 'not-allowed' : 'pointer',
+                            opacity: isGeneratingCode ? 0.7 : 1,
                         }}
                     >
-                        Get Resume Link
+                        {isGeneratingCode ? 'Generating…' : 'Save & Get Code'}
                     </button>
                 </div>
             )}
 
-            {/* Resume link display */}
-            {showResumeLink && submissionId && (
+            {/* Save-code display panel */}
+            {showSaveCode && saveCode && (
                 <div style={{
                     padding: '16px',
                     marginBottom: '12px',
@@ -537,23 +592,28 @@ const SurveyForm: React.FC = () => {
                     borderRadius: '4px',
                     border: '1px solid #c3e6cb'
                 }}>
-                    <div style={{ marginBottom: '8px', fontWeight: 'bold', color: '#155724' }}>
-                        📋 Your Resume Link
+                    <div style={{ marginBottom: '6px', fontWeight: 'bold', color: '#155724' }}>
+                        🔑 Your Save Code
+                    </div>
+                    <div style={{ marginBottom: '8px', fontSize: '12px', color: '#155724' }}>
+                        Copy and save this code. Enter it on the start page to resume your survey.
                     </div>
                     <div style={{
-                        padding: '8px',
+                        padding: '8px 10px',
                         backgroundColor: 'white',
                         borderRadius: '3px',
                         marginBottom: '8px',
                         fontSize: '13px',
                         wordBreak: 'break-all',
-                        fontFamily: 'monospace'
+                        fontFamily: 'monospace',
+                        border: '1px solid #c3e6cb',
+                        userSelect: 'all',
                     }}>
-                        {`${window.location.origin}${window.location.pathname}?id=${submissionId}`}
+                        {saveCode}
                     </div>
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
                         <button
-                            onClick={copyResumeLink}
+                            onClick={copySaveCode}
                             style={{
                                 padding: '6px 12px',
                                 fontSize: '13px',
@@ -564,10 +624,24 @@ const SurveyForm: React.FC = () => {
                                 cursor: 'pointer'
                             }}
                         >
-                            Copy Link
+                            Copy Code
                         </button>
                         <button
-                            onClick={() => setShowResumeLink(false)}
+                            onClick={copySaveUrl}
+                            style={{
+                                padding: '6px 12px',
+                                fontSize: '13px',
+                                backgroundColor: '#17a2b8',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '3px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Copy Resume Link
+                        </button>
+                        <button
+                            onClick={() => setShowSaveCode(false)}
                             style={{
                                 padding: '6px 12px',
                                 fontSize: '13px',
@@ -581,8 +655,15 @@ const SurveyForm: React.FC = () => {
                             Close
                         </button>
                     </div>
-                    <div style={{ marginTop: '8px', fontSize: '12px', color: '#155724' }}>
-                        ℹ️ Bookmark or save this link to continue your survey from any device.
+                    <div style={{
+                        fontSize: '12px',
+                        color: '#856404',
+                        backgroundColor: '#fff3cd',
+                        padding: '6px 8px',
+                        borderRadius: '3px',
+                        border: '1px solid #ffeeba'
+                    }}>
+                        ⚠️ This code can only be used once. Generate a new code each time you want to save.
                     </div>
                 </div>
             )}

@@ -5,19 +5,13 @@
 - [ ] Wire persisted survey results to a tabular analytics store with DuckDB as the OLAP engine.
 - [ ] Define database strategy: keep sql.js as transactional capture and mirror into DuckDB, or replace primary storage with DuckDB-backed workflow.
 - [ ] Implement ETL/transform step from `submissions` + `answers` JSON payloads into analysis-friendly DuckDB tables/views (wide and long formats).
-- [ ] Add input sanitization and bounds validation on the backend for all answer writes (required checks, type checks, min/max, allowed options, length limits).
-- [ ] Add server-side schema-aware validation per question ID to prevent invalid payloads bypassing frontend checks.
-- [ ] Add resume code entry UX (input field + action) so a respondent can paste/enter a save code/token without needing URL parameters.
 - [ ] Define and enforce canonical resume mechanism for users (submission ID vs one-time token) and expose only one user-facing path.
 - [ ] Add API security hardening before deployment: restricted CORS origins, payload size limits, basic rate limiting, and secure headers.
 - [ ] Add automated tests for critical flows: save answer, resume by ID/token, progress restore, submit completion, and invalid payload rejection.
 - [ ] Update the README.md file for instructions and clarity.
-- [ ] Follow up with Brandon Abley about hosting and Mother Duck access.
 
 ## Medium Priority
 
-- [ ] Review the introduction text to ensure alignment with latest project goals.
-- [ ] Review the survey completion text for working-group approval.
 - [ ] Add production health/readiness endpoint(s) for deployment monitoring and startup checks.
 - [ ] Improve export pipeline to include detailed answer-level exports (not only submission headers) for downstream analytics.
 - [ ] Add data retention/backup policy for survey databases and token lifecycle cleanup job (expired token purge).
@@ -35,11 +29,19 @@
 
 ## Completed
 
+- [x] Add input sanitization and bounds validation on the backend for all answer writes (required checks, type checks, min/max, allowed options, length limits).
+- [x] Add server-side schema-aware validation per question ID (`server/answerValidator.ts`) — all answer types, option allow-lists, numeric bounds, HTML sanitization, and submissionId format check.
+- [x] Add resume code entry UX (input field + action) so a respondent can paste/enter a save code/token without needing URL parameters.
+- [x] Follow up with Brandon Abley about hosting and Mother Duck access.
+- [x] Review the introduction text to ensure alignment with latest project goals.
+- [x] Review the survey completion text for working-group approval.
 - [x] Debounced auto-save implemented with retry and offline queue support.
 - [x] Server-side progress persistence implemented (`current_section_index`, `last_question_id`).
 - [x] Resume token issue/consume API implemented with one-time token semantics.
 - [x] Resume via URL parameters implemented (`?id=` and `?t=`).
 - [x] Question 29 "Other (Please Specify)" now supports positive numeric input validation.
+- [x] Glossary terms alphabetized by `term` field in `glossary_data.json`.
+- [x] Info-type questions (id 0 Welcome, id 39 Closing) render as non-interactive prose blocks — no question number, label, or input.
 
 ## Notes
 

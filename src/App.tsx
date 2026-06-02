@@ -1,11 +1,11 @@
 import React from 'react';
 import Layout from './components/Layout';
-import SurveyForm from './components/SurveyForm';
+import SurveyLanding from './components/SurveyLanding';
 
 function App(): React.ReactElement {
     return (
         <Layout>
-            <SurveyForm />
+            <SurveyLanding />
         </Layout>
     );
 }

@@ -68,6 +68,17 @@ const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
         return parts;
     };
 
+    // Info-type questions are purely informational — no number, label, or input.
+    if (type === 'info') {
+        return (
+            <div className="info-block">
+                <p style={{ whiteSpace: 'pre-line', lineHeight: '1.7', margin: 0 }}>
+                    {renderTextWithTooltips(text)}
+                </p>
+            </div>
+        );
+    }
+
     const renderInput = (): ReactNode => {
         switch (type) {
             case 'textarea':
