@@ -2,83 +2,94 @@
 
 ## Overview
 
-The survey application now includes database integration to store responses for analysis.
+The backend uses a two-store pattern:
 
-## Architecture
+- Transactional capture in SQLite (`sql.js`) for API writes.
+- Analytics ELT into DuckDB for OLAP queries and dataframe-style access.
 
-- **Frontend**: React app (port 5173)
-- **Backend**: Express API server (port 3001)
-- **Database**: SQLite (stored in `server/survey_responses.db`)
+DuckDB can run locally or attach to MotherDuck.
 
-## Database Schema
+## Storage Layers
 
-### `survey_responses` table
-- `id`: Auto-increment primary key
-- `submission_id`: Unique identifier for each survey submission
-- `created_at`: Timestamp of creation
-- `completed`: Boolean flag indicating if survey was submitted
+### 1) Transactional capture store (`server/survey_responses.db`)
 
-### `question_answers` table
-- `id`: Auto-increment primary key
-- `submission_id`: Foreign key to survey_responses
-- `question_id`: The question ID from survey_data.json
-- `answer`: The user's answer (JSON for arrays, string otherwise)
-- `created_at`: Timestamp
+Managed by `server/db.ts` + `server/database.ts`.
 
-## Running the Application
+Primary tables:
 
-### Install dependencies
+- `submissions`
+- `answers`
+- `resume_tokens`
+
+This layer is the source of truth for survey intake.
+
+### 2) Analytics store (`server/survey_analytics.duckdb` by default)
+
+Managed by `server/analytics.ts`.
+
+ELT output objects:
+
+- `completed_submissions`
+- `completed_answers_long`
+- `completed_surveys_dataframe_wide`
+- `completed_surveys_dataframe_long` (view)
+- `self_updating_completed_surveys_df` (view)
+- `kpi_overview` (view)
+- `kpi_daily_completions_30d` (view)
+- `kpi_question_completion` (view)
+- `kpi_answer_type_mix` (view)
+- `elt_runs`
+
+## ELT Triggers
+
+- Full sync on server startup.
+- Incremental full-refresh sync when a submission is marked complete.
+
+The sync extracts all completed submissions from the transactional store and rebuilds long/wide analytics tables in DuckDB.
+
+## MotherDuck + Quack
+
+Optional environment variables:
+
+- `MOTHERDUCK_DB`: MotherDuck database name to attach.
+- `MOTHERDUCK_TOKEN`: Token for MotherDuck attach URI.
+- `DUCKDB_LOAD_QUACK`: Attempts `INSTALL/LOAD quack` (default `true`).
+
+If MotherDuck attach fails, analytics falls back to local DuckDB automatically.
+
+## Analytics API Endpoints
+
+- `GET /api/analytics/health`
+  - Returns target catalog, row counts, and last ELT run metadata.
+
+- `GET /api/analytics/completed-surveys?limit=250`
+  - Returns rows from `self_updating_completed_surveys_df`.
+
+- `GET /api/analytics/kpis`
+  - Returns a curated KPI snapshot for dashboard cards/tables/charts.
+
+- `POST /api/analytics/refresh`
+  - Forces an ELT sync and returns sync summary payload.
+
+## Run
+
 ```bash
 npm install
-```
-
-### Run both frontend and backend
-```bash
 npm run dev:all
 ```
 
-Or run them separately:
-```bash
-# Terminal 1 - Frontend
-npm run dev
+## API Security Hardening
 
-# Terminal 2 - Backend
-npm run server
-```
+The API server applies baseline hardening middleware:
 
-## API Endpoints
+- `helmet` secure headers
+- CORS allowlist enforcement
+- JSON/urlencoded payload size limits
+- IP-based API rate limiting
 
-- `POST /api/submissions` - Create a new submission
-- `POST /api/answers` - Save an individual answer
-- `POST /api/submissions/:submissionId/complete` - Mark submission as complete
-- `GET /api/submissions/:submissionId` - Get a specific submission
-- `GET /api/submissions` - Get all submissions
-- `GET /api/export/csv` - Export data as CSV
+Environment configuration:
 
-## Features
-
-- **Auto-save**: Answers are automatically saved as users fill out the survey
-- **Resume capability**: Users can resume incomplete surveys (future enhancement)
-- **Data export**: Export responses to CSV for analysis
-- **Easy upgrade**: SQLite can be easily replaced with PostgreSQL/MySQL
-
-## Upgrading to PostgreSQL
-
-To upgrade to PostgreSQL:
-
-1. Install `pg` instead of `better-sqlite3`
-2. Update `server/database.js` to use PostgreSQL client
-3. Update connection string in environment variables
-4. Deploy to a cloud database service
-
-## Data Analysis
-
-Access all submissions via:
-```bash
-curl http://localhost:3001/api/submissions
-```
-
-Export to CSV:
-```bash
-curl http://localhost:3001/api/export/csv > responses.csv
-```
+- `CORS_ALLOWED_ORIGINS`: Comma-separated origin allowlist
+- `API_BODY_LIMIT`: Request payload size limit (for example, `64kb`)
+- `API_RATE_LIMIT_WINDOW_MS`: Rate-limit window in milliseconds
+- `API_RATE_LIMIT_MAX`: Max requests per IP per window

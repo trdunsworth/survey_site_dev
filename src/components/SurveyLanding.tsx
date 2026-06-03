@@ -6,7 +6,7 @@ import type { ResumeContext } from '../types';
 /** Returns true if the URL already carries resume params that SurveyForm handles itself. */
 const hasUrlResume = (): boolean => {
     const params = new URLSearchParams(window.location.search);
-    return params.has('t') || params.has('id');
+    return params.has('t');
 };
 
 const SurveyLanding: React.FC = () => {
@@ -46,7 +46,7 @@ const SurveyLanding: React.FC = () => {
                     const reason = result.reason;
                     setCodeError(
                         reason === 'expired'
-                            ? 'This save code has expired. Save codes are valid for 30 days.'
+                            ? 'This save code has expired. Save codes are valid for 7 days.'
                             : 'This save code is invalid or has already been used. Please check and try again.'
                     );
                 }
@@ -64,7 +64,7 @@ const SurveyLanding: React.FC = () => {
                 <h2 className="survey-landing__title">NENA PSAP Operations Survey</h2>
                 <p className="survey-landing__subtitle">
                     Thank you for participating. This survey takes approximately 20–30 minutes.
-                    You can save your progress at any time and return using a personal save code.
+                    You can save your progress at any time and return using a one-time personal save code valid for 7 days.
                 </p>
 
                 <button className="survey-landing__start-btn" onClick={handleStartNew}>

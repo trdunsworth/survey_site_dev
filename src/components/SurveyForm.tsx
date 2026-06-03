@@ -40,6 +40,8 @@ const SurveyForm: React.FC<{ resumeContext?: ResumeContext }> = ({ resumeContext
     const [showSaveCode, setShowSaveCode] = useState<boolean>(false);
     const [saveCode, setSaveCode] = useState<string | null>(null);
     const [saveCodeUrl, setSaveCodeUrl] = useState<string | null>(null);
+    const [resumeEmail, setResumeEmail] = useState<string>('');
+    const [emailDeliveryMessage, setEmailDeliveryMessage] = useState<string | null>(null);
     const [isGeneratingCode, setIsGeneratingCode] = useState<boolean>(false);
     /** Key into SURVEY_VERSIONS — drives which survey data file is displayed. */
     const [surveyVersion, setSurveyVersion] = useState<string>('default');
@@ -160,55 +162,11 @@ const SurveyForm: React.FC<{ resumeContext?: ResumeContext }> = ({ resumeContext
             return; // Don't fall through to the ?id= / localStorage logic
         }
 
-        // ── 2. Submission-ID resume (?id=...) or localStorage fallback ────────
-        // Check URL for resume ID
-        const resumeId = getUrlParam('id');
-        
+        // ── 2. LocalStorage fallback for in-progress sessions ─────────────────
         // Check localStorage for existing ID
         const storedId = localStorage.getItem('survey_submission_id');
-        
-        if (resumeId) {
-            // Resume from URL
-            console.log('Resuming survey from URL:', resumeId);
-            setIsLoading(true);
-            
-            loadSubmission(resumeId).subscribe({
-                next: (result) => {
-                    if (result.success && result.data) {
-                        if (!result.data.completed) {
-                            setSubmissionId(resumeId);
-                            setAnswers(result.data.answers || {});
-                            if (result.data.survey_version) {
-                                setSurveyVersion(result.data.survey_version);
-                            }
-                            // Prefer server-side section index (cross-device)
-                            const serverSection = result.data.current_section_index;
-                            const localSection  = localStorage.getItem(`survey_section_${resumeId}`);
-                            const sectionToUse  = (serverSection > 0)
-                                ? serverSection
-                                : localSection ? parseInt(localSection, 10) : 0;
-                            setCurrentSectionIndex(sectionToUse);
-                            localStorage.setItem('survey_submission_id', resumeId);
-                            console.log('Successfully resumed survey');
-                        } else {
-                            console.log('Survey already completed');
-                            alert('This survey has already been completed.');
-                        }
-                    } else {
-                        console.error('Failed to load submission:', result.error);
-                        alert('Could not resume survey. Starting a new one.');
-                        startNewSurvey();
-                    }
-                    setIsLoading(false);
-                },
-                error: (err) => {
-                    console.error('Error loading submission:', err);
-                    alert('Could not resume survey. Starting a new one.');
-                    startNewSurvey();
-                    setIsLoading(false);
-                }
-            });
-        } else if (storedId) {
+
+        if (storedId) {
             // Resume from localStorage
             console.log('Resuming survey from localStorage:', storedId);
             setIsLoading(true);
@@ -473,7 +431,8 @@ const SurveyForm: React.FC<{ resumeContext?: ResumeContext }> = ({ resumeContext
     const generateSaveCode = (): void => {
         if (!submissionId || isGeneratingCode) return;
         setIsGeneratingCode(true);
-        issueToken(submissionId, surveyVersion, currentSectionIndex).subscribe({
+        const normalizedEmail = resumeEmail.trim() ? resumeEmail.trim() : undefined;
+        issueToken(submissionId, surveyVersion, currentSectionIndex, normalizedEmail).subscribe({
             next: (result) => {
                 setIsGeneratingCode(false);
                 if (result.success && result.token) {
@@ -481,6 +440,19 @@ const SurveyForm: React.FC<{ resumeContext?: ResumeContext }> = ({ resumeContext
                     setSaveCodeUrl(
                         `${window.location.origin}${window.location.pathname}?t=${result.token}`
                     );
+                    if (normalizedEmail) {
+                        if (result.emailDeliveryStatus === 'sent') {
+                            setEmailDeliveryMessage(`Save code emailed to ${normalizedEmail}. This code is valid for 7 days.`);
+                        } else {
+                            setEmailDeliveryMessage(
+                                result.emailDeliveryError
+                                    ? `Could not email the save code: ${result.emailDeliveryError}`
+                                    : 'Could not email the save code. Please copy it manually below.'
+                            );
+                        }
+                    } else {
+                        setEmailDeliveryMessage('This save code is valid for 7 days and can only be used once.');
+                    }
                     setShowSaveCode(true);
                 } else {
                     alert('Could not generate a save code. Please try again.');
@@ -564,6 +536,22 @@ const SurveyForm: React.FC<{ resumeContext?: ResumeContext }> = ({ resumeContext
                     <span style={{ fontSize: '14px', color: '#004085' }}>
                         💡 Want to finish this survey later?
                     </span>
+                    <input
+                        type="email"
+                        placeholder="Optional email for save code"
+                        value={resumeEmail}
+                        onChange={(e) => setResumeEmail(e.target.value)}
+                        style={{
+                            flex: 1,
+                            maxWidth: '280px',
+                            marginLeft: '10px',
+                            marginRight: '10px',
+                            padding: '6px 8px',
+                            border: '1px solid #9ec5fe',
+                            borderRadius: '3px',
+                            fontSize: '13px',
+                        }}
+                    />
                     <button
                         onClick={generateSaveCode}
                         disabled={isGeneratingCode}
@@ -597,7 +585,17 @@ const SurveyForm: React.FC<{ resumeContext?: ResumeContext }> = ({ resumeContext
                     </div>
                     <div style={{ marginBottom: '8px', fontSize: '12px', color: '#155724' }}>
                         Copy and save this code. Enter it on the start page to resume your survey.
+                        This code expires in 7 days.
                     </div>
+                    {emailDeliveryMessage && (
+                        <div style={{
+                            marginBottom: '8px',
+                            fontSize: '12px',
+                            color: emailDeliveryMessage.startsWith('Could not') ? '#842029' : '#0f5132',
+                        }}>
+                            {emailDeliveryMessage}
+                        </div>
+                    )}
                     <div style={{
                         padding: '8px 10px',
                         backgroundColor: 'white',
@@ -663,7 +661,7 @@ const SurveyForm: React.FC<{ resumeContext?: ResumeContext }> = ({ resumeContext
                         borderRadius: '3px',
                         border: '1px solid #ffeeba'
                     }}>
-                        ⚠️ This code can only be used once. Generate a new code each time you want to save.
+                        ⚠️ This code can only be used once and expires in 7 days. Generate a new code each time you want to save.
                     </div>
                 </div>
             )}

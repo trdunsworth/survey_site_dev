@@ -88,5 +88,73 @@ export interface TokenIssueResult {
   token?: string;
   expiresAt?: string;
   resumeUrl?: string;
+  ttlDays?: number;
+  emailDeliveryStatus?: 'not_requested' | 'sent' | 'failed';
+  emailDeliveryError?: string;
+  error?: string;
+}
+
+export interface AnalyticsHealthResponse {
+  duckdbPath: string;
+  targetCatalog: string;
+  motherduckConfigured: boolean;
+  quackRequested: boolean;
+  counts: {
+    completed_submissions: number;
+    completed_answers: number;
+  };
+  lastRun: {
+    run_id: string;
+    completed_at: string;
+    extracted_submissions: number;
+    loaded_submissions: number;
+    loaded_answers: number;
+    status: string;
+    message: string;
+  } | null;
+}
+
+export interface AnalyticsKpiOverview {
+  total_completed_surveys: number;
+  survey_versions: number;
+  avg_answered_questions: number;
+  median_answered_questions: number;
+  completed_last_24h: number;
+  completed_last_7d: number;
+}
+
+export interface AnalyticsDailyCompletion {
+  completion_day: string;
+  completed_surveys: number;
+}
+
+export interface AnalyticsQuestionCompletion {
+  question_id: string;
+  answered_count: number;
+  completion_rate_pct: number;
+}
+
+export interface AnalyticsAnswerTypeMix {
+  answer_type: string;
+  answer_count: number;
+  pct_of_answers: number;
+}
+
+export interface AnalyticsKpiSnapshot {
+  overview: AnalyticsKpiOverview;
+  dailyCompletions30d: AnalyticsDailyCompletion[];
+  questionCompletion: AnalyticsQuestionCompletion[];
+  answerTypeMix: AnalyticsAnswerTypeMix[];
+}
+
+export interface AnalyticsRefreshResult {
+  success: boolean;
+  summary?: {
+    extractedSubmissions: number;
+    loadedSubmissions: number;
+    loadedAnswers: number;
+    wideColumns: number;
+    targetCatalog: string;
+  };
   error?: string;
 }

@@ -10,7 +10,14 @@ import {
   map,
   startWith,
 } from 'rxjs/operators';
-import type { AnswerValue, TokenConsumeResult, TokenIssueResult } from '../types';
+import type {
+  AnswerValue,
+  TokenConsumeResult,
+  TokenIssueResult,
+  AnalyticsHealthResponse,
+  AnalyticsKpiSnapshot,
+  AnalyticsRefreshResult,
+} from '../types';
 
 // Frontend API base URL is configurable via Vite env
 // Defaults to '/api' so it can be reverse-proxied under the site
@@ -226,12 +233,13 @@ export function issueToken(
   sourceSubmissionId: string,
   targetSurveyVersion: string,
   targetSectionIndex: number,
+  resumeEmail?: string,
 ): Observable<TokenIssueResult> {
   return new Observable<TokenIssueResult>((observer) => {
     fetch(`${API_URL}/tokens/issue`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sourceSubmissionId, targetSurveyVersion, targetSectionIndex }),
+      body: JSON.stringify({ sourceSubmissionId, targetSurveyVersion, targetSectionIndex, resumeEmail }),
     })
       .then((response) => {
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -370,4 +378,34 @@ export class OfflineSaveQueue {
   getQueueSize(): number {
     return this.queue.length;
   }
+}
+
+// ── Analytics services ─────────────────────────────────────────────────────────
+
+export async function fetchAnalyticsHealth(): Promise<AnalyticsHealthResponse> {
+  const response = await fetch(`${API_URL}/analytics/health`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch analytics health (${response.status})`);
+  }
+  return response.json() as Promise<AnalyticsHealthResponse>;
+}
+
+export async function fetchAnalyticsKpis(): Promise<AnalyticsKpiSnapshot> {
+  const response = await fetch(`${API_URL}/analytics/kpis`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch analytics KPIs (${response.status})`);
+  }
+  return response.json() as Promise<AnalyticsKpiSnapshot>;
+}
+
+export async function refreshAnalytics(): Promise<AnalyticsRefreshResult> {
+  const response = await fetch(`${API_URL}/analytics/refresh`, {
+    method: 'POST',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to refresh analytics (${response.status})`);
+  }
+
+  return response.json() as Promise<AnalyticsRefreshResult>;
 }

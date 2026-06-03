@@ -27,6 +27,10 @@ export interface SubmissionWithAnswers extends SubmissionRecord {
   answers: Record<string, unknown>;
 }
 
+export interface CompletedSubmissionWithAnswers extends SubmissionWithAnswers {
+  completed: true;
+}
+
 // ── Token types ────────────────────────────────────────────────────────────────
 
 export type TokenStatus = 'issued' | 'consumed' | 'expired' | 'revoked';

@@ -16,6 +16,7 @@ import { getDb, persist } from './db';
 import type {
   SubmissionRecord,
   SubmissionWithAnswers,
+  CompletedSubmissionWithAnswers,
   ResumeContext,
   IssueTokenResult,
 } from './types';
@@ -23,6 +24,13 @@ import type {
 // ── Internal helpers ──────────────────────────────────────────────────────────
 
 type Row = Record<string, import('sql.js').SqlValue>;
+
+interface TokenIssueMetadata {
+  requestedEmail?: string;
+  emailDeliveryStatus?: 'not_requested' | 'sent' | 'failed';
+  emailDeliveryError?: string;
+  emailSentAt?: string;
+}
 
 function rowToSubmission(row: Row): SubmissionRecord {
   return {
@@ -171,9 +179,52 @@ export const getAllSubmissions = async (): Promise<SubmissionRecord[]> => {
   return rows;
 };
 
+/**
+ * Extract completed submissions with their full answer payloads for analytics
+ * ELT into DuckDB/MotherDuck.
+ */
+export const getCompletedSubmissionsWithAnswers = async (): Promise<CompletedSubmissionWithAnswers[]> => {
+  const db = getDb();
+
+  const subStmt = db.prepare(
+    `SELECT submission_id, created_at, completed, survey_version,
+            current_section_index, last_question_id, updated_at
+     FROM submissions
+     WHERE completed = 1
+     ORDER BY created_at DESC`,
+  );
+
+  const rows: CompletedSubmissionWithAnswers[] = [];
+
+  while (subStmt.step()) {
+    const submission = rowToSubmission(subStmt.getAsObject() as Row);
+
+    const ansStmt = db.prepare(
+      `SELECT question_id, answer_json FROM answers WHERE submission_id = ?`,
+    );
+    ansStmt.bind([submission.submission_id]);
+
+    const answers: Record<string, unknown> = {};
+    while (ansStmt.step()) {
+      const r = ansStmt.getAsObject() as Row;
+      answers[r['question_id'] as string] = JSON.parse(r['answer_json'] as string);
+    }
+    ansStmt.free();
+
+    rows.push({
+      ...submission,
+      completed: true,
+      answers,
+    });
+  }
+
+  subStmt.free();
+  return rows;
+};
+
 // ── Token lifecycle ───────────────────────────────────────────────────────────
 
-const TOKEN_TTL_DAYS = 30;
+const TOKEN_TTL_DAYS = 7;
 
 /**
  * Issue a single-use resume token that routes the bearer to a specific survey
@@ -189,6 +240,7 @@ export const issueResumeToken = async (
   sourceSubmissionId: string,
   targetSurveyVersion: string,
   targetSectionIndex: number,
+  metadata: TokenIssueMetadata = {},
 ): Promise<IssueTokenResult> => {
   const db        = getDb();
   const rawToken  = crypto.randomBytes(32).toString('base64url');
@@ -200,8 +252,8 @@ export const issueResumeToken = async (
   db.run(
     `INSERT INTO resume_tokens
        (token_hash, source_submission_id, target_survey_version,
-        target_section_index, status, created_at, expires_at)
-     VALUES (?, ?, ?, ?, 'issued', ?, ?)`,
+        target_section_index, status, created_at, expires_at, metadata_json)
+     VALUES (?, ?, ?, ?, 'issued', ?, ?, ?)`,
     [
       tokenHash,
       sourceSubmissionId,
@@ -209,6 +261,7 @@ export const issueResumeToken = async (
       targetSectionIndex,
       now.toISOString(),
       expiresAt.toISOString(),
+      JSON.stringify(metadata),
     ],
   );
   persist();
@@ -218,6 +271,49 @@ export const issueResumeToken = async (
     expiresAt: expiresAt.toISOString(),
     resumeUrl: `/?t=${rawToken}`,
   };
+};
+
+/**
+ * Update token metadata for auditability (for example, email delivery status).
+ */
+export const updateResumeTokenMetadata = async (
+  rawToken: string,
+  metadataPatch: TokenIssueMetadata,
+): Promise<void> => {
+  const db = getDb();
+  const tokenHash = sha256(rawToken);
+
+  const stmt = db.prepare(`SELECT metadata_json FROM resume_tokens WHERE token_hash = ?`);
+  stmt.bind([tokenHash]);
+
+  if (!stmt.step()) {
+    stmt.free();
+    return;
+  }
+
+  const row = stmt.getAsObject() as Row;
+  stmt.free();
+
+  let current: TokenIssueMetadata = {};
+  const raw = row['metadata_json'];
+  if (typeof raw === 'string' && raw.trim() !== '') {
+    try {
+      current = JSON.parse(raw) as TokenIssueMetadata;
+    } catch {
+      current = {};
+    }
+  }
+
+  const next = {
+    ...current,
+    ...metadataPatch,
+  };
+
+  db.run(
+    `UPDATE resume_tokens SET metadata_json = ? WHERE token_hash = ?`,
+    [JSON.stringify(next), tokenHash],
+  );
+  persist();
 };
 
 /**
