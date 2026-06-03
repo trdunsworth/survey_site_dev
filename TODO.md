@@ -8,14 +8,14 @@
 - [X] Define and enforce canonical resume mechanism for users (submission ID vs one-time token) and expose only one user-facing path.
 - [x] Add API security hardening before deployment: restricted CORS origins, payload size limits, basic rate limiting, and secure headers.
 - [x] Add automated tests foundation and core coverage: answer validation, SurveyLanding resume UX, survey service retry/error handling, and API route validation.
-- [ ] Expand automated tests to cover remaining critical flows end-to-end: resume by ID, progress restore, and submit completion.
-- [ ] Update README documentation to match current runtime and testing workflows.
+- [X] Expand automated tests to cover remaining critical flows end-to-end: resume by ID, progress restore, and submit completion.
+- [X] Update README documentation to match current runtime and testing workflows.
 
 ## Medium Priority
 
 - [ ] Add production health/readiness endpoint(s) for deployment monitoring and startup checks.
 - [ ] Improve export pipeline to include detailed answer-level exports (not only submission headers) for downstream analytics.
-- [ ] Add data retention/backup policy for survey databases and token lifecycle cleanup job (expired token purge).
+- [X] Add data retention/backup policy for survey databases and token lifecycle cleanup job (expired token purge).
 - [ ] Add environment-driven configuration documentation (`PORT`, `API_BASE`, `VITE_API_URL`, CORS origin list).
 - [ ] Resolve documentation drift: several docs still reference LowDB/JSON while runtime uses sql.js SQLite.
 - [ ] Decide on and document migration plan for legacy JS server files (`server/server.js`, `server/database.js`) to avoid accidental use.
@@ -25,8 +25,8 @@
 ## Low Priority
 
 - [ ] Add optional responder-facing progress indicator enhancements (section and completion percentage).
-- [x] Evaluate admin/reporting dashboard for DuckDB outputs and trend analysis.
-- [ ] Evaluate archival strategy for old survey versions and cross-version analytics harmonization.
+- [X] Evaluate admin/reporting dashboard for DuckDB outputs and trend analysis.
+- [X] Evaluate archival strategy for old survey versions and cross-version analytics harmonization.
 
 ## Completed
 

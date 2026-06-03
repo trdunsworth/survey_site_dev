@@ -9,6 +9,9 @@ export interface SubmissionRecord {
   submission_id: string;
   created_at: string;
   completed: boolean;
+  lifecycle_state?: 'active' | 'archived';
+  completed_at?: string | null;
+  archived_at?: string | null;
   /** Which survey data file version this submission targets. */
   survey_version: string;
   /** Last section index the user was on — persisted server-side. */

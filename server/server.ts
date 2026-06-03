@@ -13,6 +13,7 @@ import {
   issueResumeToken,
   consumeResumeToken,
   updateResumeTokenMetadata,
+  runDataRetentionSweep,
 } from './database';
 import { validateAnswer } from './answerValidator';
 import {
@@ -100,6 +101,9 @@ const API_BASE = process.env.API_BASE || '';
 const API_BODY_LIMIT = process.env.API_BODY_LIMIT || '64kb';
 const API_RATE_LIMIT_WINDOW_MS = parsePositiveInt(process.env.API_RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000);
 const API_RATE_LIMIT_MAX = parsePositiveInt(process.env.API_RATE_LIMIT_MAX, 300);
+const INCOMPLETE_PURGE_DAYS = parsePositiveInt(process.env.INCOMPLETE_PURGE_DAYS, 7);
+const COMPLETED_ARCHIVE_DAYS = parsePositiveInt(process.env.COMPLETED_ARCHIVE_DAYS, 365);
+const RETENTION_SWEEP_INTERVAL_MS = parsePositiveInt(process.env.RETENTION_SWEEP_INTERVAL_MS, 6 * 60 * 60 * 1000);
 const ALLOWED_ORIGINS = getAllowedOrigins();
 
 const corsOptions: CorsOptions = {
@@ -432,7 +436,31 @@ app.post(`${API_BASE}/api/analytics/refresh`, async (_req: Request, res: Respons
 export async function startServer(): Promise<void> {
   await initDb();
   await initAnalyticsStore();
+
+  const startupRetention = await runDataRetentionSweep({
+    incompletePurgeDays: INCOMPLETE_PURGE_DAYS,
+    completedArchiveDays: COMPLETED_ARCHIVE_DAYS,
+  });
+  console.log('[retention] Startup sweep summary:', startupRetention);
+
   await syncCompletedSurveyDataframe();
+
+  setInterval(async () => {
+    try {
+      const summary = await runDataRetentionSweep({
+        incompletePurgeDays: INCOMPLETE_PURGE_DAYS,
+        completedArchiveDays: COMPLETED_ARCHIVE_DAYS,
+      });
+
+      if (summary.purgedSubmissions > 0 || summary.archivedSubmissions > 0) {
+        await syncCompletedSurveyDataframe();
+      }
+
+      console.log('[retention] Scheduled sweep summary:', summary);
+    } catch (error) {
+      console.error('[retention] Scheduled sweep failed:', error);
+    }
+  }, RETENTION_SWEEP_INTERVAL_MS);
 
   const app = createApp();
   app.listen(PORT, () => {

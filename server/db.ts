@@ -39,6 +39,9 @@ const SCHEMA = `
     submission_id         TEXT    PRIMARY KEY,
     created_at            TEXT    NOT NULL,
     completed             INTEGER NOT NULL DEFAULT 0,
+    lifecycle_state       TEXT    NOT NULL DEFAULT 'active',
+    completed_at          TEXT,
+    archived_at           TEXT,
     survey_version        TEXT    NOT NULL DEFAULT 'default',
     current_section_index INTEGER NOT NULL DEFAULT 0,
     last_question_id      TEXT,
@@ -79,6 +82,50 @@ const SCHEMA = `
   );
 `;
 
+function tableColumns(db: SqlDb, tableName: string): Set<string> {
+  const stmt = db.prepare(`PRAGMA table_info(${tableName})`);
+  const columns = new Set<string>();
+
+  while (stmt.step()) {
+    const row = stmt.getAsObject() as Record<string, import('sql.js').SqlValue>;
+    const name = row['name'];
+    if (typeof name === 'string') {
+      columns.add(name);
+    }
+  }
+
+  stmt.free();
+  return columns;
+}
+
+function ensureSubmissionLifecycleColumns(db: SqlDb): void {
+  const columns = tableColumns(db, 'submissions');
+
+  if (!columns.has('lifecycle_state')) {
+    db.run(`ALTER TABLE submissions ADD COLUMN lifecycle_state TEXT NOT NULL DEFAULT 'active'`);
+  }
+
+  if (!columns.has('completed_at')) {
+    db.run(`ALTER TABLE submissions ADD COLUMN completed_at TEXT`);
+  }
+
+  if (!columns.has('archived_at')) {
+    db.run(`ALTER TABLE submissions ADD COLUMN archived_at TEXT`);
+  }
+
+  db.run(`
+    UPDATE submissions
+    SET lifecycle_state = 'active'
+    WHERE lifecycle_state IS NULL OR TRIM(lifecycle_state) = ''
+  `);
+
+  db.run(`
+    UPDATE submissions
+    SET completed_at = updated_at
+    WHERE completed = 1 AND completed_at IS NULL
+  `);
+}
+
 // ── Public API ────────────────────────────────────────────────────────────────
 
 /**
@@ -94,6 +141,7 @@ export async function initDb(): Promise<void> {
   const fileBuffer = existsSync(DB_PATH) ? readFileSync(DB_PATH) : null;
   _db = new SQL.Database(fileBuffer ?? undefined);
   _db.run(SCHEMA);
+  ensureSubmissionLifecycleColumns(_db);
   persist();
   console.log(`[db] SQLite database ready at ${DB_PATH}`);
 }

@@ -57,6 +57,19 @@ Optional environment variables:
 
 If MotherDuck attach fails, analytics falls back to local DuckDB automatically.
 
+## Retention Lifecycle
+
+- Resume tokens expire after 7 days.
+- Incomplete submissions are purged after retention cutoff when no unexpired issued token exists.
+- Completed submissions are retained in `active` state for 12 months, then moved to `archived`.
+- Retention processing runs once during server startup and then on a periodic interval.
+
+Retention configuration:
+
+- `INCOMPLETE_PURGE_DAYS` (default: `7`)
+- `COMPLETED_ARCHIVE_DAYS` (default: `365`)
+- `RETENTION_SWEEP_INTERVAL_MS` (default: `21600000` / 6h)
+
 ## Analytics API Endpoints
 
 - `GET /api/analytics/health`
@@ -93,3 +106,30 @@ Environment configuration:
 - `API_BODY_LIMIT`: Request payload size limit (for example, `64kb`)
 - `API_RATE_LIMIT_WINDOW_MS`: Rate-limit window in milliseconds
 - `API_RATE_LIMIT_MAX`: Max requests per IP per window
+
+## Backend Testing
+
+Run all tests:
+
+```bash
+npm test
+```
+
+Run backend-only tests (API routes and answer validator):
+
+```bash
+npx vitest run server/server.test.ts server/answerValidator.test.ts --reporter=verbose
+```
+
+Run retention sweep tests:
+
+```bash
+npx vitest run server/database.retention.test.ts --reporter=verbose
+```
+
+Backend tests cover:
+
+- Survey submission and progress routes
+- Resume-token issue and consume behaviors
+- Analytics health, dataframe, and refresh route behavior
+- CORS and header hardening expectations

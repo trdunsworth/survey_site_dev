@@ -37,11 +37,21 @@ This gives you a self-updating dataframe of completed surveys in both long and w
 - `MOTHERDUCK_DB`: MotherDuck database name (optional)
 - `MOTHERDUCK_TOKEN`: MotherDuck access token (optional)
 - `DUCKDB_LOAD_QUACK`: Load Quack extension (`true` by default, set `false` to skip)
+- `INCOMPLETE_PURGE_DAYS`: Retain incomplete submissions for this many days (default `7`)
+- `COMPLETED_ARCHIVE_DAYS`: Keep completed submissions active for this many days before archiving (default `365`)
+- `RETENTION_SWEEP_INTERVAL_MS`: Interval for scheduled retention sweeps (default `21600000`, 6 hours)
 - `SMTP_HOST`: SMTP hostname for optional resume-token emails
 - `SMTP_PORT`: SMTP port (e.g., `587`)
 - `SMTP_USER`: SMTP auth username
 - `SMTP_PASS`: SMTP auth password
 - `SMTP_FROM`: Sender address for resume-token emails
+
+## Data Retention Policy
+
+- Resume tokens are valid for 7 days.
+- Incomplete submissions are purged after the retention window when no unexpired issued token remains.
+- Completed submissions remain active for 12 months and then transition to `archived` state.
+- Retention sweeps run on startup and on a configurable schedule.
 
 ## API Endpoints
 
@@ -87,3 +97,33 @@ npm run dev:all
 Frontend: `http://localhost:5173`
 
 API: `http://localhost:3001`
+
+## Testing
+
+Detailed test workflows and manual rerun instructions are documented in `TESTING.md`.
+
+Run the full automated suite:
+
+```bash
+npm test
+```
+
+Run only server route and validation tests:
+
+```bash
+npx vitest run server/server.test.ts server/answerValidator.test.ts --reporter=verbose
+```
+
+Run retention-policy tests:
+
+```bash
+npx vitest run server/database.retention.test.ts --reporter=verbose
+```
+
+Current automated coverage includes:
+
+- Core submission lifecycle routes
+- Answer validation and sanitization behavior
+- Resume-token issue/consume paths (including invalid token responses)
+- Security middleware checks (CORS and x-powered-by)
+- Analytics API routes, including refresh summary and limit parsing

@@ -121,6 +121,19 @@ describe('server API routes', () => {
     });
   });
 
+  it('returns generic invalid response when token cannot be consumed', async () => {
+    const deps = createDeps();
+    deps.consumeResumeToken.mockResolvedValueOnce(null);
+    const app = createApp(deps);
+
+    const response = await request(app)
+      .post('/api/tokens/consume')
+      .send({ token: 'expired-or-used' });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ success: false, reason: 'invalid' });
+  });
+
   it('rejects invalid resume email on token issue', async () => {
     const deps = createDeps();
     const app = createApp(deps);
@@ -173,6 +186,78 @@ describe('server API routes', () => {
         emailDeliveryStatus: 'sent',
       }),
     );
+  });
+
+  it('rejects non-numeric section progress payloads', async () => {
+    const deps = createDeps();
+    const app = createApp(deps);
+
+    const response = await request(app)
+      .put('/api/submissions/sub-123/progress')
+      .send({ currentSectionIndex: '2' });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({ error: 'currentSectionIndex must be a number' });
+    expect(deps.saveSubmissionProgress).not.toHaveBeenCalled();
+  });
+
+  it('returns 404 for unknown submissions', async () => {
+    const deps = createDeps();
+    deps.getSubmission.mockResolvedValueOnce(null);
+    const app = createApp(deps);
+
+    const response = await request(app).get('/api/submissions/missing-sub');
+
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({ error: 'Submission not found' });
+  });
+
+  it('passes numeric limit to completed-surveys analytics query', async () => {
+    const deps = createDeps();
+    deps.getCompletedSurveyDataframe.mockResolvedValueOnce([{ submission_id: 'sub-1' }]);
+    const app = createApp(deps);
+
+    const response = await request(app).get('/api/analytics/completed-surveys?limit=10');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual([{ submission_id: 'sub-1' }]);
+    expect(deps.getCompletedSurveyDataframe).toHaveBeenCalledWith(10);
+  });
+
+  it('falls back to default limit when completed-surveys limit is invalid', async () => {
+    const deps = createDeps();
+    const app = createApp(deps);
+
+    const response = await request(app).get('/api/analytics/completed-surveys?limit=not-a-number');
+
+    expect(response.status).toBe(200);
+    expect(deps.getCompletedSurveyDataframe).toHaveBeenCalledWith(250);
+  });
+
+  it('refreshes analytics dataframe and returns summary', async () => {
+    const deps = createDeps();
+    deps.syncCompletedSurveyDataframe.mockResolvedValueOnce({
+      extractedSubmissions: 3,
+      loadedSubmissions: 3,
+      loadedAnswers: 18,
+      wideColumns: 7,
+      targetCatalog: 'local',
+    });
+    const app = createApp(deps);
+
+    const response = await request(app).post('/api/analytics/refresh').send({});
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      success: true,
+      summary: {
+        extractedSubmissions: 3,
+        loadedSubmissions: 3,
+        loadedAnswers: 18,
+        wideColumns: 7,
+        targetCatalog: 'local',
+      },
+    });
   });
 
   it('rejects disallowed CORS origin', async () => {

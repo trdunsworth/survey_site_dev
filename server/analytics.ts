@@ -12,7 +12,7 @@ const MOTHERDUCK_TOKEN = process.env.MOTHERDUCK_TOKEN;
 const LOAD_QUACK = process.env.DUCKDB_LOAD_QUACK !== 'false';
 
 let _conn: DuckDBConnection | null = null;
-let _targetCatalog = 'main';
+let _targetCatalog = 'local';
 
 function quoteIdentifier(identifier: string): string {
   return `"${identifier.replace(/"/g, '""')}"`;
@@ -23,7 +23,11 @@ function escapeSqlLiteral(value: string): string {
 }
 
 function tableRef(tableName: string): string {
-  return `${quoteIdentifier(_targetCatalog)}.${quoteIdentifier('main')}.${quoteIdentifier(tableName)}`;
+  if (_targetCatalog === 'md') {
+    return `${quoteIdentifier('md')}.${quoteIdentifier('main')}.${quoteIdentifier(tableName)}`;
+  }
+
+  return `${quoteIdentifier('main')}.${quoteIdentifier(tableName)}`;
 }
 
 function toDataframeColumn(questionId: string): string {
@@ -220,7 +224,7 @@ export async function initAnalyticsStore(): Promise<void> {
   try {
     await attachMotherDuck(connection);
   } catch (error) {
-    _targetCatalog = 'main';
+    _targetCatalog = 'local';
     console.warn('[analytics] MotherDuck attach failed; using local DuckDB file instead.', error);
   }
 
