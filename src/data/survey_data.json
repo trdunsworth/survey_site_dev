@@ -391,7 +391,7 @@
         {
           "id": 30,
           "text": "Minimum number of telecommunicator FTEs per shift",
-          "descriptions": "This allows us to understand what your centre considers to be viable minimal staffing levels for telecommunicators and how that may influence scheduling practices and service quality.",
+          "description": "This allows us to understand what your centre considers to be viable minimal staffing levels for telecommunicators and how that may influence scheduling practices and service quality.",
           "options": [],
           "type": "number"
         },
