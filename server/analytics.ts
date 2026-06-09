@@ -1,7 +1,7 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { DuckDBConnection, DuckDBInstance } from '@duckdb/node-api';
-import { getCompletedSubmissionsWithAnswers } from './database';
+import { getCompletedSubmissionsWithAnswers } from './database.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -10,9 +10,12 @@ const DUCKDB_PATH = process.env.DUCKDB_PATH ?? path.join(__dirname, 'survey_anal
 const MOTHERDUCK_DB = process.env.MOTHERDUCK_DB;
 const MOTHERDUCK_TOKEN = process.env.MOTHERDUCK_TOKEN;
 const LOAD_QUACK = process.env.DUCKDB_LOAD_QUACK !== 'false';
+const REQUIRE_MOTHERDUCK = process.env.ANALYTICS_REQUIRE_MOTHERDUCK === 'true';
 
 let _conn: DuckDBConnection | null = null;
 let _targetCatalog = 'local';
+let _motherDuckAttempted = false;
+let _lastMotherDuckError: string | null = null;
 
 function quoteIdentifier(identifier: string): string {
   return `"${identifier.replace(/"/g, '""')}"`;
@@ -185,12 +188,23 @@ async function ensureCuratedKpiViews(connection: DuckDBConnection): Promise<void
 }
 
 async function attachMotherDuck(connection: DuckDBConnection): Promise<void> {
+  _motherDuckAttempted = false;
+  _lastMotherDuckError = null;
+
   if (!MOTHERDUCK_DB) {
+    return;
+  }
+
+  _motherDuckAttempted = true;
+
+  if (!MOTHERDUCK_TOKEN) {
+    _lastMotherDuckError = 'MOTHERDUCK_TOKEN is not set';
     return;
   }
 
   const loaded = await loadExtensionBestEffort(connection, 'motherduck');
   if (!loaded) {
+    _lastMotherDuckError = 'Failed to load motherduck extension';
     return;
   }
 
@@ -198,9 +212,16 @@ async function attachMotherDuck(connection: DuckDBConnection): Promise<void> {
     ? `md:${MOTHERDUCK_DB}?motherduck_token=${encodeURIComponent(MOTHERDUCK_TOKEN)}`
     : `md:${MOTHERDUCK_DB}`;
 
-  await connection.run(`ATTACH '${escapeSqlLiteral(mdUri)}' AS md`);
-  _targetCatalog = 'md';
-  console.log(`[analytics] Connected to MotherDuck database '${MOTHERDUCK_DB}'`);
+  try {
+    await connection.run(`ATTACH '${escapeSqlLiteral(mdUri)}' AS md`);
+    _targetCatalog = 'md';
+    _lastMotherDuckError = null;
+    console.log(`[analytics] Connected to MotherDuck database '${MOTHERDUCK_DB}'`);
+  } catch (error) {
+    _targetCatalog = 'local';
+    _lastMotherDuckError = error instanceof Error ? error.message : 'Unknown MotherDuck attach error';
+    throw error;
+  }
 }
 
 function answerType(answer: unknown): string {
@@ -226,6 +247,14 @@ export async function initAnalyticsStore(): Promise<void> {
   } catch (error) {
     _targetCatalog = 'local';
     console.warn('[analytics] MotherDuck attach failed; using local DuckDB file instead.', error);
+  }
+
+  if (REQUIRE_MOTHERDUCK && _targetCatalog !== 'md') {
+    throw new Error(
+      `[analytics] ANALYTICS_REQUIRE_MOTHERDUCK=true but MotherDuck is not connected${
+        _lastMotherDuckError ? `: ${_lastMotherDuckError}` : ''
+      }`,
+    );
   }
 
   await ensureAnalyticsObjects(connection);
@@ -462,7 +491,11 @@ export async function getAnalyticsHealth(): Promise<Record<string, unknown>> {
   return {
     duckdbPath: DUCKDB_PATH,
     targetCatalog: _targetCatalog,
+    motherduckAttempted: _motherDuckAttempted,
     motherduckConfigured: Boolean(MOTHERDUCK_DB),
+    motherduckRequired: REQUIRE_MOTHERDUCK,
+    motherduckConnected: _targetCatalog === 'md',
+    motherduckLastError: _lastMotherDuckError,
     quackRequested: LOAD_QUACK,
     counts: summaryReader.getRowObjectsJS()[0] ?? {
       completed_submissions: 0,

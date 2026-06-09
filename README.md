@@ -36,6 +36,7 @@ This gives you a self-updating dataframe of completed surveys in both long and w
 - `DUCKDB_PATH`: Local DuckDB file path (default `server/survey_analytics.duckdb`)
 - `MOTHERDUCK_DB`: MotherDuck database name (optional)
 - `MOTHERDUCK_TOKEN`: MotherDuck access token (optional)
+- `ANALYTICS_REQUIRE_MOTHERDUCK`: When `true`, startup fails unless MotherDuck is connected (default `false`)
 - `DUCKDB_LOAD_QUACK`: Load Quack extension (`true` by default, set `false` to skip)
 - `INCOMPLETE_PURGE_DAYS`: Retain incomplete submissions for this many days (default `7`)
 - `COMPLETED_ARCHIVE_DAYS`: Keep completed submissions active for this many days before archiving (default `365`)
@@ -127,3 +128,33 @@ Current automated coverage includes:
 - Resume-token issue/consume paths (including invalid token responses)
 - Security middleware checks (CORS and x-powered-by)
 - Analytics API routes, including refresh summary and limit parsing
+
+## MotherDuck Readiness (Survey Side)
+
+Use this checklist before production cutover to ensure completed survey data is mirrored to MotherDuck:
+
+1. Set these backend environment variables:
+	- `MOTHERDUCK_DB=<database_name>`
+	- `MOTHERDUCK_TOKEN=<service_token>`
+	- `ANALYTICS_REQUIRE_MOTHERDUCK=true`
+2. Start the API server and verify `GET /api/analytics/health` reports:
+	- `targetCatalog: "md"`
+	- `motherduckConnected: true`
+	- `motherduckLastError: null`
+3. Complete a test survey submission and confirm analytics refresh succeeds.
+4. Verify the `completed_submissions` and `completed_answers_long` objects in MotherDuck contain the new submission.
+
+If MotherDuck is temporarily unavailable and strict mode is not enabled, analytics falls back to local DuckDB (`targetCatalog: "local"`).
+
+## Deployment Runbook Quick Reference
+
+The full production checklist and rollback workflow is documented in `deploy.txt` under:
+
+- `DEPLOYMENT RUNBOOK (PRODUCTION)`
+
+Operator minimum checks after deployment:
+
+1. `GET /api/analytics/health` returns `targetCatalog: "md"` and `motherduckConnected: true`.
+2. Submit one synthetic survey response through completion and verify ELT run status is `success`.
+3. Confirm MotherDuck row growth in `completed_submissions` for the test submission.
+4. If any check fails, follow rollback steps in `deploy.txt` immediately.

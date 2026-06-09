@@ -11,12 +11,69 @@
  *  4. Convert `completed INTEGER` ↔ `boolean` coercion to native BOOL.
  */
 import crypto from 'crypto';
-import { getDb, persist } from './db';
+import { getDb, persist } from './db.js';
+const DEFAULT_INCOMPLETE_PURGE_DAYS = 7;
+const DEFAULT_COMPLETED_ARCHIVE_DAYS = 365;
+function normalizePositiveDays(days, fallback) {
+    if (typeof days !== 'number' || !Number.isFinite(days) || days <= 0) {
+        return fallback;
+    }
+    return Math.floor(days);
+}
+function rowsModified(db) {
+    const getter = db.getRowsModified;
+    if (typeof getter !== 'function') {
+        return 0;
+    }
+    return getter.call(db);
+}
+function isoDaysAgo(now, days) {
+    return new Date(now.getTime() - (days * 24 * 60 * 60 * 1000)).toISOString();
+}
+function collectPurgeableSubmissionIds(db, incompleteCutoff, sweepAt) {
+    const stmt = db.prepare(`SELECT s.submission_id
+     FROM submissions s
+     WHERE s.completed = 0
+       AND s.lifecycle_state = 'active'
+       AND s.updated_at <= ?
+       AND NOT EXISTS (
+         SELECT 1
+         FROM resume_tokens t
+         WHERE t.source_submission_id = s.submission_id
+           AND t.status = 'issued'
+           AND t.expires_at > ?
+       )`);
+    stmt.bind([incompleteCutoff, sweepAt]);
+    const ids = [];
+    while (stmt.step()) {
+        const row = stmt.getAsObject();
+        const submissionId = row['submission_id'];
+        if (typeof submissionId === 'string' && submissionId !== '') {
+            ids.push(submissionId);
+        }
+    }
+    stmt.free();
+    return ids;
+}
+function placeholders(count) {
+    return Array.from({ length: count }, () => '?').join(', ');
+}
+function deleteBySubmissionIds(db, tableName, ids) {
+    if (ids.length === 0) {
+        return 0;
+    }
+    const foreignKey = tableName === 'resume_tokens' ? 'source_submission_id' : 'submission_id';
+    db.run(`DELETE FROM ${tableName} WHERE ${foreignKey} IN (${placeholders(ids.length)})`, ids);
+    return rowsModified(db);
+}
 function rowToSubmission(row) {
     return {
         submission_id: row['submission_id'],
         created_at: row['created_at'],
         completed: row['completed'] !== 0,
+        lifecycle_state: row['lifecycle_state'] ?? 'active',
+        completed_at: row['completed_at'] ?? null,
+        archived_at: row['archived_at'] ?? null,
         survey_version: row['survey_version'],
         current_section_index: row['current_section_index'],
         last_question_id: row['last_question_id'],
@@ -54,7 +111,14 @@ export const createSubmission = async (submissionId, surveyVersion = 'default') 
 };
 export const markSubmissionComplete = async (submissionId) => {
     const db = getDb();
-    db.run(`UPDATE submissions SET completed = 1, updated_at = ? WHERE submission_id = ?`, [new Date().toISOString(), submissionId]);
+    const now = new Date().toISOString();
+    db.run(`UPDATE submissions
+     SET completed = 1,
+         lifecycle_state = 'active',
+         completed_at = COALESCE(completed_at, ?),
+         archived_at = NULL,
+         updated_at = ?
+     WHERE submission_id = ?`, [now, now, submissionId]);
     persist();
 };
 /**
@@ -73,7 +137,8 @@ export const saveSubmissionProgress = async (submissionId, currentSectionIndex, 
 export const getSubmission = async (submissionId) => {
     const db = getDb();
     const subStmt = db.prepare(`SELECT submission_id, created_at, completed, survey_version,
-            current_section_index, last_question_id, updated_at
+            current_section_index, last_question_id, updated_at,
+            lifecycle_state, completed_at, archived_at
      FROM submissions WHERE submission_id = ?`);
     subStmt.bind([submissionId]);
     if (!subStmt.step()) {
@@ -95,7 +160,8 @@ export const getSubmission = async (submissionId) => {
 export const getAllSubmissions = async () => {
     const db = getDb();
     const stmt = db.prepare(`SELECT submission_id, created_at, completed, survey_version,
-            current_section_index, last_question_id, updated_at
+            current_section_index, last_question_id, updated_at,
+            lifecycle_state, completed_at, archived_at
      FROM submissions ORDER BY created_at DESC`);
     const rows = [];
     while (stmt.step()) {
@@ -111,9 +177,11 @@ export const getAllSubmissions = async () => {
 export const getCompletedSubmissionsWithAnswers = async () => {
     const db = getDb();
     const subStmt = db.prepare(`SELECT submission_id, created_at, completed, survey_version,
-            current_section_index, last_question_id, updated_at
+            current_section_index, last_question_id, updated_at,
+            lifecycle_state, completed_at, archived_at
      FROM submissions
      WHERE completed = 1
+       AND lifecycle_state = 'active'
      ORDER BY created_at DESC`);
     const rows = [];
     while (subStmt.step()) {
@@ -136,7 +204,7 @@ export const getCompletedSubmissionsWithAnswers = async () => {
     return rows;
 };
 // ── Token lifecycle ───────────────────────────────────────────────────────────
-const TOKEN_TTL_DAYS = 30;
+const TOKEN_TTL_DAYS = 7;
 /**
  * Issue a single-use resume token that routes the bearer to a specific survey
  * version and section.
@@ -147,7 +215,7 @@ const TOKEN_TTL_DAYS = 30;
  *  - Tokens expire after TOKEN_TTL_DAYS days
  *  - On consumption the status flips to 'consumed' making replay impossible
  */
-export const issueResumeToken = async (sourceSubmissionId, targetSurveyVersion, targetSectionIndex) => {
+export const issueResumeToken = async (sourceSubmissionId, targetSurveyVersion, targetSectionIndex, metadata = {}) => {
     const db = getDb();
     const rawToken = crypto.randomBytes(32).toString('base64url');
     const tokenHash = sha256(rawToken);
@@ -155,14 +223,15 @@ export const issueResumeToken = async (sourceSubmissionId, targetSurveyVersion, 
     const expiresAt = new Date(now.getTime() + TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000);
     db.run(`INSERT INTO resume_tokens
        (token_hash, source_submission_id, target_survey_version,
-        target_section_index, status, created_at, expires_at)
-     VALUES (?, ?, ?, ?, 'issued', ?, ?)`, [
+        target_section_index, status, created_at, expires_at, metadata_json)
+     VALUES (?, ?, ?, ?, 'issued', ?, ?, ?)`, [
         tokenHash,
         sourceSubmissionId,
         targetSurveyVersion,
         targetSectionIndex,
         now.toISOString(),
         expiresAt.toISOString(),
+        JSON.stringify(metadata),
     ]);
     persist();
     return {
@@ -170,6 +239,37 @@ export const issueResumeToken = async (sourceSubmissionId, targetSurveyVersion, 
         expiresAt: expiresAt.toISOString(),
         resumeUrl: `/?t=${rawToken}`,
     };
+};
+/**
+ * Update token metadata for auditability (for example, email delivery status).
+ */
+export const updateResumeTokenMetadata = async (rawToken, metadataPatch) => {
+    const db = getDb();
+    const tokenHash = sha256(rawToken);
+    const stmt = db.prepare(`SELECT metadata_json FROM resume_tokens WHERE token_hash = ?`);
+    stmt.bind([tokenHash]);
+    if (!stmt.step()) {
+        stmt.free();
+        return;
+    }
+    const row = stmt.getAsObject();
+    stmt.free();
+    let current = {};
+    const raw = row['metadata_json'];
+    if (typeof raw === 'string' && raw.trim() !== '') {
+        try {
+            current = JSON.parse(raw);
+        }
+        catch {
+            current = {};
+        }
+    }
+    const next = {
+        ...current,
+        ...metadataPatch,
+    };
+    db.run(`UPDATE resume_tokens SET metadata_json = ? WHERE token_hash = ?`, [JSON.stringify(next), tokenHash]);
+    persist();
 };
 /**
  * Validate and consume a resume token.
@@ -213,5 +313,43 @@ export const consumeResumeToken = async (rawToken) => {
         targetSurveyVersion: row['target_survey_version'],
         targetSectionIndex: row['target_section_index'],
         sourceSubmissionId: row['source_submission_id'],
+    };
+};
+export const runDataRetentionSweep = async (options = {}) => {
+    const db = getDb();
+    const now = options.now ?? new Date();
+    const nowIso = now.toISOString();
+    const incompletePurgeDays = normalizePositiveDays(options.incompletePurgeDays, DEFAULT_INCOMPLETE_PURGE_DAYS);
+    const completedArchiveDays = normalizePositiveDays(options.completedArchiveDays, DEFAULT_COMPLETED_ARCHIVE_DAYS);
+    const incompleteCutoff = isoDaysAgo(now, incompletePurgeDays);
+    const archiveCutoff = isoDaysAgo(now, completedArchiveDays);
+    db.run(`UPDATE resume_tokens
+     SET status = 'expired'
+     WHERE status = 'issued' AND expires_at <= ?`, [nowIso]);
+    const expiredTokens = rowsModified(db);
+    const purgeableSubmissionIds = collectPurgeableSubmissionIds(db, incompleteCutoff, nowIso);
+    const purgedAnswers = deleteBySubmissionIds(db, 'answers', purgeableSubmissionIds);
+    const purgedTokens = deleteBySubmissionIds(db, 'resume_tokens', purgeableSubmissionIds);
+    const purgedSubmissions = deleteBySubmissionIds(db, 'submissions', purgeableSubmissionIds);
+    db.run(`UPDATE submissions
+     SET lifecycle_state = 'archived',
+         archived_at = ?,
+         updated_at = ?
+     WHERE completed = 1
+       AND lifecycle_state = 'active'
+       AND COALESCE(completed_at, updated_at, created_at) <= ?`, [nowIso, nowIso, archiveCutoff]);
+    const archivedSubmissions = rowsModified(db);
+    if (expiredTokens > 0 || purgedSubmissions > 0 || archivedSubmissions > 0) {
+        persist();
+    }
+    return {
+        sweepAt: nowIso,
+        incompleteCutoff,
+        archiveCutoff,
+        expiredTokens,
+        purgedSubmissions,
+        purgedAnswers,
+        purgedTokens,
+        archivedSubmissions,
     };
 };

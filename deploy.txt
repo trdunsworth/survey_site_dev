@@ -34,6 +34,13 @@ npm run build:server
 This compiles the backend server code from TypeScript to JavaScript.
 
 
+Step 6: Start Server in Production Mode
+------------------------------
+npm run server:prod
+
+This runs the compiled server entrypoint at server/dist/server.js.
+
+
 QUICK DEPLOYMENT (One Command)
 ================================================================================
 
@@ -53,11 +60,13 @@ After successful build:
 
 2. Server:
    - Compiled files ready for Node.js runtime
+   - Entry point: server/dist/server.js
    - Requires Node.js environment on your server
 
 3. Database:
-   - Location: server/survey_responses.json
-   - Persists user survey submissions
+   - Transactional store: server/survey_responses.db
+   - Analytics store: server/survey_analytics.duckdb
+   - Persisted by sql.js and DuckDB
    - Must be accessible to backend server
 
 
@@ -70,8 +79,13 @@ DEPLOYMENT CHECKLIST
 [ ] npm run build - frontend built successfully (dist/ folder created)
 [ ] npm run build:server - server built successfully
 [ ] dist/ folder ready for upload
-[ ] Database file (server/survey_responses.json) backed up
+[ ] Transactional DB file (server/survey_responses.db) backed up
+[ ] Analytics DB file (server/survey_analytics.duckdb) backed up
+[ ] MOTHERDUCK_DB and MOTHERDUCK_TOKEN configured in production secrets
+[ ] ANALYTICS_REQUIRE_MOTHERDUCK=true configured for production
 [ ] Backend server ready to deploy
+[ ] npm run server:prod starts successfully
+[ ] /api/analytics/health shows targetCatalog=md and motherduckConnected=true
 [ ] Verify dist/ contains all necessary files (index.html, assets, etc.)
 
 
@@ -81,8 +95,125 @@ NOTES
 - Frontend (dist/) can be hosted on any static file server
 - Backend (server/) requires Node.js runtime
 - Ensure backend API endpoints are accessible from your frontend domain
-- Keep server/survey_responses.json in a safe location (critical data)
+- Keep server/survey_responses.db in a safe location (critical data)
 - Consider environment variables for production configuration
+
+
+DEPLOYMENT RUNBOOK (PRODUCTION)
+================================================================================
+
+This runbook is an operational sequence intended to reduce deployment risk and
+verify that completed survey data is landing in MotherDuck.
+
+1) Pre-Deployment Gate
+------------------------------
+
+Run locally or in CI:
+
+npm install
+npm run type-check
+npm run lint
+npm run build
+npm run build:server
+npx vitest run server/analytics.test.ts --reporter=verbose
+
+Expected result:
+- All commands pass with exit code 0.
+
+
+2) Production Environment Configuration
+------------------------------
+
+Set these server environment variables in your hosting platform:
+
+- PORT
+- API_BASE
+- CORS_ALLOWED_ORIGINS
+- MOTHERDUCK_DB
+- MOTHERDUCK_TOKEN
+- ANALYTICS_REQUIRE_MOTHERDUCK=true
+
+Recommended:
+- API_RATE_LIMIT_WINDOW_MS
+- API_RATE_LIMIT_MAX
+- API_BODY_LIMIT
+
+Expected result:
+- App has all required configuration at startup.
+- Startup fails fast if MotherDuck is unreachable or token is missing.
+
+
+3) Deploy Artifacts
+------------------------------
+
+- Frontend: deploy dist/
+- Backend: deploy server/dist plus runtime dependencies
+
+Start backend with:
+
+npm run server:prod
+
+Expected result:
+- Process starts successfully with no module import errors.
+
+
+4) Post-Deploy Health Verification
+------------------------------
+
+PowerShell check:
+
+Invoke-RestMethod -Uri "https://<your-host><api-base>/api/analytics/health" -Method GET
+
+Confirm these values in the response:
+- targetCatalog = md
+- motherduckConnected = true
+- motherduckLastError = null
+
+If targetCatalog is local in production, treat as failed deployment.
+
+
+5) Survey Data Smoke Test
+------------------------------
+
+Run a synthetic submission through the API in order:
+
+1. POST /api/submissions
+2. POST /api/answers (one or more answers)
+3. POST /api/submissions/:submissionId/complete
+
+Then re-check:
+
+GET /api/analytics/health
+
+Expected result:
+- lastRun.status = success
+- counts.completed_submissions increases as expected
+
+
+6) Rollback Trigger and Procedure
+------------------------------
+
+Rollback triggers:
+- App fails startup.
+- Health endpoint does not report MotherDuck connected.
+- Completion endpoint repeatedly fails analytics sync.
+
+Rollback steps:
+1. Re-deploy previous known-good backend artifact.
+2. Keep ANALYTICS_REQUIRE_MOTHERDUCK=true in production.
+3. Re-run post-deploy health verification.
+4. Open incident with captured logs and health payload.
+
+
+7) First 24 Hours Monitoring
+------------------------------
+
+- Check /api/analytics/health at regular intervals.
+- Track failed completion requests and 5xx rates.
+- Confirm MotherDuck row growth for completed_submissions.
+
+Expected result:
+- Stable health, successful ELT runs, and consistent submission counts.
 
 
 ================================================================================

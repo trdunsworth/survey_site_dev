@@ -1,15 +1,18 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { DuckDBInstance } from '@duckdb/node-api';
-import { getCompletedSubmissionsWithAnswers } from './database';
+import { getCompletedSubmissionsWithAnswers } from './database.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DUCKDB_PATH = process.env.DUCKDB_PATH ?? path.join(__dirname, 'survey_analytics.duckdb');
 const MOTHERDUCK_DB = process.env.MOTHERDUCK_DB;
 const MOTHERDUCK_TOKEN = process.env.MOTHERDUCK_TOKEN;
 const LOAD_QUACK = process.env.DUCKDB_LOAD_QUACK !== 'false';
+const REQUIRE_MOTHERDUCK = process.env.ANALYTICS_REQUIRE_MOTHERDUCK === 'true';
 let _conn = null;
-let _targetCatalog = 'main';
+let _targetCatalog = 'local';
+let _motherDuckAttempted = false;
+let _lastMotherDuckError = null;
 function quoteIdentifier(identifier) {
     return `"${identifier.replace(/"/g, '""')}"`;
 }
@@ -17,7 +20,10 @@ function escapeSqlLiteral(value) {
     return value.replace(/'/g, "''");
 }
 function tableRef(tableName) {
-    return `${quoteIdentifier(_targetCatalog)}.${quoteIdentifier('main')}.${quoteIdentifier(tableName)}`;
+    if (_targetCatalog === 'md') {
+        return `${quoteIdentifier('md')}.${quoteIdentifier('main')}.${quoteIdentifier(tableName)}`;
+    }
+    return `${quoteIdentifier('main')}.${quoteIdentifier(tableName)}`;
 }
 function toDataframeColumn(questionId) {
     const cleaned = questionId.replace(/[^a-zA-Z0-9_]/g, '_');
@@ -85,20 +91,98 @@ async function ensureAnalyticsObjects(connection) {
      LEFT JOIN ${tableRef('completed_answers_long')} a
        ON s.submission_id = a.submission_id`);
 }
+async function ensureCuratedKpiViews(connection) {
+    await connection.run(`CREATE OR REPLACE VIEW ${tableRef('kpi_overview')} AS
+     WITH answers_per_submission AS (
+       SELECT submission_id, COUNT(*) AS answered_questions
+       FROM ${tableRef('completed_answers_long')}
+       GROUP BY submission_id
+     )
+     SELECT
+       COUNT(*) AS total_completed_surveys,
+       COUNT(DISTINCT survey_version) AS survey_versions,
+       COALESCE(
+         (SELECT AVG(answered_questions)::DOUBLE FROM answers_per_submission),
+         0
+       ) AS avg_answered_questions,
+       COALESCE(
+         (SELECT median(answered_questions)::DOUBLE FROM answers_per_submission),
+         0
+       ) AS median_answered_questions,
+       COUNT(*) FILTER (
+         WHERE completed_at >= (NOW() - INTERVAL '24 hours')
+       ) AS completed_last_24h,
+       COUNT(*) FILTER (
+         WHERE completed_at >= (NOW() - INTERVAL '7 days')
+       ) AS completed_last_7d
+     FROM ${tableRef('completed_submissions')}`);
+    await connection.run(`CREATE OR REPLACE VIEW ${tableRef('kpi_daily_completions_30d')} AS
+     SELECT
+       DATE_TRUNC('day', completed_at) AS completion_day,
+       COUNT(*) AS completed_surveys
+     FROM ${tableRef('completed_submissions')}
+     WHERE completed_at >= (NOW() - INTERVAL '30 days')
+     GROUP BY 1
+     ORDER BY 1`);
+    await connection.run(`CREATE OR REPLACE VIEW ${tableRef('kpi_question_completion')} AS
+     WITH total AS (
+       SELECT COUNT(*)::DOUBLE AS total_completed
+       FROM ${tableRef('completed_submissions')}
+     ),
+     answered AS (
+       SELECT question_id, COUNT(*)::DOUBLE AS answered_count
+       FROM ${tableRef('completed_answers_long')}
+       GROUP BY question_id
+     )
+     SELECT
+       a.question_id,
+       a.answered_count::BIGINT AS answered_count,
+       CASE
+         WHEN t.total_completed = 0 THEN 0
+         ELSE ROUND((a.answered_count / t.total_completed) * 100, 2)
+       END AS completion_rate_pct
+     FROM answered a
+     CROSS JOIN total t
+     ORDER BY completion_rate_pct DESC, a.question_id ASC`);
+    await connection.run(`CREATE OR REPLACE VIEW ${tableRef('kpi_answer_type_mix')} AS
+     SELECT
+       answer_type,
+       COUNT(*) AS answer_count,
+       ROUND((COUNT(*)::DOUBLE / NULLIF(SUM(COUNT(*)) OVER (), 0)) * 100, 2) AS pct_of_answers
+     FROM ${tableRef('completed_answers_long')}
+     GROUP BY answer_type
+     ORDER BY answer_count DESC, answer_type ASC`);
+}
 async function attachMotherDuck(connection) {
+    _motherDuckAttempted = false;
+    _lastMotherDuckError = null;
     if (!MOTHERDUCK_DB) {
+        return;
+    }
+    _motherDuckAttempted = true;
+    if (!MOTHERDUCK_TOKEN) {
+        _lastMotherDuckError = 'MOTHERDUCK_TOKEN is not set';
         return;
     }
     const loaded = await loadExtensionBestEffort(connection, 'motherduck');
     if (!loaded) {
+        _lastMotherDuckError = 'Failed to load motherduck extension';
         return;
     }
     const mdUri = MOTHERDUCK_TOKEN
         ? `md:${MOTHERDUCK_DB}?motherduck_token=${encodeURIComponent(MOTHERDUCK_TOKEN)}`
         : `md:${MOTHERDUCK_DB}`;
-    await connection.run(`ATTACH '${escapeSqlLiteral(mdUri)}' AS md`);
-    _targetCatalog = 'md';
-    console.log(`[analytics] Connected to MotherDuck database '${MOTHERDUCK_DB}'`);
+    try {
+        await connection.run(`ATTACH '${escapeSqlLiteral(mdUri)}' AS md`);
+        _targetCatalog = 'md';
+        _lastMotherDuckError = null;
+        console.log(`[analytics] Connected to MotherDuck database '${MOTHERDUCK_DB}'`);
+    }
+    catch (error) {
+        _targetCatalog = 'local';
+        _lastMotherDuckError = error instanceof Error ? error.message : 'Unknown MotherDuck attach error';
+        throw error;
+    }
 }
 function answerType(answer) {
     if (Array.isArray(answer))
@@ -119,10 +203,14 @@ export async function initAnalyticsStore() {
         await attachMotherDuck(connection);
     }
     catch (error) {
-        _targetCatalog = 'main';
+        _targetCatalog = 'local';
         console.warn('[analytics] MotherDuck attach failed; using local DuckDB file instead.', error);
     }
+    if (REQUIRE_MOTHERDUCK && _targetCatalog !== 'md') {
+        throw new Error(`[analytics] ANALYTICS_REQUIRE_MOTHERDUCK=true but MotherDuck is not connected${_lastMotherDuckError ? `: ${_lastMotherDuckError}` : ''}`);
+    }
     await ensureAnalyticsObjects(connection);
+    await ensureCuratedKpiViews(connection);
     console.log(`[analytics] DuckDB analytics store ready at ${DUCKDB_PATH}`);
 }
 export async function syncCompletedSurveyDataframe() {
@@ -230,6 +318,7 @@ export async function syncCompletedSurveyDataframe() {
         }
         await connection.run(`CREATE OR REPLACE VIEW ${tableRef('self_updating_completed_surveys_df')} AS
        SELECT * FROM ${tableRef('completed_surveys_dataframe_wide')}`);
+        await ensureCuratedKpiViews(connection);
         await connection.run('COMMIT');
     }
     catch (error) {
@@ -289,12 +378,36 @@ export async function getAnalyticsHealth() {
     return {
         duckdbPath: DUCKDB_PATH,
         targetCatalog: _targetCatalog,
+        motherduckAttempted: _motherDuckAttempted,
         motherduckConfigured: Boolean(MOTHERDUCK_DB),
+        motherduckRequired: REQUIRE_MOTHERDUCK,
+        motherduckConnected: _targetCatalog === 'md',
+        motherduckLastError: _lastMotherDuckError,
         quackRequested: LOAD_QUACK,
         counts: summaryReader.getRowObjectsJS()[0] ?? {
             completed_submissions: 0,
             completed_answers: 0,
         },
         lastRun: runReader.getRowObjectsJS()[0] ?? null,
+    };
+}
+export async function getAnalyticsKpiSnapshot() {
+    const connection = getConnection();
+    const overviewReader = await connection.runAndReadAll(`SELECT * FROM ${tableRef('kpi_overview')} LIMIT 1`);
+    const dailyReader = await connection.runAndReadAll(`SELECT * FROM ${tableRef('kpi_daily_completions_30d')}`);
+    const questionReader = await connection.runAndReadAll(`SELECT * FROM ${tableRef('kpi_question_completion')} LIMIT 100`);
+    const answerTypeReader = await connection.runAndReadAll(`SELECT * FROM ${tableRef('kpi_answer_type_mix')}`);
+    return {
+        overview: overviewReader.getRowObjectsJS()[0] ?? {
+            total_completed_surveys: 0,
+            survey_versions: 0,
+            avg_answered_questions: 0,
+            median_answered_questions: 0,
+            completed_last_24h: 0,
+            completed_last_7d: 0,
+        },
+        dailyCompletions30d: dailyReader.getRowObjectsJS(),
+        questionCompletion: questionReader.getRowObjectsJS(),
+        answerTypeMix: answerTypeReader.getRowObjectsJS(),
     };
 }

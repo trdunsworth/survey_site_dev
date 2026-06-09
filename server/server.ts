@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import cors, { CorsOptions } from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import { initDb } from './db';
+import { initDb } from './db.js';
 import {
   saveResponse,
   createSubmission,
@@ -14,16 +14,16 @@ import {
   consumeResumeToken,
   updateResumeTokenMetadata,
   runDataRetentionSweep,
-} from './database';
-import { validateAnswer } from './answerValidator';
+} from './database.js';
+import { validateAnswer } from './answerValidator.js';
 import {
   initAnalyticsStore,
   syncCompletedSurveyDataframe,
   getCompletedSurveyDataframe,
   getAnalyticsHealth,
   getAnalyticsKpiSnapshot,
-} from './analytics';
-import { sendResumeTokenEmail } from './email';
+} from './analytics.js';
+import { sendResumeTokenEmail } from './email.js';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DEFAULT_ALLOWED_ORIGINS = [

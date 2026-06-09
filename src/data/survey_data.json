@@ -460,6 +460,38 @@
           "data_location": "This information should come from your phone software or your Computer Aided Dispatch (CAD) software.",
           "options": [],
           "type": "number"
+        },
+        {
+          "id": 39,
+          "text": "What is the average time to transfer a call to another PSAP in seconds? (From answer to transfer)",
+          "description": "This allows us to understand the impact of outbound call transfers on telecommunicator workload and how that may influence staffing needs and service quality.",
+          "data_location": "This information should come from your phone software.",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id":40,
+          "text": "What is the average processing time for law enforcement service calls in seconds? (From answer to dispatch)",
+          "description": "This will allow us to understand staffing needs to ensure that community expectations and parter agency SLAs are met",
+          "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id":41,
+          "text": "What is the average processing time for fire service calls in seconds? (From answer to dispatch)",
+          "description": "This will allow us to understand staffing needs to ensure that community expectations and parter agency SLAs are met",
+          "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
+          "options": [],
+          "type": "number"
+        },
+        {
+          "id":42,
+          "text": "What is the average processing time for EMS service calls in seconds? (From answer to dispatch)",
+          "description": "This will allow us to understand staffing needs to ensure that community expectations and parter agency SLAs are met",
+          "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
+          "options": [],
+          "type": "number"
         }
       ]
     },
@@ -467,7 +499,7 @@
       "title": "Closing",
       "questions": [
         {
-          "id": 39,
+          "id": 43,
           "text": "Thank you for completing the NENA 2024 PSAP Survey. Your participation is greatly appreciated and will help NENA better understand staffing and call processing standards. Your feedback is valuable throughout the industry and support meaningful solutions, advocacy, and future planning for the 9-1-1 community.",
           "type": "info"
         }

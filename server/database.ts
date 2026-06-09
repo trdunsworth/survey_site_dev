@@ -12,14 +12,14 @@
  */
 
 import crypto from 'crypto';
-import { getDb, persist } from './db';
+import { getDb, persist } from './db.js';
 import type {
   SubmissionRecord,
   SubmissionWithAnswers,
   CompletedSubmissionWithAnswers,
   ResumeContext,
   IssueTokenResult,
-} from './types';
+} from './types.js';
 
 // ── Internal helpers ──────────────────────────────────────────────────────────
 

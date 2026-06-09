@@ -17,8 +17,8 @@
 - [ ] Improve export pipeline to include detailed answer-level exports (not only submission headers) for downstream analytics.
 - [X] Add data retention/backup policy for survey databases and token lifecycle cleanup job (expired token purge).
 - [ ] Add environment-driven configuration documentation (`PORT`, `API_BASE`, `VITE_API_URL`, CORS origin list).
-- [ ] Resolve documentation drift: several docs still reference LowDB/JSON while runtime uses sql.js SQLite.
-- [ ] Decide on and document migration plan for legacy JS server files (`server/server.js`, `server/database.js`) to avoid accidental use.
+- [X] Resolve documentation drift: several docs still reference LowDB/JSON while runtime uses sql.js SQLite.
+- [X] Decide on and document migration plan for legacy JS server files (`server/server.js`, `server/database.js`) to avoid accidental use.
 - [X] Add informational text to Question ID 30.
 - [X] Identify possible pilot PSAPs for testing and feedback.
 

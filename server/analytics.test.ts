@@ -10,6 +10,7 @@ type TestHarnessOptions = {
   motherDuckDb?: string;
   motherDuckToken?: string;
   failAttach?: boolean;
+  requireMotherDuck?: boolean;
 };
 
 function createQueryResult(rows: Array<Record<string, unknown>> = []): QueryResult {
@@ -31,6 +32,12 @@ async function loadAnalyticsModule(options: TestHarnessOptions = {}) {
     process.env.MOTHERDUCK_TOKEN = options.motherDuckToken;
   } else {
     delete process.env.MOTHERDUCK_TOKEN;
+  }
+
+  if (options.requireMotherDuck) {
+    process.env.ANALYTICS_REQUIRE_MOTHERDUCK = 'true';
+  } else {
+    delete process.env.ANALYTICS_REQUIRE_MOTHERDUCK;
   }
 
   process.env.DUCKDB_LOAD_QUACK = 'false';
@@ -93,6 +100,7 @@ describe('analytics table qualification', () => {
     motherDuckDb: process.env.MOTHERDUCK_DB,
     motherDuckToken: process.env.MOTHERDUCK_TOKEN,
     duckdbLoadQuack: process.env.DUCKDB_LOAD_QUACK,
+    analyticsRequireMotherDuck: process.env.ANALYTICS_REQUIRE_MOTHERDUCK,
   };
 
   beforeEach(() => {
@@ -117,6 +125,12 @@ describe('analytics table qualification', () => {
     } else {
       process.env.DUCKDB_LOAD_QUACK = envSnapshot.duckdbLoadQuack;
     }
+
+    if (envSnapshot.analyticsRequireMotherDuck === undefined) {
+      delete process.env.ANALYTICS_REQUIRE_MOTHERDUCK;
+    } else {
+      process.env.ANALYTICS_REQUIRE_MOTHERDUCK = envSnapshot.analyticsRequireMotherDuck;
+    }
   });
 
   it('uses schema-qualified table names for local DuckDB', async () => {
@@ -132,14 +146,18 @@ describe('analytics table qualification', () => {
   });
 
   it('uses catalog-qualified table names when MotherDuck is attached', async () => {
-    const { executedSql } = await loadAnalyticsModule({ motherDuckDb: 'survey_prod' });
+    const { executedSql } = await loadAnalyticsModule({
+      motherDuckDb: 'survey_prod',
+      motherDuckToken: 'token123',
+    });
 
     const attachSql = executedSql.find((sql) => sql.startsWith('ATTACH '));
     const createCompletedSubmissions = executedSql.find((sql) =>
       sql.includes('CREATE TABLE IF NOT EXISTS') && sql.includes('completed_submissions'),
     );
 
-    expect(attachSql).toContain("ATTACH 'md:survey_prod' AS md");
+    expect(attachSql).toContain("ATTACH 'md:survey_prod");
+    expect(attachSql).toContain("AS md");
     expect(createCompletedSubmissions).toContain('"md"."main"."completed_submissions"');
   });
 
@@ -158,5 +176,16 @@ describe('analytics table qualification', () => {
 
     const health = await analytics.getAnalyticsHealth();
     expect(health.targetCatalog).toBe('local');
+  });
+
+  it('fails initialization when MotherDuck is required but attach fails', async () => {
+    await expect(
+      loadAnalyticsModule({
+        motherDuckDb: 'survey_prod',
+        motherDuckToken: 'token123',
+        failAttach: true,
+        requireMotherDuck: true,
+      }),
+    ).rejects.toThrow('ANALYTICS_REQUIRE_MOTHERDUCK=true');
   });
 });

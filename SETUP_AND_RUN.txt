@@ -10,7 +10,8 @@ and analyzing NENA 9-1-1 operation survey responses.
 Technology Stack:
 - Frontend: React + Vite (Port 5173)
 - Backend: Express.js API (Port 3001)
-- Database: LowDB (JSON-based, stored in server/survey_responses.json)
+- Transactional Database: SQLite via sql.js (stored in server/survey_responses.db)
+- Analytics Database: DuckDB (stored in server/survey_analytics.duckdb)
 - Styling: Custom CSS with NENA red/white corporate colors
 
 
@@ -25,7 +26,7 @@ INITIAL SETUP (First Time Only)
    This installs:
    - React and React-DOM (frontend)
    - Express and CORS (backend API)
-   - LowDB (database)
+   - sql.js and @duckdb/node-api (databases)
    - Concurrently (run multiple servers)
    - Vite (build tool)
 
@@ -74,26 +75,13 @@ If running separately:
 DATABASE INFORMATION
 ================================================================================
 
-Location: server/survey_responses.json
+Transactional DB Location: server/survey_responses.db
+Analytics DB Location: server/survey_analytics.duckdb
 
 Structure:
-{
-  "submissions": [
-    {
-      "submission_id": "survey_1234567890_abc123",
-      "created_at": "2025-12-10T20:30:00.000Z",
-      "completed": true/false
-    }
-  ],
-  "answers": [
-    {
-      "submission_id": "survey_1234567890_abc123",
-      "question_id": 1,
-      "answer": "Less than 10,000",
-      "created_at": "2025-12-10T20:30:15.000Z"
-    }
-  ]
-}
+- SQLite tables include: submissions, answers, resume_tokens
+- DuckDB analytics objects include completed_submissions, completed_answers_long,
+   completed_surveys_dataframe_wide, and self_updating_completed_surveys_df view
 
 
 KEY FEATURES
@@ -136,25 +124,29 @@ PROJECT FILE STRUCTURE
 survey_site_dev/
 ├── src/
 │   ├── components/
-│   │   ├── SurveyForm.jsx    (Main survey component with DB integration)
-│   │   ├── Question.jsx      (Question renderer for all types)
-│   │   ├── Header.jsx        (Red header with NENA branding)
-│   │   ├── Footer.jsx        (Footer component)
-│   │   ├── Layout.jsx        (Layout wrapper)
-│   │   ├── Glossary.jsx      (Glossary panel)
-│   │   └── Tooltip.jsx       (Tooltip component)
+│   │   ├── SurveyForm.tsx    (Main survey component with API integration)
+│   │   ├── Question.tsx      (Question renderer for all types)
+│   │   ├── Header.tsx        (Header with NENA branding)
+│   │   ├── Footer.tsx        (Footer component)
+│   │   ├── Layout.tsx        (Layout wrapper)
+│   │   ├── Glossary.tsx      (Glossary panel)
+│   │   └── Tooltip.tsx       (Tooltip component)
 │   ├── data/
 │   │   ├── survey_data.json  (Survey questions - 96 questions)
 │   │   └── glossary_data.json (Term definitions)
-│   ├── App.jsx
-│   ├── main.jsx
+│   ├── App.tsx
+│   ├── main.tsx
 │   └── index.css             (NENA red/white styling)
 ├── server/
-│   ├── server.js             (Express API server)
-│   ├── database.js           (Database operations)
-│   └── survey_responses.json (Database file - created automatically)
+│   ├── server.ts             (Express API server source)
+│   ├── database.ts           (Transactional DB operations)
+│   ├── db.ts                 (sql.js adapter)
+│   ├── analytics.ts          (DuckDB analytics pipeline)
+│   ├── dist/                 (Compiled server output)
+│   ├── survey_responses.db   (SQLite database file)
+│   └── survey_analytics.duckdb (DuckDB analytics file)
 ├── package.json
-├── vite.config.js
+├── vite.config.ts
 └── index.html
 
 
@@ -214,26 +206,26 @@ Solution:
 
 Problem: Database file corrupted
 Solution:
-   Delete server/survey_responses.json (it will be recreated)
+   Delete server/survey_responses.db (it will be recreated)
    Backup first if you need the data!
 
 Problem: Can't access API from frontend
 Solution:
    - Ensure backend is running on port 3001
-   - Check CORS is enabled in server/server.js
-   - Verify API_URL in src/components/SurveyForm.jsx
+   - Check CORS is configured in server/server.ts
+   - Verify VITE_API_URL in your .env files
 
 
-UPGRADING TO PRODUCTION DATABASE
+UPGRADING TO EXTERNAL PRODUCTION DATABASE
 ================================================================================
 
-To upgrade from LowDB to PostgreSQL/MySQL:
+To migrate from local sql.js SQLite to PostgreSQL/MySQL:
 
 1. Install database driver:
    npm install pg        (for PostgreSQL)
    npm install mysql2    (for MySQL)
 
-2. Replace server/database.js with appropriate database client
+2. Replace the adapter in server/db.ts with the target database client
 
 3. Update connection string in environment variables
 
@@ -267,7 +259,8 @@ For help with:
 - React: https://react.dev
 - Vite: https://vitejs.dev
 - Express: https://expressjs.com
-- LowDB: https://github.com/typicode/lowdb
+- sql.js: https://github.com/sql-js/sql.js
+- DuckDB Node API: https://duckdb.org/docs/api/nodejs/overview
 
 
 QUICK START COMMANDS SUMMARY
