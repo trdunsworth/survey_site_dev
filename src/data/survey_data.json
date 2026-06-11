@@ -392,6 +392,7 @@
           "id": 30,
           "text": "Minimum number of telecommunicator FTEs per shift",
           "description": "This allows us to understand what your centre considers to be viable minimal staffing levels for telecommunicators and how that may influence scheduling practices and service quality.",
+          "responseEmphasis": "Enter a whole-number headcount. If you staff with a fractional value internally, round to the nearest whole person for this response.",
           "options": [],
           "type": "number"
         },
@@ -458,6 +459,7 @@
           "text": "What is the average number of calls handled per telecommunicator FTE per hour?",
           "description": "This will allow us to understand how staffing levels may influence the number of calls handled per telecommunicator and how that may influence service quality.",
           "data_location": "This information should come from your phone software or your Computer Aided Dispatch (CAD) software.",
+          "responseEmphasis": "To get this information, take the average number of calls from your phone or CAD software and divide by the average number of telecommunicators per day.",
           "options": [],
           "type": "number"
         },
@@ -465,31 +467,31 @@
           "id": 39,
           "text": "What is the average time to transfer a call to another PSAP in seconds? (From answer to transfer)",
           "description": "This allows us to understand the impact of outbound call transfers on telecommunicator workload and how that may influence staffing needs and service quality.",
-          "data_location": "This information should come from your phone software.",
+          "data_location": "This information should come from your phone software. You will need to isolate transfer calls using your phone reporting software and calculate the average time from answer to transfer for those calls.",
           "options": [],
           "type": "number"
         },
         {
           "id":40,
           "text": "What is the average processing time for law enforcement service calls in seconds? (From answer to dispatch)",
-          "description": "This will allow us to understand staffing needs to ensure that community expectations and parter agency SLAs are met",
-          "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
+          "description": "This will allow us to understand staffing needs to ensure that community expectations and partner agency SLAs are met",
+          "data_location": "This information should come from your Computer Aided Dispatch (CAD) software. To get this, isolate your law enforcement service calls and calculate the average time from answer to dispatch for those calls.",
           "options": [],
           "type": "number"
         },
         {
           "id":41,
           "text": "What is the average processing time for fire service calls in seconds? (From answer to dispatch)",
-          "description": "This will allow us to understand staffing needs to ensure that community expectations and parter agency SLAs are met",
-          "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
+          "description": "This will allow us to understand staffing needs to ensure that community expectations and partner agency SLAs are met",
+          "data_location": "This information should come from your Computer Aided Dispatch (CAD) software. To get this, isolate your fire service calls and calculate the average time from answer to dispatch for those calls.",
           "options": [],
           "type": "number"
         },
         {
           "id":42,
           "text": "What is the average processing time for EMS service calls in seconds? (From answer to dispatch)",
-          "description": "This will allow us to understand staffing needs to ensure that community expectations and parter agency SLAs are met",
-          "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
+          "description": "This will allow us to understand staffing needs to ensure that community expectations and partner agency SLAs are met",
+          "data_location": "This information should come from your Computer Aided Dispatch (CAD) software. To get this, isolate your medical service calls and calculate the average time from answer to dispatch for those calls.",
           "options": [],
           "type": "number"
         }

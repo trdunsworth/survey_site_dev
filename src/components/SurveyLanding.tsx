@@ -14,16 +14,19 @@ const SurveyLanding: React.FC = () => {
         hasUrlResume() ? 'survey' : 'landing'
     );
     const [resumeContext, setResumeContext] = useState<ResumeContext | undefined>(undefined);
+    const [skipStoredResume, setSkipStoredResume] = useState<boolean>(false);
     const [codeInput, setCodeInput] = useState<string>('');
     const [codeError, setCodeError] = useState<string | null>(null);
     const [isResuming, setIsResuming] = useState<boolean>(false);
 
     if (mode === 'survey') {
-        return <SurveyForm resumeContext={resumeContext} />;
+        return <SurveyForm resumeContext={resumeContext} skipStoredResume={skipStoredResume} />;
     }
 
     const handleStartNew = (): void => {
         setResumeContext(undefined);
+        setSkipStoredResume(true);
+        localStorage.removeItem('survey_submission_id');
         setMode('survey');
     };
 
@@ -41,6 +44,7 @@ const SurveyLanding: React.FC = () => {
                 setIsResuming(false);
                 if (result.success && result.context) {
                     setResumeContext(result.context);
+                    setSkipStoredResume(false);
                     setMode('survey');
                 } else {
                     const reason = result.reason;

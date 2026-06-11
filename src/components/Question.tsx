@@ -10,6 +10,7 @@ interface QuestionProps {
 }
 
 const typedGlossaryData = glossaryData as GlossaryItem[];
+const sortedGlossaryData = [...typedGlossaryData].sort((a, b) => b.term.length - a.term.length);
 const NUMERIC_OTHER_QUESTION_IDS = new Set(['29', 29]);
 
 const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
@@ -28,12 +29,9 @@ const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
 
     // Helper to highlight terms
     const renderTextWithTooltips = (displayText: string): (string | ReactNode)[] => {
-        // Sort terms by length descending to match longest phrases first
-        const sortedTerms = [...typedGlossaryData].sort((a, b) => b.term.length - a.term.length);
-
         let parts: (string | ReactNode)[] = [displayText];
 
-        sortedTerms.forEach(item => {
+        sortedGlossaryData.forEach(item => {
             const term = item.term;
             const definition = item.definition;
             const regex = new RegExp(`\\b(${term})\\b`, 'gi');
@@ -75,6 +73,11 @@ const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
                 <p style={{ whiteSpace: 'pre-line', lineHeight: '1.7', margin: 0 }}>
                     {renderTextWithTooltips(text)}
                 </p>
+                {question.responseEmphasis && (
+                    <p className="question-response-emphasis" style={{ whiteSpace: 'pre-line' }}>
+                        {renderTextWithTooltips(question.responseEmphasis)}
+                    </p>
+                )}
             </div>
         );
     }
@@ -319,6 +322,11 @@ const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
                 {data_location && (
                     <span className="question-data-location" style={{ whiteSpace: 'pre-line' }}>
                         {data_location}
+                    </span>
+                )}
+                {question.responseEmphasis && (
+                    <span className="question-response-emphasis" style={{ whiteSpace: 'pre-line' }}>
+                        {renderTextWithTooltips(question.responseEmphasis)}
                     </span>
                 )}
             </label>

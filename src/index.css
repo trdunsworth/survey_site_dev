@@ -146,6 +146,15 @@ textarea {
   font-style: italic;
 }
 
+.question-response-emphasis {
+  display: block;
+  margin-top: 0.4rem;
+  margin-left: 1.8rem;
+  color: var(--nena-red);
+  font-weight: 600;
+  font-style: italic;
+}
+
 .question-number {
   font-weight: bold;
   color: var(--nena-red);
@@ -437,6 +446,13 @@ textarea {
 .survey-landing__resume-btn:disabled {
     opacity: 0.65;
     cursor: not-allowed;
+}
+
+.survey-load-timing {
+  margin-top: 0.85rem;
+  color: var(--nena-red);
+  font-style: italic;
+  font-size: 0.9rem;
 }
 
 /* ── Analytics Dashboard ───────────────────────────────────────────────────── */

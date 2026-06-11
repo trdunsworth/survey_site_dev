@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Question from './Question';
 import surveyData from '../data/survey_data.json';
 import surveyData20260311 from '../data/survey_data_20260311.json';
@@ -30,7 +30,7 @@ const getUrlParam = (name: string): string | null => {
     return params.get(name);
 };
 
-const SurveyForm: React.FC<{ resumeContext?: ResumeContext }> = ({ resumeContext }) => {
+const SurveyForm: React.FC<{ resumeContext?: ResumeContext; skipStoredResume?: boolean }> = ({ resumeContext, skipStoredResume = false }) => {
     const [currentSectionIndex, setCurrentSectionIndex] = useState<number>(0);
     const [answers, setAnswers] = useState<Answers>({});
     const [submissionId, setSubmissionId] = useState<string | null>(null);
@@ -167,6 +167,12 @@ const SurveyForm: React.FC<{ resumeContext?: ResumeContext }> = ({ resumeContext
         const storedId = localStorage.getItem('survey_submission_id');
 
         if (storedId) {
+            if (skipStoredResume) {
+                startNewSurvey();
+                setIsLoading(false);
+                return;
+            }
+
             // Resume from localStorage
             console.log('Resuming survey from localStorage:', storedId);
             setIsLoading(true);

@@ -5,10 +5,11 @@ import userEvent from '@testing-library/user-event';
 import SurveyLanding from './SurveyLanding';
 
 vi.mock('./SurveyForm', () => ({
-  default: ({ resumeContext }: { resumeContext?: { sourceSubmissionId: string } }) => (
+  default: ({ resumeContext, skipStoredResume }: { resumeContext?: { sourceSubmissionId: string }; skipStoredResume?: boolean }) => (
     <div>
       Survey Form View
       {resumeContext?.sourceSubmissionId ? `:${resumeContext.sourceSubmissionId}` : ''}
+      {skipStoredResume ? ':fresh' : ''}
     </div>
   ),
 }));
@@ -42,7 +43,7 @@ describe('SurveyLanding', () => {
 
     await user.click(screen.getByRole('button', { name: 'Start New Survey' }));
 
-    expect(screen.getByText('Survey Form View')).toBeInTheDocument();
+    expect(screen.getByText('Survey Form View:fresh')).toBeInTheDocument();
   });
 
   it('shows validation error when resume code is empty', async () => {

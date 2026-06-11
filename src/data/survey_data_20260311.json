@@ -349,12 +349,14 @@
         {
           "id": 29,
           "text": "Number of executive and administrative personnel in the PSAP",
+          "responseEmphasis": "Enter the current staffed headcount. If positions are shared, use the number of people assigned to this PSAP rather than the number of posts.",
           "options": [],
           "type": "number"
         },
         {
           "id": 30,
           "text": "Number of IT support staff in the PSAP",
+          "responseEmphasis": "Enter a whole-number headcount. Include staff who are assigned directly to the PSAP and exclude shared district or regional support unless they are dedicated here.",
           "options": [],
           "type": "number"
         },
