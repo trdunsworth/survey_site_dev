@@ -26,10 +26,7 @@ import type {
 type Row = Record<string, import('sql.js').SqlValue>;
 
 interface TokenIssueMetadata {
-  requestedEmail?: string;
-  emailDeliveryStatus?: 'not_requested' | 'sent' | 'failed';
-  emailDeliveryError?: string;
-  emailSentAt?: string;
+  [key: string]: unknown;
 }
 
 export interface RetentionSweepOptions {

@@ -21,8 +21,6 @@ function createDeps() {
     getSubmission: vi.fn(async () => null),
     getAllSubmissions: vi.fn(async () => []),
     issueResumeToken: vi.fn(async () => ({ token: 't1', expiresAt: '2026-01-01T00:00:00.000Z', resumeUrl: '/?t=t1' })),
-    updateResumeTokenMetadata: vi.fn(async () => undefined),
-    sendResumeTokenEmail: vi.fn(async () => ({ sent: true })),
     consumeResumeToken: vi.fn(async () => null),
     getAnalyticsHealth: vi.fn(async () => ({ targetCatalog: 'main' })),
     getCompletedSurveyDataframe: vi.fn(async () => []),
@@ -134,7 +132,7 @@ describe('server API routes', () => {
     expect(response.body).toEqual({ success: false, reason: 'invalid' });
   });
 
-  it('rejects invalid resume email on token issue', async () => {
+  it('rejects token issue when email collection fields are provided', async () => {
     const deps = createDeps();
     const app = createApp(deps);
 
@@ -148,13 +146,12 @@ describe('server API routes', () => {
       });
 
     expect(response.status).toBe(400);
-    expect(response.body).toEqual({ error: 'resumeEmail must be a valid email address' });
+    expect(response.body).toEqual({ error: 'Email collection is not supported' });
     expect(deps.issueResumeToken).not.toHaveBeenCalled();
   });
 
-  it('issues token and attempts email when resume email is supplied', async () => {
+  it('issues token without collecting email', async () => {
     const deps = createDeps();
-    deps.sendResumeTokenEmail.mockResolvedValueOnce({ sent: true });
     const app = createApp(deps);
 
     const response = await request(app)
@@ -163,29 +160,36 @@ describe('server API routes', () => {
         sourceSubmissionId: 'sub-1',
         targetSurveyVersion: 'default',
         targetSectionIndex: 1,
-        resumeEmail: 'USER@Example.com',
       });
 
     expect(response.status).toBe(200);
-    expect(deps.issueResumeToken).toHaveBeenCalledWith(
-      'sub-1',
-      'default',
-      1,
-      expect.objectContaining({ requestedEmail: 'user@example.com' }),
-    );
-    expect(deps.sendResumeTokenEmail).toHaveBeenCalledWith(
-      'user@example.com',
-      't1',
-      expect.stringContaining('/?t=t1'),
-      '2026-01-01T00:00:00.000Z',
-    );
+    expect(deps.issueResumeToken).toHaveBeenCalledWith('sub-1', 'default', 1);
     expect(response.body).toEqual(
       expect.objectContaining({
         success: true,
         ttlDays: 7,
-        emailDeliveryStatus: 'sent',
       }),
     );
+  });
+
+  it('rejects token issue when resume email is provided', async () => {
+    const deps = createDeps();
+    const app = createApp(deps);
+
+    const response = await request(app)
+      .post('/api/tokens/issue')
+      .send({
+        sourceSubmissionId: 'sub-1',
+        targetSurveyVersion: 'default',
+        targetSectionIndex: 1,
+        resumeEmail: 'user@example.com',
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({
+      error: 'Email collection is not supported',
+    });
+    expect(deps.issueResumeToken).not.toHaveBeenCalled();
   });
 
   it('rejects non-numeric section progress payloads', async () => {

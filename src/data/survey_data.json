@@ -6,7 +6,27 @@
       "questions": [
         {
           "id": 0,
-          "text": "The National Emergency Number Association (NENA) is conducting this survey to collect data from Public Safety Answering Points (PSAP) in the United States and Canada to evaluate and update call processing and staffing guidelines in response to evolving operational demands, emerging technologies, and increasing service complexity. The results will identify national trends, challenges, and effective practices to support data-driven decisions and the development of practical modern staffing recommendations that enhance efficiency, sustainability, and service quality. The survey takes approximately 20 to 30 minutes to complete. Participants are encouraged to have relevant staffing, call volume, and organization available, and may use the 'Save' feature to return later if needed. The deadline for completion is 07/31/2026. This initial phase focuses on core operations such as call processing, dispatching, and frontline Full Time Equivalent (FTE) staffing. Future phases will include support and administrative functions. Broad participation is essential to ensure representative results. All responses will be analyzed in aggregate to support research and guideline development. ",
+          "text": "The National Emergency Number Association (NENA) is conducting this survey to collect data from Public Safety Answering Points (PSAP) in the United States and Canada to evaluate and update call processing and staffing guidelines in response to evolving operational demands, emerging technologies, and increasing service complexity. The results will identify national trends, challenges, and effective practices to support data-driven decisions and the development of practical modern staffing recommendations that enhance efficiency, sustainability, and service quality. The survey takes approximately 20 to 30 minutes to complete. The deadline for completion is 07/31/2026. This initial phase focuses on core operations such as call processing, dispatching, and frontline Full Time Equivalent (FTE) staffing. Future phases will include support and administrative functions. Broad participation is essential to ensure representative results. All responses will be analyzed in aggregate to support research and guideline development. ",
+          "type": "info"
+        }
+      ]
+    },
+    {
+      "title": "Data Requirements",
+      "questions": [
+        {
+          "id": 0.1,
+          "text": "To complete this survey, you will need to have the following data available to you: census and demographic data for your PSAP's service area, call volume data for the last calendar year, staffing data including the number of telecommunicators and supervisors, and performance metrics such as average phone answer times and call processing times. You may use the 'Save & Get Code' button at any time to save your progress and return later if you need to gather additional information. The code can be used for 7 days from the time it is generated.",
+          "type": "info"
+        }
+      ]
+    },
+    {
+      "title": "Data Privacy and Usage",
+      "questions": [
+        {
+          "id": 0.2,
+          "text": "All data collected through this survey will be treated with strict confidentiality and used solely for the purpose of developing staffing guidelines, call processing standards, and industry analytics for PSAPs. The data will be aggregated and anonymized to ensure that no specific PSAP can be identified in any reports or publications resulting from this survey. By participating in this survey, you consent to the use of your data for these purposes.",
           "type": "info"
         }
       ]
@@ -380,6 +400,7 @@
           "id": 29,
           "text": "What is the length of shifts in hours?",
           "description": "This allows us to understand the distribution of shift lengths and how that may influence staffing needs and scheduling practices.",
+          "responseEmphasis": "Please indicate the length of your base shifts. If you have multiple shift lengths, select the one that is most common.",
           "options": [
             "8",
             "10",
@@ -392,7 +413,7 @@
           "id": 30,
           "text": "Minimum number of telecommunicator FTEs per shift",
           "description": "This allows us to understand what your centre considers to be viable minimal staffing levels for telecommunicators and how that may influence scheduling practices and service quality.",
-          "responseEmphasis": "Enter a whole-number headcount. If you staff with a fractional value internally, round to the nearest whole person for this response.",
+          "responseEmphasis": "Enter a whole-number headcount for your minimum staffing level for normal operations.",
           "options": [],
           "type": "number"
         },
@@ -400,6 +421,7 @@
           "id": 31,
           "text": "Minimum number of supervisor FTEs per shift",
           "description": "This allows us to understand what your centre considers to be viable minimal staffing levels for supervisors and how that may influence scheduling practices and service quality.",
+          "responseEmphasis":"Enter a whole-number headcount for your minimum staffing level to supervise normal operations.",
           "options": [],
           "type": "number"
         },
@@ -407,6 +429,7 @@
           "id": 32,
           "text": "Maximum number of telecommunicator FTEs per shift",
           "description": "This allows us to understand what your centre considers to be maximum staffing levels for telecommunicators and how that may influence scheduling practices and service quality.",
+          "responseEmphasis":"Enter a whole-number headcount for your maximum staffing level for normal operations.",
           "options": [],
           "type": "number"
         },
@@ -414,6 +437,7 @@
           "id": 33,
           "text": "Maximum number of supervisor FTEs per shift",
           "description": "This allows us to understand what your centre considers to be maximum staffing levels for supervisors and how that may influence scheduling practices and service quality.",
+          "responseEmphasis":"Enter a whole-number headcount for your maximum staffing level to supervise normal operations.", 
           "options": [],
           "type": "number"
         }
@@ -427,6 +451,7 @@
           "text": "What is your average phone answer time for 9-1-1 calls in seconds? (From presentation to answer)",
           "description": "This will allow us to understand how staffing levels may influence phone answer times and how that may influence service quality.",
           "data_location": "This information should come from your phone software.",
+          "responseEmphasis": "To report the best estimation for your center, please use the last calendar year of data.",
           "options": [],
           "type": "number"
         },
@@ -435,6 +460,7 @@
           "text": "What is your average phone answer time for non-emergency calls in seconds? (From presentation to answer)",
           "description": "This will allow us to understand how staffing levels may influence phone answer times and how that may influence service quality.",
           "data_location": "This information should come from your phone software.",
+          "responseEmphasis": "To report the best estimation for your center, please use the last calendar year of data.",
           "options": [],
           "type": "number"
         },
@@ -443,6 +469,7 @@
           "text": "What is your average call processing time for 9-1-1 calls in seconds? (From answer to dispatch)",
           "description": "This will allow us to understand how staffing levels may influence call processing times and how that may influence service quality.",
           "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
+          "responseEmphasis": "To report the best estimation for your center, please use the last calendar year of data.",
           "options": [],
           "type": "number"
         },
@@ -451,6 +478,7 @@
           "text": "What is your average call processing time for non-emergency calls in seconds? (From answer to dispatch)",
           "description": "This will allow us to understand how staffing levels may influence call processing times and how that may influence service quality.",
           "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
+          "responseEmphasis": "To report the best estimation for your center, please use the last calendar year of data.",
           "options": [],
           "type": "number"
         },
@@ -468,6 +496,7 @@
           "text": "What is the average time to transfer a call to another PSAP in seconds? (From answer to transfer)",
           "description": "This allows us to understand the impact of outbound call transfers on telecommunicator workload and how that may influence staffing needs and service quality.",
           "data_location": "This information should come from your phone software. You will need to isolate transfer calls using your phone reporting software and calculate the average time from answer to transfer for those calls.",
+          "responseEmphasis": "Divide the number of total seconds for these calls by the number of calls.",
           "options": [],
           "type": "number"
         },
@@ -475,7 +504,8 @@
           "id":40,
           "text": "What is the average processing time for law enforcement service calls in seconds? (From answer to dispatch)",
           "description": "This will allow us to understand staffing needs to ensure that community expectations and partner agency SLAs are met",
-          "data_location": "This information should come from your Computer Aided Dispatch (CAD) software. To get this, isolate your law enforcement service calls and calculate the average time from answer to dispatch for those calls.",
+          "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
+          "responseEmphasis": "To get this, isolate your law enforcement service calls and calculate the average time from answer to dispatch for those calls. To report the best estimation for your center, please use the last calendar year of data.",
           "options": [],
           "type": "number"
         },
@@ -483,7 +513,8 @@
           "id":41,
           "text": "What is the average processing time for fire service calls in seconds? (From answer to dispatch)",
           "description": "This will allow us to understand staffing needs to ensure that community expectations and partner agency SLAs are met",
-          "data_location": "This information should come from your Computer Aided Dispatch (CAD) software. To get this, isolate your fire service calls and calculate the average time from answer to dispatch for those calls.",
+          "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
+          "responseEmphasis": "To get this, isolate your fire service calls and calculate the average time from answer to dispatch for those calls. To report the best estimation for your center, please use the last calendar year of data.",
           "options": [],
           "type": "number"
         },
@@ -491,7 +522,8 @@
           "id":42,
           "text": "What is the average processing time for EMS service calls in seconds? (From answer to dispatch)",
           "description": "This will allow us to understand staffing needs to ensure that community expectations and partner agency SLAs are met",
-          "data_location": "This information should come from your Computer Aided Dispatch (CAD) software. To get this, isolate your medical service calls and calculate the average time from answer to dispatch for those calls.",
+          "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
+          "responseEmphasis": "To get this, isolate your medical service calls and calculate the average time from answer to dispatch for those calls. To report the best estimation for your center, please use the last calendar year of data.",
           "options": [],
           "type": "number"
         }

@@ -90,8 +90,6 @@ export interface TokenIssueResult {
   expiresAt?: string;
   resumeUrl?: string;
   ttlDays?: number;
-  emailDeliveryStatus?: 'not_requested' | 'sent' | 'failed';
-  emailDeliveryError?: string;
   error?: string;
 }
 

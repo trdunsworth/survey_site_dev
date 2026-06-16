@@ -233,13 +233,16 @@ export function issueToken(
   sourceSubmissionId: string,
   targetSurveyVersion: string,
   targetSectionIndex: number,
-  resumeEmail?: string,
 ): Observable<TokenIssueResult> {
   return new Observable<TokenIssueResult>((observer) => {
     fetch(`${API_URL}/tokens/issue`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sourceSubmissionId, targetSurveyVersion, targetSectionIndex, resumeEmail }),
+      body: JSON.stringify({
+        sourceSubmissionId,
+        targetSurveyVersion,
+        targetSectionIndex,
+      }),
     })
       .then((response) => {
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);

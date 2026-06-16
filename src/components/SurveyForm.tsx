@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Question from './Question';
 import surveyData from '../data/survey_data.json';
 import surveyData20260311 from '../data/survey_data_20260311.json';
@@ -40,8 +40,6 @@ const SurveyForm: React.FC<{ resumeContext?: ResumeContext; skipStoredResume?: b
     const [showSaveCode, setShowSaveCode] = useState<boolean>(false);
     const [saveCode, setSaveCode] = useState<string | null>(null);
     const [saveCodeUrl, setSaveCodeUrl] = useState<string | null>(null);
-    const [resumeEmail, setResumeEmail] = useState<string>('');
-    const [emailDeliveryMessage, setEmailDeliveryMessage] = useState<string | null>(null);
     const [isGeneratingCode, setIsGeneratingCode] = useState<boolean>(false);
     /** Key into SURVEY_VERSIONS — drives which survey data file is displayed. */
     const [surveyVersion, setSurveyVersion] = useState<string>('default');
@@ -437,8 +435,7 @@ const SurveyForm: React.FC<{ resumeContext?: ResumeContext; skipStoredResume?: b
     const generateSaveCode = (): void => {
         if (!submissionId || isGeneratingCode) return;
         setIsGeneratingCode(true);
-        const normalizedEmail = resumeEmail.trim() ? resumeEmail.trim() : undefined;
-        issueToken(submissionId, surveyVersion, currentSectionIndex, normalizedEmail).subscribe({
+        issueToken(submissionId, surveyVersion, currentSectionIndex).subscribe({
             next: (result) => {
                 setIsGeneratingCode(false);
                 if (result.success && result.token) {
@@ -446,19 +443,6 @@ const SurveyForm: React.FC<{ resumeContext?: ResumeContext; skipStoredResume?: b
                     setSaveCodeUrl(
                         `${window.location.origin}${window.location.pathname}?t=${result.token}`
                     );
-                    if (normalizedEmail) {
-                        if (result.emailDeliveryStatus === 'sent') {
-                            setEmailDeliveryMessage(`Save code emailed to ${normalizedEmail}. This code is valid for 7 days.`);
-                        } else {
-                            setEmailDeliveryMessage(
-                                result.emailDeliveryError
-                                    ? `Could not email the save code: ${result.emailDeliveryError}`
-                                    : 'Could not email the save code. Please copy it manually below.'
-                            );
-                        }
-                    } else {
-                        setEmailDeliveryMessage('This save code is valid for 7 days and can only be used once.');
-                    }
                     setShowSaveCode(true);
                 } else {
                     alert('Could not generate a save code. Please try again.');
@@ -542,22 +526,6 @@ const SurveyForm: React.FC<{ resumeContext?: ResumeContext; skipStoredResume?: b
                     <span style={{ fontSize: '14px', color: '#004085' }}>
                         💡 Want to finish this survey later?
                     </span>
-                    <input
-                        type="email"
-                        placeholder="Optional email for save code"
-                        value={resumeEmail}
-                        onChange={(e) => setResumeEmail(e.target.value)}
-                        style={{
-                            flex: 1,
-                            maxWidth: '280px',
-                            marginLeft: '10px',
-                            marginRight: '10px',
-                            padding: '6px 8px',
-                            border: '1px solid #9ec5fe',
-                            borderRadius: '3px',
-                            fontSize: '13px',
-                        }}
-                    />
                     <button
                         onClick={generateSaveCode}
                         disabled={isGeneratingCode}
@@ -570,6 +538,7 @@ const SurveyForm: React.FC<{ resumeContext?: ResumeContext; skipStoredResume?: b
                             borderRadius: '3px',
                             cursor: isGeneratingCode ? 'not-allowed' : 'pointer',
                             opacity: isGeneratingCode ? 0.7 : 1,
+                            marginLeft: '10px',
                         }}
                     >
                         {isGeneratingCode ? 'Generating…' : 'Save & Get Code'}
@@ -593,15 +562,6 @@ const SurveyForm: React.FC<{ resumeContext?: ResumeContext; skipStoredResume?: b
                         Copy and save this code. Enter it on the start page to resume your survey.
                         This code expires in 7 days.
                     </div>
-                    {emailDeliveryMessage && (
-                        <div style={{
-                            marginBottom: '8px',
-                            fontSize: '12px',
-                            color: emailDeliveryMessage.startsWith('Could not') ? '#842029' : '#0f5132',
-                        }}>
-                            {emailDeliveryMessage}
-                        </div>
-                    )}
                     <div style={{
                         padding: '8px 10px',
                         backgroundColor: 'white',

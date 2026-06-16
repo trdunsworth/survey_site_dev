@@ -312,8 +312,8 @@ const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
                 <span style={{ whiteSpace: 'pre-line' }}>
                     {renderTextWithTooltips(text)}
                 </span>
-                {question.required && <span style={{ color: '#e74c3c', marginLeft: '0.25rem', fontWeight: 'bold' }}>*</span>}
-                {question.required && <span style={{ color: '#e74c3c', fontSize: '0.85em', marginLeft: '0.5rem', fontStyle: 'italic' }}>(Required)</span>}
+                {question.required && <span style={{ color: 'var(--nena-red)', marginLeft: '0.25rem', fontWeight: 'bold' }}>*</span>}
+                {question.required && <span style={{ color: 'var(--nena-red)', fontSize: '0.85em', marginLeft: '0.5rem', fontStyle: 'italic' }}>(Required)</span>}
                 {plainDescription && (
                     <span className="question-description" style={{ whiteSpace: 'pre-line' }}>
                         {plainDescription}

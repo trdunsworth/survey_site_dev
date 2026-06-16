@@ -12,7 +12,6 @@ import {
   getAllSubmissions,
   issueResumeToken,
   consumeResumeToken,
-  updateResumeTokenMetadata,
   runDataRetentionSweep,
 } from './database.js';
 import { validateAnswer } from './answerValidator.js';
@@ -23,9 +22,6 @@ import {
   getAnalyticsHealth,
   getAnalyticsKpiSnapshot,
 } from './analytics.js';
-import { sendResumeTokenEmail } from './email.js';
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DEFAULT_ALLOWED_ORIGINS = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
@@ -69,8 +65,6 @@ interface ServerDeps {
   getSubmission: typeof getSubmission;
   getAllSubmissions: typeof getAllSubmissions;
   issueResumeToken: typeof issueResumeToken;
-  updateResumeTokenMetadata: typeof updateResumeTokenMetadata;
-  sendResumeTokenEmail: typeof sendResumeTokenEmail;
   consumeResumeToken: typeof consumeResumeToken;
   getAnalyticsHealth: typeof getAnalyticsHealth;
   getCompletedSurveyDataframe: typeof getCompletedSurveyDataframe;
@@ -87,8 +81,6 @@ const defaultDeps: ServerDeps = {
   getSubmission,
   getAllSubmissions,
   issueResumeToken,
-  updateResumeTokenMetadata,
-  sendResumeTokenEmail,
   consumeResumeToken,
   getAnalyticsHealth,
   getCompletedSurveyDataframe,
@@ -278,7 +270,7 @@ app.get(`${API_BASE}/api/export/csv`, async (req: Request, res: Response): Promi
  * Issue a resume token that carries a user from their current submission to a
  * specific version and section of the survey.
  *
- * Body: { sourceSubmissionId, targetSurveyVersion, targetSectionIndex, resumeEmail? }
+ * Body: { sourceSubmissionId, targetSurveyVersion, targetSectionIndex }
  */
 app.post(`${API_BASE}/api/tokens/issue`, async (req: Request, res: Response): Promise<void> => {
   try {
@@ -289,13 +281,8 @@ app.post(`${API_BASE}/api/tokens/issue`, async (req: Request, res: Response): Pr
       return;
     }
 
-    const normalizedEmail =
-      typeof resumeEmail === 'string' && resumeEmail.trim() !== ''
-        ? resumeEmail.trim().toLowerCase()
-        : undefined;
-
-    if (normalizedEmail && !EMAIL_REGEX.test(normalizedEmail)) {
-      res.status(400).json({ error: 'resumeEmail must be a valid email address' });
+    if (typeof resumeEmail === 'string' && resumeEmail.trim() !== '') {
+      res.status(400).json({ error: 'Email collection is not supported' });
       return;
     }
 
@@ -303,41 +290,12 @@ app.post(`${API_BASE}/api/tokens/issue`, async (req: Request, res: Response): Pr
       sourceSubmissionId,
       targetSurveyVersion ?? 'default',
       typeof targetSectionIndex === 'number' ? targetSectionIndex : 0,
-      {
-        requestedEmail: normalizedEmail,
-        emailDeliveryStatus: normalizedEmail ? 'failed' : 'not_requested',
-      },
     );
-
-    let emailDeliveryStatus: 'not_requested' | 'sent' | 'failed' = normalizedEmail ? 'failed' : 'not_requested';
-    let emailDeliveryError: string | undefined;
-
-    if (normalizedEmail) {
-      const resumeLink = `${req.protocol}://${req.get('host')}${result.resumeUrl}`;
-      const emailResult = await deps.sendResumeTokenEmail(
-        normalizedEmail,
-        result.token,
-        resumeLink,
-        result.expiresAt,
-      );
-
-      emailDeliveryStatus = emailResult.sent ? 'sent' : 'failed';
-      emailDeliveryError = emailResult.error;
-
-      await deps.updateResumeTokenMetadata(result.token, {
-        requestedEmail: normalizedEmail,
-        emailDeliveryStatus,
-        emailDeliveryError,
-        emailSentAt: emailResult.sent ? new Date().toISOString() : undefined,
-      });
-    }
 
     res.json({
       success: true,
       ...result,
       ttlDays: 7,
-      emailDeliveryStatus,
-      emailDeliveryError,
     });
   } catch (error) {
     console.error('Error issuing token:', error);
