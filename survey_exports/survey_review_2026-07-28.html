@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NENA Survey - Review Document</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #34495e;
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-left: 5px solid #3498db;
+            margin-top: 40px;
+            margin-bottom: 20px;
+        }
+        .question {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #fafafa;
+            border-radius: 5px;
+            border-left: 3px solid #95a5a6;
+        }
+        .question-header {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .question-number {
+            font-weight: bold;
+            color: #3498db;
+            font-size: 1.1em;
+        }
+        .question-text {
+            color: #2c3e50;
+            font-size: 1.05em;
+            flex: 1;
+        }
+        .required-badge {
+            background-color: #e74c3c;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.75em;
+            font-weight: bold;
+        }
+        .question-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+        .question-type {
+            background-color: #3498db;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 3px;
+            font-size: 0.85em;
+        }
+        .options {
+            margin-top: 10px;
+            padding-left: 20px;
+        }
+        .option-item {
+            padding: 5px 0;
+            color: #555;
+        }
+        .option-item:before {
+            content: "○ ";
+            color: #3498db;
+            font-weight: bold;
+        }
+        .toc {
+            background-color: #ecf0f1;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+        .toc h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .toc ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .toc li {
+            padding: 5px 0;
+        }
+        .toc a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .toc a:hover {
+            text-decoration: underline;
+        }
+        .stats {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .stat-label {
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+        @media print {
+            body {
+                background-color: white;
+            }
+            .container {
+                box-shadow: none;
+            }
+            .question {
+                page-break-inside: avoid;
+            }
+            h2 {
+                page-break-after: avoid;
+            }
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>NENA Survey</h1>
+
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-number">9</span>
+                <span class="stat-label">Sections</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">47</span>
+                <span class="stat-label">Total Questions</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">0</span>
+                <span class="stat-label">Required Questions</span>
+            </div>
+        </div>
+
+        <div class="toc">
+            <h3>Table of Contents</h3>
+            <ul>
+                <li><a href="#section-0">Welcome</a> (1 questions)</li>
+                <li><a href="#section-1">Data Requirements</a> (1 questions)</li>
+                <li><a href="#section-2">Data Privacy and Usage</a> (1 questions)</li>
+                <li><a href="#section-3">Location Information</a> (1 questions)</li>
+                <li><a href="#section-4">PSAP Classification</a> (10 questions)</li>
+                <li><a href="#section-5">Yearly Call Counts</a> (13 questions)</li>
+                <li><a href="#section-6">Telecommunicator staff numbers</a> (10 questions)</li>
+                <li><a href="#section-7">Performance Metrics</a> (9 questions)</li>
+                <li><a href="#section-8">Closing</a> (1 questions)</li>
+            </ul>
+        </div>
+
+        <h2 id="section-0">Welcome</h2>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">0.</span>
+                <span class="question-text">The National Emergency Number Association (NENA) is conducting this survey to collect data from Public Safety Answering Points (PSAP) in the United States and Canada to evaluate and update call processing and staffing guidelines in response to evolving operational demands, emerging technologies, and increasing service complexity. The results will identify national trends, challenges, and effective practices to support data-driven decisions and the development of practical modern staffing recommendations that enhance efficiency, sustainability, and service quality. The survey takes approximately 20 to 30 minutes to complete. The deadline for completion is 07/31/2026. This initial phase focuses on core operations such as call processing, dispatching, and frontline Full Time Equivalent (FTE) staffing. Future phases will include support and administrative functions. Broad participation is essential to ensure representative results. All responses will be analyzed in aggregate to support research and guideline development.
+
+***Please coordinate within the center to ensure that there is only one response per PSAP***.
+
+If you have multiple PSAPs under the same governance, please complete a survey for each PSAP to ensure that we can capture the unique characteristics of each center.</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">info</span>
+            </div>
+        </div>
+
+        <h2 id="section-1">Data Requirements</h2>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">0.1.</span>
+                <span class="question-text">To complete this survey, you will need to have the following data available to you:
+•Census and demographic data for your PSAP's service area
+•Call volume data for the last calendar year
+•Staffing data including the number of telecommunicators and supervisors
+•Shift length, count, and staffing per shift.
+•Average phone answer times.
+•Call processing times.
+You may use the 'Save & Get Code' button at any time to save your progress and return later if you need to gather additional information. The code can be used for 7 days from the time it is generated.</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">info</span>
+            </div>
+        </div>
+
+        <h2 id="section-2">Data Privacy and Usage</h2>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">0.2.</span>
+                <span class="question-text">All data collected through this survey will be treated with strict confidentiality and used solely for the purpose of developing staffing guidelines, call processing standards, and industry analytics for PSAPs. The data will be aggregated and anonymized to ensure that no specific PSAP can be identified in any reports or publications resulting from this survey. By participating in this survey, you consent to the use of your data for these purposes.</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">info</span>
+            </div>
+        </div>
+
+        <h2 id="section-3">Location Information</h2>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">1.</span>
+                <span class="question-text">Please select your state or province from the list below:</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Dropdown</span>
+            </div>
+
+            <div class="options">
+                <strong>Options:</strong>
+                <div class="option-item">Alabama</div>
+                <div class="option-item">Alaska</div>
+                <div class="option-item">American Samoa</div>
+                <div class="option-item">Arizona</div>
+                <div class="option-item">Arkansas</div>
+                <div class="option-item">British Columbia</div>
+                <div class="option-item">California</div>
+                <div class="option-item">Colorado</div>
+                <div class="option-item">Connecticut</div>
+                <div class="option-item">Delaware</div>
+                <div class="option-item">District of Columbia</div>
+                <div class="option-item">Florida</div>
+                <div class="option-item">Georgia</div>
+                <div class="option-item">Guam</div>
+                <div class="option-item">Hawaii</div>
+                <div class="option-item">Idaho</div>
+                <div class="option-item">Illinois</div>
+                <div class="option-item">Indiana</div>
+                <div class="option-item">Iowa</div>
+                <div class="option-item">Kansas</div>
+                <div class="option-item">Kentucky</div>
+                <div class="option-item">Louisiana</div>
+                <div class="option-item">Maine</div>
+                <div class="option-item">Manitoba</div>
+                <div class="option-item">Maryland</div>
+                <div class="option-item">Massachusetts</div>
+                <div class="option-item">Michigan</div>
+                <div class="option-item">Minnesota</div>
+                <div class="option-item">Mississippi</div>
+                <div class="option-item">Missouri</div>
+                <div class="option-item">Montana</div>
+                <div class="option-item">Nebraska</div>
+                <div class="option-item">Nevada</div>
+                <div class="option-item">New Brunswick</div>
+                <div class="option-item">Newfoundland and Labrador</div>
+                <div class="option-item">New Hampshire</div>
+                <div class="option-item">New Jersey</div>
+                <div class="option-item">New Mexico</div>
+                <div class="option-item">New York</div>
+                <div class="option-item">North Carolina</div>
+                <div class="option-item">North Dakota</div>
+                <div class="option-item">Northern Mariana Islands</div>
+                <div class="option-item">Northwest Territories</div>
+                <div class="option-item">Nova Scotia</div>
+                <div class="option-item">Nunavut</div>
+                <div class="option-item">Ohio</div>
+                <div class="option-item">Oklahoma</div>
+                <div class="option-item">Ontario</div>
+                <div class="option-item">Oregon</div>
+                <div class="option-item">Pennsylvania</div>
+                <div class="option-item">Prince Edward Island</div>
+                <div class="option-item">Puerto Rico</div>
+                <div class="option-item">Quebec</div>
+                <div class="option-item">Rhode Island</div>
+                <div class="option-item">Saskatchewan</div>
+                <div class="option-item">South Carolina</div>
+                <div class="option-item">South Dakota</div>
+                <div class="option-item">Tennessee</div>
+                <div class="option-item">Texas</div>
+                <div class="option-item">U.S. Virgin Islands</div>
+                <div class="option-item">Utah</div>
+                <div class="option-item">Vermont</div>
+                <div class="option-item">Virginia</div>
+                <div class="option-item">Washington</div>
+                <div class="option-item">West Virginia</div>
+                <div class="option-item">Wisconsin</div>
+                <div class="option-item">Wyoming</div>
+                <div class="option-item">Other (Please Specify)</div>
+            </div>
+        </div>
+
+        <h2 id="section-4">PSAP Classification</h2>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">2.</span>
+                <span class="question-text">What is the base population serviced by the PSAP?</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Dropdown</span>
+            </div>
+
+            <div class="options">
+                <strong>Options:</strong>
+                <div class="option-item">Less than 10,000</div>
+                <div class="option-item">10,000 - 25,000</div>
+                <div class="option-item">25,000 - 50,000</div>
+                <div class="option-item">50,000 - 100,000</div>
+                <div class="option-item">100,000 - 250,000</div>
+                <div class="option-item">250,000 - 500,000</div>
+                <div class="option-item">500,000 - 1,000,000</div>
+                <div class="option-item">Over 1,000,000</div>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">3.</span>
+                <span class="question-text">What is the peak population serviced by the PSAP?</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Dropdown</span>
+            </div>
+
+            <div class="options">
+                <strong>Options:</strong>
+                <div class="option-item">Less than 10,000</div>
+                <div class="option-item">10,000 - 25,000</div>
+                <div class="option-item">25,000 - 50,000</div>
+                <div class="option-item">50,000 - 100,000</div>
+                <div class="option-item">100,000 - 250,000</div>
+                <div class="option-item">250,000 - 500,000</div>
+                <div class="option-item">500,000 - 1,000,000</div>
+                <div class="option-item">Over 1,000,000</div>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">4.</span>
+                <span class="question-text">What are most common factors contiubting to the population variation? (Select all that apply)</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Multiple Choice</span>
+            </div>
+
+            <div class="options">
+                <strong>Options:</strong>
+                <div class="option-item">Daytime Increase (Worker Influx)</div>
+                <div class="option-item">Seasonal Peaks</div>
+                <div class="option-item">Event Peaks</div>
+                <div class="option-item">None</div>
+                <div class="option-item">Other (Please Specify)</div>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">5.</span>
+                <span class="question-text">Select the PSAP classification:</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Single Choice</span>
+            </div>
+
+            <div class="options">
+                <strong>Options:</strong>
+                <div class="option-item">Primary</div>
+                <div class="option-item">Secondary</div>
+                <div class="option-item">Other</div>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">6.</span>
+                <span class="question-text">What services does the PSAP provide (select one or more):</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Multiple Choice</span>
+            </div>
+
+            <div class="options">
+                <strong>Options:</strong>
+                <div class="option-item">Call Taking</div>
+                <div class="option-item">Dispatching</div>
+                <div class="option-item">Walk Up</div>
+                <div class="option-item">SMS/Text</div>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">7.</span>
+                <span class="question-text">Please list any additional services that you provide:</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Text Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">8.</span>
+                <span class="question-text">What is the PSAP operational governance:</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Single Choice</span>
+            </div>
+
+            <div class="options">
+                <strong>Options:</strong>
+                <div class="option-item">Federal Government (Airport, Tribal, LEO, Miliary, Other)</div>
+                <div class="option-item">State Government  (LEO, Other)</div>
+                <div class="option-item">County Government (Sheriff, Fire, EMS, Other)</div>
+                <div class="option-item">Municipal Government (Fire, EMS, LEO, Other)</div>
+                <div class="option-item">Independent Tax Funded Authority</div>
+                <div class="option-item">Private</div>
+                <div class="option-item">Other (Please Specify)</div>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">8.1.</span>
+                <span class="question-text">Which specific agencies fall under this governance:</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Multiple Choice</span>
+            </div>
+
+            <div class="options">
+                <strong>Options:</strong>
+                <div class="option-item">Police</div>
+                <div class="option-item">Sheriff</div>
+                <div class="option-item">Fire</div>
+                <div class="option-item">EMS</div>
+                <div class="option-item">Airport</div>
+                <div class="option-item">Tribal</div>
+                <div class="option-item">Military</div>
+                <div class="option-item">Other (Please Specify)</div>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">9.</span>
+                <span class="question-text">What agencies does the PSAP answer calls and dispatch for and how many of each?</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Agency Selection with Count</span>
+            </div>
+
+            <div class="options">
+                <strong>Options:</strong>
+                <div class="option-item">Police</div>
+                <div class="option-item">Fire</div>
+                <div class="option-item">EMS</div>
+                <div class="option-item">Sheriff</div>
+                <div class="option-item">Animal Control</div>
+                <div class="option-item">Other (Please Specify)</div>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">10.</span>
+                <span class="question-text">Types of calls answered by PSAP:</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Multiple Choice</span>
+            </div>
+
+            <div class="options">
+                <strong>Options:</strong>
+                <div class="option-item">9-1-1</div>
+                <div class="option-item">Admin</div>
+                <div class="option-item">10-digit Emergency</div>
+                <div class="option-item">SMS/Text</div>
+                <div class="option-item">TTY/TDD</div>
+                <div class="option-item">Other (Please Specify)</div>
+            </div>
+        </div>
+
+        <h2 id="section-5">Yearly Call Counts</h2>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">11.</span>
+                <span class="question-text">Total of 9-1-1 calls answered in the last calendar year:</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">12.</span>
+                <span class="question-text">Total of all 10-digit emergency calls answered in the last calendar year:</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">13.</span>
+                <span class="question-text">Total of all non-emergency calls answered in the last calendar year:</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">14.</span>
+                <span class="question-text">Total of all SMS/Text sessions answered in the last calendar year:</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">15.</span>
+                <span class="question-text">Total of all TTY/TDD sessions answered in the last calendar year:</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">16.</span>
+                <span class="question-text">Total number of Law Enforcement events processed in the last calendar year:</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">17.</span>
+                <span class="question-text">Total number of Fire events processed in the last calendar year:</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">18.</span>
+                <span class="question-text">Total number of EMS events processed in the last calendar year:</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">19.</span>
+                <span class="question-text">Total number of other events processed in the last calendar year:</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">20.</span>
+                <span class="question-text">Estimated radio keyups in the last calendar year:</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Text Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">21.</span>
+                <span class="question-text">Average number of radio keyups per hour in the last calendar year:</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">22.</span>
+                <span class="question-text">How many calls were transferred in the last calendar year?</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">23.</span>
+                <span class="question-text">Of the calls transferred, how many were transferred to a secondary PSAP?</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <h2 id="section-6">Telecommunicator staff numbers</h2>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">24.</span>
+                <span class="question-text">Number of Funded Operational FTEs (Full Time Equivalents)</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">25.</span>
+                <span class="question-text">Number of Telecommunicator FTEs in use</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">26.</span>
+                <span class="question-text">Number of Supervisor FTEs in use</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">27.</span>
+                <span class="question-text">What is your optimum number of Telecommunicator FTEs (if fully staffed)?</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">28.</span>
+                <span class="question-text">What is your optimum number of Supervisor FTEs (if fully staffed)?</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">29.</span>
+                <span class="question-text">What is the length of shifts in hours?</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Single Choice</span>
+            </div>
+
+            <div class="options">
+                <strong>Options:</strong>
+                <div class="option-item">8</div>
+                <div class="option-item">10</div>
+                <div class="option-item">12</div>
+                <div class="option-item">Other (Please Specify)</div>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">30.</span>
+                <span class="question-text">Minimum number of telecommunicator FTEs per shift</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">31.</span>
+                <span class="question-text">Minimum number of supervisor FTEs per shift</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">32.</span>
+                <span class="question-text">Maximum number of telecommunicator FTEs per shift</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">33.</span>
+                <span class="question-text">Maximum number of supervisor FTEs per shift</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <h2 id="section-7">Performance Metrics</h2>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">34.</span>
+                <span class="question-text">What is your average phone answer time for 9-1-1 calls in seconds? (From presentation to answer)</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">35.</span>
+                <span class="question-text">What is your average phone answer time for non-emergency calls in seconds? (From presentation to answer)</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">36.</span>
+                <span class="question-text">What is your average call processing time for 9-1-1 calls in seconds? (From answer to dispatch)</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">37.</span>
+                <span class="question-text">What is your average call processing time for non-emergency calls in seconds? (From answer to dispatch)</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">38.</span>
+                <span class="question-text">What is the average number of calls handled per telecommunicator FTE per hour?</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">39.</span>
+                <span class="question-text">What is the average time to transfer a call to another PSAP in seconds? (From answer to transfer)</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">40.</span>
+                <span class="question-text">What is the average processing time for law enforcement service calls in seconds? (From answer to dispatch)</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">41.</span>
+                <span class="question-text">What is the average processing time for fire service calls in seconds? (From answer to dispatch)</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">42.</span>
+                <span class="question-text">What is the average processing time for EMS service calls in seconds? (From answer to dispatch)</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">Numeric Input</span>
+            </div>
+        </div>
+
+        <h2 id="section-8">Closing</h2>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-number">43.</span>
+                <span class="question-text">Thank you for completing the NENA 2026 PSAP Survey. Your participation is greatly appreciated and will help NENA better understand staffing and call processing standards. Your feedback is valuable throughout the industry and support meaningful solutions, advocacy, and future planning for the 9-1-1 community.</span>
+                
+            </div>
+            <div class="question-meta">
+                <span class="question-type">info</span>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Generated on 7/28/2026, 9:50:20 AM</p>
+            <p>Total Questions: 47 | Required: 0 | Sections: 9</p>
+        </div>
+    </div>
+</body>
+</html>

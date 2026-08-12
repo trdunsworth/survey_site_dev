@@ -158,3 +158,27 @@ Operator minimum checks after deployment:
 2. Submit one synthetic survey response through completion and verify ELT run status is `success`.
 3. Confirm MotherDuck row growth in `completed_submissions` for the test submission.
 4. If any check fails, follow rollback steps in `deploy.txt` immediately.
+
+## Static Hosting Package (No Node On Host)
+
+If your hosting environment cannot run `npm install` or a Node server, generate a fully static package locally and upload the resulting files.
+
+Build static output into the `static/` folder:
+
+```bash
+npm run build:static
+```
+
+Then upload everything inside `static/` to your host document root.
+
+Static mode behavior:
+
+- No backend API is required.
+- Survey save/resume/submit is handled in-browser via `localStorage`.
+- Resume codes work in static mode and expire after 7 days.
+- Analytics dashboard computes values from locally stored completed responses.
+
+Important limitations in static mode:
+
+- Data is browser/device scoped unless you export it separately.
+- There is no shared central database across respondents.

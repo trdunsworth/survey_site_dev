@@ -14,6 +14,7 @@ import type {
   AnswerValue,
   TokenConsumeResult,
   TokenIssueResult,
+  ResumeContext,
   AnalyticsHealthResponse,
   AnalyticsKpiSnapshot,
   AnalyticsRefreshResult,
@@ -22,6 +23,156 @@ import type {
 // Frontend API base URL is configurable via Vite env
 // Defaults to '/api' so it can be reverse-proxied under the site
 const API_URL = (import.meta as any).env?.VITE_API_URL ?? '/api';
+const STATIC_MODE =
+  (import.meta as any).env?.VITE_STATIC_MODE === 'true' ||
+  (import.meta as any).env?.MODE === 'static';
+
+const STATIC_STORE_KEY = 'survey_static_store_v1';
+const STATIC_TOKEN_TTL_DAYS = 7;
+
+interface StaticSubmission {
+  submission_id: string;
+  created_at: string;
+  completed: boolean;
+  survey_version: string;
+  current_section_index: number;
+  last_question_id: string | null;
+  updated_at: string;
+  completed_at?: string;
+  answers: Record<string, AnswerValue>;
+}
+
+interface StaticToken {
+  token: string;
+  sourceSubmissionId: string;
+  targetSurveyVersion: string;
+  targetSectionIndex: number;
+  createdAt: string;
+  expiresAt: string;
+  consumedAt?: string;
+}
+
+interface StaticStore {
+  submissions: Record<string, StaticSubmission>;
+  tokens: Record<string, StaticToken>;
+}
+
+function nowIso(): string {
+  return new Date().toISOString();
+}
+
+function defaultStore(): StaticStore {
+  return { submissions: {}, tokens: {} };
+}
+
+function loadStaticStore(): StaticStore {
+  if (!STATIC_MODE) return defaultStore();
+  try {
+    const raw = localStorage.getItem(STATIC_STORE_KEY);
+    if (!raw) return defaultStore();
+    const parsed = JSON.parse(raw) as Partial<StaticStore>;
+    return {
+      submissions: parsed.submissions ?? {},
+      tokens: parsed.tokens ?? {},
+    };
+  } catch {
+    return defaultStore();
+  }
+}
+
+function saveStaticStore(store: StaticStore): void {
+  if (!STATIC_MODE) return;
+  localStorage.setItem(STATIC_STORE_KEY, JSON.stringify(store));
+}
+
+function createStaticToken(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID().replace(/-/g, '');
+  }
+  return `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 12)}`;
+}
+
+function computeStaticKpis(store: StaticStore): AnalyticsKpiSnapshot {
+  const completed = Object.values(store.submissions).filter((s) => s.completed);
+  const totalCompleted = completed.length;
+  const now = Date.now();
+  const dayMs = 24 * 60 * 60 * 1000;
+
+  const answeredCounts = completed.map((s) => Object.keys(s.answers || {}).length).sort((a, b) => a - b);
+  const avgAnswered = totalCompleted === 0
+    ? 0
+    : answeredCounts.reduce((sum, value) => sum + value, 0) / totalCompleted;
+  const medianAnswered = totalCompleted === 0
+    ? 0
+    : answeredCounts[Math.floor((answeredCounts.length - 1) / 2)];
+  const surveyVersions = new Set(completed.map((s) => s.survey_version || 'default')).size;
+
+  let completedLast24h = 0;
+  let completedLast7d = 0;
+  const dailyMap: Record<string, number> = {};
+  const questionCountMap: Record<string, number> = {};
+  const answerTypeMap: Record<string, number> = {};
+
+  for (const submission of completed) {
+    const completedAt = new Date(submission.completed_at ?? submission.updated_at).getTime();
+    if (Number.isFinite(completedAt)) {
+      if (now - completedAt <= dayMs) completedLast24h += 1;
+      if (now - completedAt <= 7 * dayMs) completedLast7d += 1;
+      if (now - completedAt <= 30 * dayMs) {
+        const day = new Date(completedAt).toISOString().slice(0, 10);
+        dailyMap[day] = (dailyMap[day] ?? 0) + 1;
+      }
+    }
+
+    Object.entries(submission.answers || {}).forEach(([questionId, answer]) => {
+      questionCountMap[questionId] = (questionCountMap[questionId] ?? 0) + 1;
+
+      let answerType: string = typeof answer;
+      if (Array.isArray(answer)) answerType = 'array';
+      else if (answer && typeof answer === 'object') {
+        if ('option' in answer) answerType = 'option-object';
+        else if ('agency' in (answer as Record<string, unknown>)) answerType = 'agency-count';
+        else answerType = 'object';
+      }
+      answerTypeMap[answerType] = (answerTypeMap[answerType] ?? 0) + 1;
+    });
+  }
+
+  const dailyCompletions30d = Object.entries(dailyMap)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([completion_day, completed_surveys]) => ({ completion_day, completed_surveys }));
+
+  const questionCompletion = Object.entries(questionCountMap)
+    .map(([question_id, answered_count]) => ({
+      question_id,
+      answered_count,
+      completion_rate_pct: totalCompleted === 0 ? 0 : (answered_count / totalCompleted) * 100,
+    }))
+    .sort((a, b) => b.answered_count - a.answered_count);
+
+  const totalAnswers = Object.values(answerTypeMap).reduce((sum, count) => sum + count, 0);
+  const answerTypeMix = Object.entries(answerTypeMap)
+    .map(([answer_type, answer_count]) => ({
+      answer_type,
+      answer_count,
+      pct_of_answers: totalAnswers === 0 ? 0 : (answer_count / totalAnswers) * 100,
+    }))
+    .sort((a, b) => b.answer_count - a.answer_count);
+
+  return {
+    overview: {
+      total_completed_surveys: totalCompleted,
+      survey_versions: surveyVersions,
+      avg_answered_questions: avgAnswered,
+      median_answered_questions: medianAnswered,
+      completed_last_24h: completedLast24h,
+      completed_last_7d: completedLast7d,
+    },
+    dailyCompletions30d,
+    questionCompletion,
+    answerTypeMix,
+  };
+}
 
 export interface AnswerChange {
   submissionId: string;
@@ -50,6 +201,23 @@ export const networkStatus$ = merge(
  * Create submission in the database
  */
 export function createSubmission(submissionId: string): Observable<SaveResult> {
+  if (STATIC_MODE) {
+    const store = loadStaticStore();
+    const timestamp = nowIso();
+    store.submissions[submissionId] = {
+      submission_id: submissionId,
+      created_at: timestamp,
+      completed: false,
+      survey_version: 'default',
+      current_section_index: 0,
+      last_question_id: null,
+      updated_at: timestamp,
+      answers: {},
+    };
+    saveStaticStore(store);
+    return of({ success: true });
+  }
+
   return new Observable<SaveResult>((observer) => {
     fetch(`${API_URL}/submissions`, {
       method: 'POST',
@@ -82,6 +250,27 @@ export function createSubmission(submissionId: string): Observable<SaveResult> {
  * Save a single answer to the database
  */
 export function saveAnswer(data: AnswerChange): Observable<SaveResult> {
+  if (STATIC_MODE) {
+    const store = loadStaticStore();
+    const existing = store.submissions[data.submissionId];
+    const timestamp = nowIso();
+    const submission: StaticSubmission = existing ?? {
+      submission_id: data.submissionId,
+      created_at: timestamp,
+      completed: false,
+      survey_version: 'default',
+      current_section_index: 0,
+      last_question_id: null,
+      updated_at: timestamp,
+      answers: {},
+    };
+    submission.answers[String(data.questionId)] = data.answer;
+    submission.updated_at = timestamp;
+    store.submissions[data.submissionId] = submission;
+    saveStaticStore(store);
+    return of({ success: true });
+  }
+
   return new Observable<SaveResult>((observer) => {
     fetch(`${API_URL}/answers`, {
       method: 'POST',
@@ -112,6 +301,21 @@ export function saveAnswer(data: AnswerChange): Observable<SaveResult> {
  * Complete the submission
  */
 export function completeSubmission(submissionId: string): Observable<SaveResult> {
+  if (STATIC_MODE) {
+    const store = loadStaticStore();
+    const submission = store.submissions[submissionId];
+    if (!submission) {
+      return of({ success: false, error: 'Submission not found' });
+    }
+    const timestamp = nowIso();
+    submission.completed = true;
+    submission.completed_at = timestamp;
+    submission.updated_at = timestamp;
+    store.submissions[submissionId] = submission;
+    saveStaticStore(store);
+    return of({ success: true });
+  }
+
   return new Observable<SaveResult>((observer) => {
     fetch(`${API_URL}/submissions/${submissionId}/complete`, {
       method: 'POST',
@@ -155,6 +359,27 @@ export function loadSubmission(submissionId: string): Observable<{
   };
   error?: string;
 }> {
+  if (STATIC_MODE) {
+    const store = loadStaticStore();
+    const submission = store.submissions[submissionId];
+    if (!submission) {
+      return of({ success: false, error: 'Submission not found' });
+    }
+    return of({
+      success: true,
+      data: {
+        submission_id: submission.submission_id,
+        created_at: submission.created_at,
+        completed: submission.completed,
+        survey_version: submission.survey_version,
+        current_section_index: submission.current_section_index,
+        last_question_id: submission.last_question_id,
+        updated_at: submission.updated_at,
+        answers: submission.answers,
+      },
+    });
+  }
+
   return new Observable<{
     success: boolean;
     data?: {
@@ -201,6 +426,29 @@ export function loadSubmission(submissionId: string): Observable<{
  * failure result with a generic reason code on failure.
  */
 export function consumeToken(rawToken: string): Observable<TokenConsumeResult> {
+  if (STATIC_MODE) {
+    const token = rawToken.trim();
+    const store = loadStaticStore();
+    const tokenRecord = store.tokens[token];
+    if (!tokenRecord) return of({ success: false, reason: 'invalid' as const });
+    if (tokenRecord.consumedAt) return of({ success: false, reason: 'consumed' as const });
+    if (Date.now() > new Date(tokenRecord.expiresAt).getTime()) {
+      return of({ success: false, reason: 'expired' as const });
+    }
+    if (!store.submissions[tokenRecord.sourceSubmissionId]) {
+      return of({ success: false, reason: 'invalid' as const });
+    }
+    tokenRecord.consumedAt = nowIso();
+    store.tokens[token] = tokenRecord;
+    saveStaticStore(store);
+    const context: ResumeContext = {
+      sourceSubmissionId: tokenRecord.sourceSubmissionId,
+      targetSurveyVersion: tokenRecord.targetSurveyVersion,
+      targetSectionIndex: tokenRecord.targetSectionIndex,
+    };
+    return of({ success: true, context });
+  }
+
   return new Observable<TokenConsumeResult>((observer) => {
     fetch(`${API_URL}/tokens/consume`, {
       method: 'POST',
@@ -234,6 +482,39 @@ export function issueToken(
   targetSurveyVersion: string,
   targetSectionIndex: number,
 ): Observable<TokenIssueResult> {
+  if (STATIC_MODE) {
+    const store = loadStaticStore();
+    const submission = store.submissions[sourceSubmissionId];
+    if (!submission) {
+      return of({ success: false, error: 'Submission not found' });
+    }
+    submission.survey_version = targetSurveyVersion;
+    store.submissions[sourceSubmissionId] = submission;
+
+    const token = createStaticToken();
+    const createdAt = nowIso();
+    const expiresAt = new Date(Date.now() + STATIC_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000).toISOString();
+
+    store.tokens[token] = {
+      token,
+      sourceSubmissionId,
+      targetSurveyVersion,
+      targetSectionIndex,
+      createdAt,
+      expiresAt,
+    };
+    saveStaticStore(store);
+
+    const resumeUrl = `${window.location.origin}${window.location.pathname}?t=${encodeURIComponent(token)}`;
+    return of({
+      success: true,
+      token,
+      expiresAt,
+      ttlDays: STATIC_TOKEN_TTL_DAYS,
+      resumeUrl,
+    });
+  }
+
   return new Observable<TokenIssueResult>((observer) => {
     fetch(`${API_URL}/tokens/issue`, {
       method: 'POST',
@@ -270,6 +551,20 @@ export function saveProgress(
   currentSectionIndex: number,
   lastQuestionId?: string,
 ): Observable<SaveResult> {
+  if (STATIC_MODE) {
+    const store = loadStaticStore();
+    const submission = store.submissions[submissionId];
+    if (!submission) {
+      return of({ success: false, error: 'Submission not found' });
+    }
+    submission.current_section_index = currentSectionIndex;
+    submission.last_question_id = lastQuestionId ?? submission.last_question_id;
+    submission.updated_at = nowIso();
+    store.submissions[submissionId] = submission;
+    saveStaticStore(store);
+    return of({ success: true });
+  }
+
   return new Observable<SaveResult>((observer) => {
     fetch(`${API_URL}/submissions/${submissionId}/progress`, {
       method: 'PUT',
@@ -313,8 +608,8 @@ export function createAutoSaveStream(
         prev.questionId === curr.questionId &&
         JSON.stringify(prev.answer) === JSON.stringify(curr.answer)
     ),
-    // Only save when online
-    filter(() => navigator.onLine),
+    // Static mode can save even while offline because it writes to localStorage.
+    filter(() => STATIC_MODE || navigator.onLine),
     // Cancel previous request if a new one comes in
     switchMap((data) =>
       saveAnswer(data).pipe(
@@ -386,6 +681,34 @@ export class OfflineSaveQueue {
 // ── Analytics services ─────────────────────────────────────────────────────────
 
 export async function fetchAnalyticsHealth(): Promise<AnalyticsHealthResponse> {
+  if (STATIC_MODE) {
+    const store = loadStaticStore();
+    const completedCount = Object.values(store.submissions).filter((s) => s.completed).length;
+    const answersCount = Object.values(store.submissions)
+      .filter((s) => s.completed)
+      .reduce((sum, submission) => sum + Object.keys(submission.answers || {}).length, 0);
+
+    return {
+      duckdbPath: 'localStorage',
+      targetCatalog: 'static',
+      motherduckConfigured: false,
+      quackRequested: false,
+      counts: {
+        completed_submissions: completedCount,
+        completed_answers: answersCount,
+      },
+      lastRun: {
+        run_id: 'static-mode',
+        completed_at: nowIso(),
+        extracted_submissions: completedCount,
+        loaded_submissions: completedCount,
+        loaded_answers: answersCount,
+        status: 'success',
+        message: 'Static mode analytics are computed in-browser from localStorage.',
+      },
+    };
+  }
+
   const response = await fetch(`${API_URL}/analytics/health`);
   if (!response.ok) {
     throw new Error(`Failed to fetch analytics health (${response.status})`);
@@ -394,6 +717,11 @@ export async function fetchAnalyticsHealth(): Promise<AnalyticsHealthResponse> {
 }
 
 export async function fetchAnalyticsKpis(): Promise<AnalyticsKpiSnapshot> {
+  if (STATIC_MODE) {
+    const store = loadStaticStore();
+    return computeStaticKpis(store);
+  }
+
   const response = await fetch(`${API_URL}/analytics/kpis`);
   if (!response.ok) {
     throw new Error(`Failed to fetch analytics KPIs (${response.status})`);
@@ -402,6 +730,25 @@ export async function fetchAnalyticsKpis(): Promise<AnalyticsKpiSnapshot> {
 }
 
 export async function refreshAnalytics(): Promise<AnalyticsRefreshResult> {
+  if (STATIC_MODE) {
+    const store = loadStaticStore();
+    const completedCount = Object.values(store.submissions).filter((s) => s.completed).length;
+    const answersCount = Object.values(store.submissions)
+      .filter((s) => s.completed)
+      .reduce((sum, submission) => sum + Object.keys(submission.answers || {}).length, 0);
+
+    return {
+      success: true,
+      summary: {
+        extractedSubmissions: completedCount,
+        loadedSubmissions: completedCount,
+        loadedAnswers: answersCount,
+        wideColumns: 0,
+        targetCatalog: 'static',
+      },
+    };
+  }
+
   const response = await fetch(`${API_URL}/analytics/refresh`, {
     method: 'POST',
   });
