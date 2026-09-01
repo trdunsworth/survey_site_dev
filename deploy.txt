@@ -2,7 +2,23 @@
 NENA SURVEY APPLICATION - DEPLOYMENT GUIDE
 ================================================================================
 
-DEPLOYMENT COMMAND SEQUENCE
+DEPLOYMENT MODES
+================================================================================
+
+This application supports two deployment modes:
+
+  1. STATIC MODE — No backend, browser-only (localStorage)
+     Build: npm run build:static
+     Deploy: Upload static/ folder to any web host
+
+  2. FULL STACK MODE — Node.js backend + MotherDuck analytics
+     Build: npm run build && npm run build:server
+     Deploy: Node.js server + frontend assets
+
+See DEPLOYMENT.md for detailed instructions on both modes.
+
+
+DEPLOYMENT COMMAND SEQUENCE (FULL STACK)
 ================================================================================
 
 Step 1: Install Dependencies
@@ -44,9 +60,11 @@ This runs the compiled server entrypoint at server/dist/server.js.
 QUICK DEPLOYMENT (One Command)
 ================================================================================
 
-Run all steps in sequence:
+Full stack:
+  npm install && npm run type-check && npm run lint && npm run build && npm run build:server
 
-npm install && npm run type-check && npm run lint && npm run build && npm run build:server
+Static only:
+  npm install && npm run build:static
 
 
 DEPLOYMENT ARTIFACTS
@@ -54,20 +72,24 @@ DEPLOYMENT ARTIFACTS
 
 After successful build:
 
-1. Frontend:
+1. Frontend (Full Stack):
    - Location: dist/
    - Upload these files to your web hosting
 
-2. Server:
+2. Frontend (Static):
+   - Location: static/
+   - Upload these files to any web host (no Node.js required)
+
+3. Server:
    - Compiled files ready for Node.js runtime
    - Entry point: server/dist/server.js
-   - Requires Node.js environment on your server
+   - Requires Node.js 18+ environment on your server
 
-3. Database:
-   - Transactional store: server/survey_responses.db
-   - Analytics store: server/survey_analytics.duckdb
-   - Persisted by sql.js and DuckDB
-   - Must be accessible to backend server
+4. Database:
+   - Transactional store: server/survey_responses.db (local DuckDB)
+   - Analytics store: server/survey_analytics.duckdb (DuckDB)
+   - Both auto-created on first run
+   - MotherDuck syncs completed survey data to cloud
 
 
 DEPLOYMENT CHECKLIST
@@ -79,8 +101,6 @@ DEPLOYMENT CHECKLIST
 [ ] npm run build - frontend built successfully (dist/ folder created)
 [ ] npm run build:server - server built successfully
 [ ] dist/ folder ready for upload
-[ ] Transactional DB file (server/survey_responses.db) backed up
-[ ] Analytics DB file (server/survey_analytics.duckdb) backed up
 [ ] MOTHERDUCK_DB and MOTHERDUCK_TOKEN configured in production secrets
 [ ] ANALYTICS_REQUIRE_MOTHERDUCK=true configured for production
 [ ] Backend server ready to deploy
@@ -93,10 +113,11 @@ NOTES
 ================================================================================
 
 - Frontend (dist/) can be hosted on any static file server
-- Backend (server/) requires Node.js runtime
+- Backend (server/) requires Node.js 18+ runtime
 - Ensure backend API endpoints are accessible from your frontend domain
-- Keep server/survey_responses.db in a safe location (critical data)
-- Consider environment variables for production configuration
+- Local DuckDB files (survey_responses.db, survey_analytics.duckdb) are
+  auto-created and persisted by the server
+- MotherDuck provides cloud analytics and data redundancy
 
 
 DEPLOYMENT RUNBOOK (PRODUCTION)
@@ -126,17 +147,18 @@ Expected result:
 
 Set these server environment variables in your hosting platform:
 
-- PORT
-- API_BASE
-- CORS_ALLOWED_ORIGINS
+Required:
 - MOTHERDUCK_DB
 - MOTHERDUCK_TOKEN
 - ANALYTICS_REQUIRE_MOTHERDUCK=true
 
-Recommended:
-- API_RATE_LIMIT_WINDOW_MS
-- API_RATE_LIMIT_MAX
-- API_BODY_LIMIT
+Optional:
+- PORT (default: 3001)
+- API_BASE (default: empty)
+- CORS_ALLOWED_ORIGINS (default: localhost origins)
+- API_RATE_LIMIT_WINDOW_MS (default: 900000)
+- API_RATE_LIMIT_MAX (default: 300)
+- API_BODY_LIMIT (default: 64kb)
 
 Expected result:
 - App has all required configuration at startup.
@@ -155,6 +177,7 @@ npm run server:prod
 
 Expected result:
 - Process starts successfully with no module import errors.
+- Local DuckDB files auto-created on first run.
 
 
 4) Post-Deploy Health Verification

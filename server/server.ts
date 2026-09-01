@@ -2,7 +2,8 @@ import express, { Request, Response } from 'express';
 import cors, { CorsOptions } from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import { initDb } from './db.js';
+import { initDb as initDuckDb } from './duckdb.js';
+import { initDb as initSqliteDb } from './db.js';
 import {
   saveResponse,
   createSubmission,
@@ -392,7 +393,12 @@ app.post(`${API_BASE}/api/analytics/refresh`, async (_req: Request, res: Respons
 // ── Startup ──────────────────────────────────────────────────────────────────────
 
 export async function startServer(): Promise<void> {
-  await initDb();
+  const DB_ENGINE = process.env.DB_ENGINE ?? 'duckdb';
+  if (DB_ENGINE === 'duckdb') {
+    await initDuckDb();
+  } else {
+    await initSqliteDb();
+  }
   await initAnalyticsStore();
 
   const startupRetention = await runDataRetentionSweep({

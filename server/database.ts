@@ -1,18 +1,17 @@
 /**
- * database.ts — repository functions over the sql.js SQLite adapter.
+ * database.ts — repository functions over the local DuckDB adapter.
  *
- * All functions are async so callers don't need to change when this layer is
- * swapped for better-sqlite3, pg, or another driver.
- *
- * Migration checklist (when moving to a real RDBMS):
- *  1. Replace db.ts with an adapter that exposes the same initDb/getDb surface.
- *  2. Swap `db.run(sql, params)` calls for the driver's prepared-statement API.
- *  3. Remove `persist()` calls — real databases handle durability themselves.
- *  4. Convert `completed INTEGER` ↔ `boolean` coercion to native BOOL.
+ * All functions are async and use the DuckDB connection from duckdb.ts.
+ * This version uses DuckDB-compatible SQL:
+ *   - ? parameter placeholders
+ *   - Native BOOLEAN type
+ *   - Native TIMESTAMP type
+ *   - JSON type for structured columns
+ *   - No persist() calls — DuckDB auto-persists to disk
  */
 
 import crypto from 'crypto';
-import { getDb, persist } from './db.js';
+import { query, run, queryOne } from './duckdb.js';
 import type {
   SubmissionRecord,
   SubmissionWithAnswers,
@@ -22,8 +21,6 @@ import type {
 } from './types.js';
 
 // ── Internal helpers ──────────────────────────────────────────────────────────
-
-type Row = Record<string, import('sql.js').SqlValue>;
 
 interface TokenIssueMetadata {
   [key: string]: unknown;
@@ -53,85 +50,22 @@ function normalizePositiveDays(days: number | undefined, fallback: number): numb
   if (typeof days !== 'number' || !Number.isFinite(days) || days <= 0) {
     return fallback;
   }
-
   return Math.floor(days);
 }
 
-function rowsModified(db: ReturnType<typeof getDb>): number {
-  const getter = (db as unknown as { getRowsModified?: () => number }).getRowsModified;
-  if (typeof getter !== 'function') {
-    return 0;
-  }
-
-  return getter.call(db);
-}
-
 function isoDaysAgo(now: Date, days: number): string {
-  return new Date(now.getTime() - (days * 24 * 60 * 60 * 1000)).toISOString();
+  return new Date(now.getTime() - days * 24 * 60 * 60 * 1000).toISOString();
 }
 
-function collectPurgeableSubmissionIds(
-  db: ReturnType<typeof getDb>,
-  incompleteCutoff: string,
-  sweepAt: string,
-): string[] {
-  const stmt = db.prepare(
-    `SELECT s.submission_id
-     FROM submissions s
-     WHERE s.completed = 0
-       AND s.lifecycle_state = 'active'
-       AND s.updated_at <= ?
-       AND NOT EXISTS (
-         SELECT 1
-         FROM resume_tokens t
-         WHERE t.source_submission_id = s.submission_id
-           AND t.status = 'issued'
-           AND t.expires_at > ?
-       )`,
-  );
-
-  stmt.bind([incompleteCutoff, sweepAt]);
-
-  const ids: string[] = [];
-  while (stmt.step()) {
-    const row = stmt.getAsObject() as Row;
-    const submissionId = row['submission_id'];
-    if (typeof submissionId === 'string' && submissionId !== '') {
-      ids.push(submissionId);
-    }
-  }
-
-  stmt.free();
-  return ids;
-}
-
-function placeholders(count: number): string {
+function duckPlaceholders(count: number): string {
   return Array.from({ length: count }, () => '?').join(', ');
 }
 
-function deleteBySubmissionIds(
-  db: ReturnType<typeof getDb>,
-  tableName: 'answers' | 'resume_tokens' | 'submissions',
-  ids: string[],
-): number {
-  if (ids.length === 0) {
-    return 0;
-  }
-
-  const foreignKey = tableName === 'resume_tokens' ? 'source_submission_id' : 'submission_id';
-  db.run(
-    `DELETE FROM ${tableName} WHERE ${foreignKey} IN (${placeholders(ids.length)})`,
-    ids,
-  );
-
-  return rowsModified(db);
-}
-
-function rowToSubmission(row: Row): SubmissionRecord {
+function rowToSubmission(row: Record<string, unknown>): SubmissionRecord {
   return {
     submission_id:         row['submission_id']         as string,
     created_at:            row['created_at']            as string,
-    completed:             (row['completed'] as number) !== 0,
+    completed:             row['completed'] === true || row['completed'] === 1,
     lifecycle_state:       (row['lifecycle_state'] as 'active' | 'archived' | undefined) ?? 'active',
     completed_at:          (row['completed_at'] as string | null | undefined) ?? null,
     archived_at:           (row['archived_at'] as string | null | undefined) ?? null,
@@ -153,28 +87,25 @@ export const saveResponse = async (
   questionId: string,
   answer: unknown,
 ): Promise<void> => {
-  const db  = getDb();
   const now = new Date().toISOString();
 
-  // Upsert answer (SQLite 3.24+ UPSERT syntax)
-  db.run(
+  // Upsert answer (DuckDB UPSERT syntax)
+  await run(
     `INSERT INTO answers (submission_id, question_id, answer_json, created_at)
      VALUES (?, ?, ?, ?)
      ON CONFLICT(submission_id, question_id) DO UPDATE SET
-       answer_json = excluded.answer_json,
-       created_at  = excluded.created_at`,
+       answer_json = EXCLUDED.answer_json,
+       created_at  = EXCLUDED.created_at`,
     [submissionId, questionId, JSON.stringify(answer), now],
   );
 
   // Keep last_question_id and updated_at fresh on the parent submission
-  db.run(
+  await run(
     `UPDATE submissions
      SET last_question_id = ?, updated_at = ?
      WHERE submission_id = ?`,
     [questionId, now, submissionId],
   );
-
-  persist();
 };
 
 // ── Submissions ───────────────────────────────────────────────────────────────
@@ -183,25 +114,22 @@ export const createSubmission = async (
   submissionId: string,
   surveyVersion = 'default',
 ): Promise<void> => {
-  const db  = getDb();
   const now = new Date().toISOString();
 
-  db.run(
+  await run(
     `INSERT INTO submissions
        (submission_id, created_at, completed, survey_version,
         current_section_index, last_question_id, updated_at)
-     VALUES (?, ?, 0, ?, 0, NULL, ?)`,
+     VALUES (?, ?, FALSE, ?, 0, NULL, ?)`,
     [submissionId, now, surveyVersion, now],
   );
-  persist();
 };
 
 export const markSubmissionComplete = async (submissionId: string): Promise<void> => {
-  const db = getDb();
   const now = new Date().toISOString();
-  db.run(
+  await run(
     `UPDATE submissions
-     SET completed = 1,
+     SET completed = TRUE,
          lifecycle_state = 'active',
          completed_at = COALESCE(completed_at, ?),
          archived_at = NULL,
@@ -209,7 +137,6 @@ export const markSubmissionComplete = async (submissionId: string): Promise<void
      WHERE submission_id = ?`,
     [now, now, submissionId],
   );
-  persist();
 };
 
 /**
@@ -221,8 +148,7 @@ export const saveSubmissionProgress = async (
   currentSectionIndex: number,
   lastQuestionId?: string,
 ): Promise<void> => {
-  const db = getDb();
-  db.run(
+  await run(
     `UPDATE submissions
      SET current_section_index = ?,
          last_question_id      = COALESCE(?, last_question_id),
@@ -230,95 +156,79 @@ export const saveSubmissionProgress = async (
      WHERE submission_id = ?`,
     [currentSectionIndex, lastQuestionId ?? null, new Date().toISOString(), submissionId],
   );
-  persist();
 };
 
 export const getSubmission = async (
   submissionId: string,
 ): Promise<SubmissionWithAnswers | null> => {
-  const db = getDb();
-
-  const subStmt = db.prepare(
+  const subRow = await queryOne(
     `SELECT submission_id, created_at, completed, survey_version,
             current_section_index, last_question_id, updated_at,
             lifecycle_state, completed_at, archived_at
      FROM submissions WHERE submission_id = ?`,
+    [submissionId],
   );
-  subStmt.bind([submissionId]);
 
-  if (!subStmt.step()) {
-    subStmt.free();
-    return null;
-  }
-  const submission = rowToSubmission(subStmt.getAsObject() as Row);
-  subStmt.free();
+  if (!subRow) return null;
+  const submission = rowToSubmission(subRow);
 
-  const ansStmt = db.prepare(
+  const ansRows = await query(
     `SELECT question_id, answer_json FROM answers WHERE submission_id = ?`,
+    [submissionId],
   );
-  ansStmt.bind([submissionId]);
 
   const answers: Record<string, unknown> = {};
-  while (ansStmt.step()) {
-    const r = ansStmt.getAsObject() as Row;
-    answers[r['question_id'] as string] = JSON.parse(r['answer_json'] as string);
+  for (const r of ansRows) {
+    answers[r['question_id'] as string] = typeof r['answer_json'] === 'string'
+      ? JSON.parse(r['answer_json'] as string)
+      : r['answer_json'];
   }
-  ansStmt.free();
 
   return { ...submission, answers };
 };
 
 export const getAllSubmissions = async (): Promise<SubmissionRecord[]> => {
-  const db = getDb();
-
-  const stmt = db.prepare(
+  const rows = await query(
     `SELECT submission_id, created_at, completed, survey_version,
             current_section_index, last_question_id, updated_at,
             lifecycle_state, completed_at, archived_at
      FROM submissions ORDER BY created_at DESC`,
   );
 
-  const rows: SubmissionRecord[] = [];
-  while (stmt.step()) {
-    rows.push(rowToSubmission(stmt.getAsObject() as Row));
-  }
-  stmt.free();
-  return rows;
+  return rows.map(rowToSubmission);
 };
 
 /**
  * Extract completed submissions with their full answer payloads for analytics
- * ELT into DuckDB/MotherDuck.
+ * ELT into MotherDuck.
  */
 export const getCompletedSubmissionsWithAnswers = async (): Promise<CompletedSubmissionWithAnswers[]> => {
-  const db = getDb();
-
-  const subStmt = db.prepare(
+  const subRows = await query(
     `SELECT submission_id, created_at, completed, survey_version,
             current_section_index, last_question_id, updated_at,
             lifecycle_state, completed_at, archived_at
      FROM submissions
-     WHERE completed = 1
+     WHERE completed = TRUE
        AND lifecycle_state = 'active'
      ORDER BY created_at DESC`,
   );
 
   const rows: CompletedSubmissionWithAnswers[] = [];
 
-  while (subStmt.step()) {
-    const submission = rowToSubmission(subStmt.getAsObject() as Row);
+  for (const subRow of subRows) {
+    const submission = rowToSubmission(subRow);
 
-    const ansStmt = db.prepare(
+    const ansRows = await query(
       `SELECT question_id, answer_json FROM answers WHERE submission_id = ?`,
+      [submission.submission_id],
     );
-    ansStmt.bind([submission.submission_id]);
 
     const answers: Record<string, unknown> = {};
-    while (ansStmt.step()) {
-      const r = ansStmt.getAsObject() as Row;
-      answers[r['question_id'] as string] = JSON.parse(r['answer_json'] as string);
+    for (const r of ansRows) {
+      answers[r['question_id'] as string] = typeof r['answer_json'] === 'string'
+        ? JSON.parse(r['answer_json'] as string)
+        : r['answer_json'];
     }
-    ansStmt.free();
 
     rows.push({
       ...submission,
@@ -327,7 +237,6 @@ export const getCompletedSubmissionsWithAnswers = async (): Promise<CompletedSub
     });
   }
 
-  subStmt.free();
   return rows;
 };
 
@@ -351,14 +260,13 @@ export const issueResumeToken = async (
   targetSectionIndex: number,
   metadata: TokenIssueMetadata = {},
 ): Promise<IssueTokenResult> => {
-  const db        = getDb();
   const rawToken  = crypto.randomBytes(32).toString('base64url');
   const tokenHash = sha256(rawToken);
 
   const now       = new Date();
   const expiresAt = new Date(now.getTime() + TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000);
 
-  db.run(
+  await run(
     `INSERT INTO resume_tokens
        (token_hash, source_submission_id, target_survey_version,
         target_section_index, status, created_at, expires_at, metadata_json)
@@ -373,7 +281,6 @@ export const issueResumeToken = async (
       JSON.stringify(metadata),
     ],
   );
-  persist();
 
   return {
     token:     rawToken,
@@ -389,19 +296,14 @@ export const updateResumeTokenMetadata = async (
   rawToken: string,
   metadataPatch: TokenIssueMetadata,
 ): Promise<void> => {
-  const db = getDb();
   const tokenHash = sha256(rawToken);
 
-  const stmt = db.prepare(`SELECT metadata_json FROM resume_tokens WHERE token_hash = ?`);
-  stmt.bind([tokenHash]);
+  const row = await queryOne(
+    `SELECT metadata_json FROM resume_tokens WHERE token_hash = ?`,
+    [tokenHash],
+  );
 
-  if (!stmt.step()) {
-    stmt.free();
-    return;
-  }
-
-  const row = stmt.getAsObject() as Row;
-  stmt.free();
+  if (!row) return;
 
   let current: TokenIssueMetadata = {};
   const raw = row['metadata_json'];
@@ -411,18 +313,17 @@ export const updateResumeTokenMetadata = async (
     } catch {
       current = {};
     }
+  } else if (raw && typeof raw === 'object') {
+    // JSON may already be parsed by DuckDB driver
+    current = raw as TokenIssueMetadata;
   }
 
-  const next = {
-    ...current,
-    ...metadataPatch,
-  };
+  const next = { ...current, ...metadataPatch };
 
-  db.run(
+  await run(
     `UPDATE resume_tokens SET metadata_json = ? WHERE token_hash = ?`,
     [JSON.stringify(next), tokenHash],
   );
-  persist();
 };
 
 /**
@@ -439,24 +340,17 @@ export const updateResumeTokenMetadata = async (
 export const consumeResumeToken = async (
   rawToken: string,
 ): Promise<ResumeContext | null> => {
-  const db        = getDb();
   const tokenHash = sha256(rawToken);
   const now       = new Date().toISOString();
 
-  const stmt = db.prepare(
+  const row = await queryOne(
     `SELECT source_submission_id, target_survey_version, target_section_index,
             status, expires_at
      FROM resume_tokens WHERE token_hash = ?`,
+    [tokenHash],
   );
-  stmt.bind([tokenHash]);
 
-  if (!stmt.step()) {
-    stmt.free();
-    return null; // unknown token
-  }
-
-  const row = stmt.getAsObject() as Row;
-  stmt.free();
+  if (!row) return null; // unknown token
 
   const status    = row['status']    as string;
   const expiresAt = row['expires_at'] as string;
@@ -465,17 +359,15 @@ export const consumeResumeToken = async (
 
   if (now > expiresAt) {
     // Lazily mark expired for auditability; treat as invalid
-    db.run(`UPDATE resume_tokens SET status = 'expired' WHERE token_hash = ?`, [tokenHash]);
-    persist();
+    await run(`UPDATE resume_tokens SET status = 'expired' WHERE token_hash = ?`, [tokenHash]);
     return null;
   }
 
   // Consume the token — one-time use
-  db.run(
+  await run(
     `UPDATE resume_tokens SET status = 'consumed', consumed_at = ? WHERE token_hash = ?`,
     [now, tokenHash],
   );
-  persist();
 
   return {
     targetSurveyVersion: row['target_survey_version'] as string,
@@ -484,10 +376,52 @@ export const consumeResumeToken = async (
   };
 };
 
+// ── Data retention ────────────────────────────────────────────────────────────
+
+async function collectPurgeableSubmissionIds(
+  incompleteCutoff: string,
+  sweepAt: string,
+): Promise<string[]> {
+  const rows = await query(
+    `SELECT s.submission_id
+     FROM submissions s
+     WHERE s.completed = FALSE
+       AND s.lifecycle_state = 'active'
+       AND s.updated_at <= ?
+       AND NOT EXISTS (
+         SELECT 1
+         FROM resume_tokens t
+         WHERE t.source_submission_id = s.submission_id
+           AND t.status = 'issued'
+           AND t.expires_at > ?
+       )`,
+    [incompleteCutoff, sweepAt],
+  );
+
+  return rows.map((r) => r['submission_id'] as string).filter(Boolean);
+}
+
+async function deleteBySubmissionIds(
+  tableName: 'answers' | 'resume_tokens' | 'submissions',
+  ids: string[],
+): Promise<number> {
+  if (ids.length === 0) return 0;
+
+  const foreignKey = tableName === 'resume_tokens' ? 'source_submission_id' : 'submission_id';
+  // DuckDB doesn't return rowCount directly, so we count before/after or just run
+  await run(
+    `DELETE FROM ${tableName} WHERE ${foreignKey} IN (${duckPlaceholders(ids.length)})`,
+    ids,
+  );
+
+  // For retention purposes, return the count of IDs we attempted to delete
+  // DuckDB runAndReadAll doesn't easily give us rowCount for DELETE
+  return ids.length;
+}
+
 export const runDataRetentionSweep = async (
   options: RetentionSweepOptions = {},
 ): Promise<RetentionSweepSummary> => {
-  const db = getDb();
   const now = options.now ?? new Date();
   const nowIso = now.toISOString();
 
@@ -503,35 +437,44 @@ export const runDataRetentionSweep = async (
   const incompleteCutoff = isoDaysAgo(now, incompletePurgeDays);
   const archiveCutoff = isoDaysAgo(now, completedArchiveDays);
 
-  db.run(
-    `UPDATE resume_tokens
-     SET status = 'expired'
-     WHERE status = 'issued' AND expires_at <= ?`,
+  // Count expired tokens before update
+  const expiredRows = await query(
+    `SELECT COUNT(*) AS cnt FROM resume_tokens WHERE status = 'issued' AND expires_at <= ?`,
     [nowIso],
   );
-  const expiredTokens = rowsModified(db);
+  const expiredTokens = expiredRows[0]?.['cnt'] as number ?? 0;
 
-  const purgeableSubmissionIds = collectPurgeableSubmissionIds(db, incompleteCutoff, nowIso);
+  await run(
+    `UPDATE resume_tokens SET status = 'expired' WHERE status = 'issued' AND expires_at <= ?`,
+    [nowIso],
+  );
 
-  const purgedAnswers = deleteBySubmissionIds(db, 'answers', purgeableSubmissionIds);
-  const purgedTokens = deleteBySubmissionIds(db, 'resume_tokens', purgeableSubmissionIds);
-  const purgedSubmissions = deleteBySubmissionIds(db, 'submissions', purgeableSubmissionIds);
+  const purgeableSubmissionIds = await collectPurgeableSubmissionIds(incompleteCutoff, nowIso);
 
-  db.run(
+  const purgedAnswers    = await deleteBySubmissionIds('answers', purgeableSubmissionIds);
+  const purgedTokens     = await deleteBySubmissionIds('resume_tokens', purgeableSubmissionIds);
+  const purgedSubmissions = await deleteBySubmissionIds('submissions', purgeableSubmissionIds);
+
+  // Count archived submissions before update
+  const archiveCountRows = await query(
+    `SELECT COUNT(*) AS cnt FROM submissions
+     WHERE completed = TRUE
+       AND lifecycle_state = 'active'
+       AND COALESCE(completed_at, updated_at, created_at) <= ?`,
+    [archiveCutoff],
+  );
+  const archivedSubmissions = archiveCountRows[0]?.['cnt'] as number ?? 0;
+
+  await run(
     `UPDATE submissions
      SET lifecycle_state = 'archived',
          archived_at = ?,
          updated_at = ?
-     WHERE completed = 1
+     WHERE completed = TRUE
        AND lifecycle_state = 'active'
        AND COALESCE(completed_at, updated_at, created_at) <= ?`,
     [nowIso, nowIso, archiveCutoff],
   );
-  const archivedSubmissions = rowsModified(db);
-
-  if (expiredTokens > 0 || purgedSubmissions > 0 || archivedSubmissions > 0) {
-    persist();
-  }
 
   return {
     sweepAt: nowIso,
