@@ -125,9 +125,11 @@ function s(options: string[]): ReadonlySet<string> {
 
 const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
 
-    // ── id 0 / 39 — info blocks, no user input ────────────────────────────────
-    '0':  { kind: 'info' },
-    '39': { kind: 'info' },
+    // ── ids 0, 0.1, 0.2, 45 — info blocks, no user input ─────────────────────
+    '0':   { kind: 'info' },
+    '0.1': { kind: 'info' },
+    '0.2': { kind: 'info' },
+    '45':  { kind: 'info' },
 
     // ── id 1 — state / province select ───────────────────────────────────────
     '1': {
@@ -247,45 +249,65 @@ const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
     '18': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
     '19': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
 
-    // ── id 20 — estimated radio keyups (free text — see survey data) ──────────
-    '20': { kind: 'text', maxLength: MAX_TEXT_LENGTH },
+    // ── id 20 — NCIC transactions ─────────────────────────────────────────────
+    '20': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
 
-    // ── id 21 — average radio keyups per hour ────────────────────────────────
-    '21': { kind: 'number', min: 0, max: 100_000, integerOnly: false },
+    // ── id 21 — other incidents not covered elsewhere ────────────────────────
+    '21': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
 
-    // ── id 22, 23 — transferred calls ────────────────────────────────────────
-    '22': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
-    '23': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
+    // ── id 22 — estimated radio keyups (free text — see survey data) ─────────
+    '22': { kind: 'text', maxLength: MAX_TEXT_LENGTH },
 
-    // ── ids 24–28 — FTE counts ────────────────────────────────────────────────
-    '24': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
-    '25': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
+    // ── id 23 — average radio keyups per hour ────────────────────────────────
+    '23': { kind: 'number', min: 0, max: 100_000, integerOnly: false },
+
+    // ── ids 24, 25 — transferred calls ───────────────────────────────────────
+    '24': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
+    '25': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
+
+    // ── ids 26–30 — FTE counts ────────────────────────────────────────────────
     '26': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
     '27': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
     '28': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
+    '29': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
+    '30': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
 
-    // ── id 29 — shift length (radio, Other → positive numeric hours) ──────────
-    '29': {
+    // ── id 31 — shift length (radio, Other → positive numeric hours) ──────────
+    '31': {
         kind: 'radio',
         options: s(['8', '10', '12', OTHER_LABEL]),
         otherIsNumeric: true,
     },
 
-    // ── ids 30–33 — min/max FTEs per shift ───────────────────────────────────
-    '30': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
-    '31': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
+    // ── ids 32–35 — min/max FTEs per shift ────────────────────────────────────
     '32': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
     '33': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
+    '34': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
+    '35': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
 
-    // ── ids 34–37 — average answer / processing times (seconds) ──────────────
+    // ── ids 36, 37 — average phone answer time (seconds) ─────────────────────
     // No PSAP's average answer time is realistically above 3600 s (1 hour).
-    '34': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
-    '35': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
     '36': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
     '37': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
 
-    // ── id 38 — average calls per telecommunicator FTE per hour ──────────────
-    '38': { kind: 'number', min: 0, max: 1_000, integerOnly: false },
+    // ── ids 38, 39 — average call processing time (seconds) ──────────────────
+    // Measured answer → dispatch, not talk time, so the same 1 hour ceiling holds.
+    '38': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
+    '39': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
+
+    // ── id 40 — average calls handled per telecommunicator FTE per hour ──────
+    '40': { kind: 'number', min: 0, max: 1_000, integerOnly: false },
+
+    // ── id 41 — average time to transfer a call (seconds) ────────────────────
+    '41': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
+
+    // ── ids 42–44 — average processing time by service type (seconds) ────────
+    // The working group noted some centers keep a telecommunicator on the line
+    // through pre-arrival / post-dispatch instructions, which can push these
+    // averages high. Raise this ceiling if real responses get rejected.
+    '42': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
+    '43': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
+    '44': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
 };
 
 // ── Per-kind validators ───────────────────────────────────────────────────────

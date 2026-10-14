@@ -2,12 +2,11 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import { initDb } from './db.js';
-import { saveResponse, createSubmission, markSubmissionComplete, saveSubmissionProgress, getSubmission, getAllSubmissions, issueResumeToken, consumeResumeToken, updateResumeTokenMetadata, runDataRetentionSweep, } from './database.js';
+import { initDb as initDuckDb } from './duckdb.js';
+import { initDb as initSqliteDb } from './db.js';
+import { saveResponse, createSubmission, markSubmissionComplete, saveSubmissionProgress, getSubmission, getAllSubmissions, issueResumeToken, consumeResumeToken, runDataRetentionSweep, } from './database.js';
 import { validateAnswer } from './answerValidator.js';
 import { initAnalyticsStore, syncCompletedSurveyDataframe, getCompletedSurveyDataframe, getAnalyticsHealth, getAnalyticsKpiSnapshot, } from './analytics.js';
-import { sendResumeTokenEmail } from './email.js';
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DEFAULT_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
@@ -46,8 +45,6 @@ const defaultDeps = {
     getSubmission,
     getAllSubmissions,
     issueResumeToken,
-    updateResumeTokenMetadata,
-    sendResumeTokenEmail,
     consumeResumeToken,
     getAnalyticsHealth,
     getCompletedSurveyDataframe,
@@ -223,7 +220,7 @@ export function createApp(deps = defaultDeps) {
      * Issue a resume token that carries a user from their current submission to a
      * specific version and section of the survey.
      *
-     * Body: { sourceSubmissionId, targetSurveyVersion, targetSectionIndex, resumeEmail? }
+     * Body: { sourceSubmissionId, targetSurveyVersion, targetSectionIndex }
      */
     app.post(`${API_BASE}/api/tokens/issue`, async (req, res) => {
         try {
@@ -232,37 +229,15 @@ export function createApp(deps = defaultDeps) {
                 res.status(400).json({ error: 'sourceSubmissionId is required' });
                 return;
             }
-            const normalizedEmail = typeof resumeEmail === 'string' && resumeEmail.trim() !== ''
-                ? resumeEmail.trim().toLowerCase()
-                : undefined;
-            if (normalizedEmail && !EMAIL_REGEX.test(normalizedEmail)) {
-                res.status(400).json({ error: 'resumeEmail must be a valid email address' });
+            if (typeof resumeEmail === 'string' && resumeEmail.trim() !== '') {
+                res.status(400).json({ error: 'Email collection is not supported' });
                 return;
             }
-            const result = await deps.issueResumeToken(sourceSubmissionId, targetSurveyVersion ?? 'default', typeof targetSectionIndex === 'number' ? targetSectionIndex : 0, {
-                requestedEmail: normalizedEmail,
-                emailDeliveryStatus: normalizedEmail ? 'failed' : 'not_requested',
-            });
-            let emailDeliveryStatus = normalizedEmail ? 'failed' : 'not_requested';
-            let emailDeliveryError;
-            if (normalizedEmail) {
-                const resumeLink = `${req.protocol}://${req.get('host')}${result.resumeUrl}`;
-                const emailResult = await deps.sendResumeTokenEmail(normalizedEmail, result.token, resumeLink, result.expiresAt);
-                emailDeliveryStatus = emailResult.sent ? 'sent' : 'failed';
-                emailDeliveryError = emailResult.error;
-                await deps.updateResumeTokenMetadata(result.token, {
-                    requestedEmail: normalizedEmail,
-                    emailDeliveryStatus,
-                    emailDeliveryError,
-                    emailSentAt: emailResult.sent ? new Date().toISOString() : undefined,
-                });
-            }
+            const result = await deps.issueResumeToken(sourceSubmissionId, targetSurveyVersion ?? 'default', typeof targetSectionIndex === 'number' ? targetSectionIndex : 0);
             res.json({
                 success: true,
                 ...result,
                 ttlDays: 7,
-                emailDeliveryStatus,
-                emailDeliveryError,
             });
         }
         catch (error) {
@@ -351,7 +326,13 @@ export function createApp(deps = defaultDeps) {
 }
 // ── Startup ──────────────────────────────────────────────────────────────────────
 export async function startServer() {
-    await initDb();
+    const DB_ENGINE = process.env.DB_ENGINE ?? 'duckdb';
+    if (DB_ENGINE === 'duckdb') {
+        await initDuckDb();
+    }
+    else {
+        await initSqliteDb();
+    }
     await initAnalyticsStore();
     const startupRetention = await runDataRetentionSweep({
         incompletePurgeDays: INCOMPLETE_PURGE_DAYS,

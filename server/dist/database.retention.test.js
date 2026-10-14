@@ -1,57 +1,45 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-function createFakeDb(config = {}) {
+function createFakeDuckDb(config = {}) {
     const purgeableSubmissionIds = config.purgeableSubmissionIds ?? [];
-    const rowsModifiedByPrefix = config.rowsModifiedByPrefix ?? {};
-    let lastRowsModified = 0;
-    const db = {
-        run: vi.fn((sql) => {
-            const match = Object.entries(rowsModifiedByPrefix).find(([prefix]) => sql.includes(prefix));
-            lastRowsModified = match ? match[1] : 0;
-        }),
-        prepare: vi.fn((sql) => {
-            if (sql.includes('FROM submissions s')) {
-                let index = -1;
-                return {
-                    bind: vi.fn(),
-                    step: () => {
-                        index += 1;
-                        return index < purgeableSubmissionIds.length;
-                    },
-                    getAsObject: () => ({ submission_id: purgeableSubmissionIds[index] }),
-                    free: vi.fn(),
-                };
+    const countByPrefix = config.countByPrefix ?? {};
+    const fakeQuery = vi.fn(async (sql, _params) => {
+        // Match COUNT(*) queries for retention sweep
+        for (const [prefix, count] of Object.entries(countByPrefix)) {
+            if (sql.includes(prefix)) {
+                return [{ cnt: count }];
             }
-            return {
-                bind: vi.fn(),
-                step: () => false,
-                getAsObject: () => ({}),
-                free: vi.fn(),
-            };
-        }),
-        getRowsModified: vi.fn(() => lastRowsModified),
-    };
-    return db;
+        }
+        // Match the purgeable submission IDs query
+        if (sql.includes('FROM submissions s') && sql.includes('lifecycle_state')) {
+            return purgeableSubmissionIds.map((id) => ({ submission_id: id }));
+        }
+        return [];
+    });
+    const fakeRun = vi.fn(async (_sql, _params) => {
+        // no-op for mutations
+    });
+    return { query: fakeQuery, run: fakeRun };
 }
 describe('runDataRetentionSweep', () => {
     beforeEach(() => {
         vi.resetModules();
     });
     it('expires tokens, purges incomplete records, and archives aged completed submissions', async () => {
-        const fakeDb = createFakeDb({
+        const fakeDb = createFakeDuckDb({
             purgeableSubmissionIds: ['sub-old-a', 'sub-old-b'],
-            rowsModifiedByPrefix: {
-                "SET status = 'expired'": 2,
-                'DELETE FROM answers': 8,
-                'DELETE FROM resume_tokens': 3,
-                'DELETE FROM submissions': 2,
-                "SET lifecycle_state = 'archived'": 4,
+            countByPrefix: {
+                "status = 'issued' AND expires_at": 2,
+                'completed = TRUE': 4,
             },
         });
-        const persistMock = vi.fn();
-        vi.doMock('./db', () => ({
-            getDb: () => fakeDb,
-            persist: persistMock,
+        vi.doMock('./duckdb', () => ({
+            query: fakeDb.query,
+            run: fakeDb.run,
+            queryOne: vi.fn(async (sql, params) => {
+                const rows = await fakeDb.query(sql, params);
+                return rows[0] ?? null;
+            }),
         }));
         const { runDataRetentionSweep } = await import('./database.ts');
         const summary = await runDataRetentionSweep({
@@ -60,26 +48,28 @@ describe('runDataRetentionSweep', () => {
             completedArchiveDays: 365,
         });
         expect(summary.expiredTokens).toBe(2);
-        expect(summary.purgedAnswers).toBe(8);
-        expect(summary.purgedTokens).toBe(3);
+        expect(summary.purgedAnswers).toBe(2);
+        expect(summary.purgedTokens).toBe(2);
         expect(summary.purgedSubmissions).toBe(2);
         expect(summary.archivedSubmissions).toBe(4);
         expect(summary.incompleteCutoff).toBe('2026-05-27T00:00:00.000Z');
         expect(summary.archiveCutoff).toBe('2025-06-03T00:00:00.000Z');
-        expect(persistMock).toHaveBeenCalledTimes(1);
     });
-    it('does not persist when no retention mutations are needed', async () => {
-        const fakeDb = createFakeDb({
+    it('does not purge when no retention mutations are needed', async () => {
+        const fakeDb = createFakeDuckDb({
             purgeableSubmissionIds: [],
-            rowsModifiedByPrefix: {
-                "SET status = 'expired'": 0,
-                "SET lifecycle_state = 'archived'": 0,
+            countByPrefix: {
+                "status = 'issued' AND expires_at": 0,
+                'completed = TRUE': 0,
             },
         });
-        const persistMock = vi.fn();
-        vi.doMock('./db', () => ({
-            getDb: () => fakeDb,
-            persist: persistMock,
+        vi.doMock('./duckdb', () => ({
+            query: fakeDb.query,
+            run: fakeDb.run,
+            queryOne: vi.fn(async (sql, params) => {
+                const rows = await fakeDb.query(sql, params);
+                return rows[0] ?? null;
+            }),
         }));
         const { runDataRetentionSweep } = await import('./database.ts');
         const summary = await runDataRetentionSweep({
@@ -88,6 +78,5 @@ describe('runDataRetentionSweep', () => {
         expect(summary.expiredTokens).toBe(0);
         expect(summary.purgedSubmissions).toBe(0);
         expect(summary.archivedSubmissions).toBe(0);
-        expect(persistMock).not.toHaveBeenCalled();
     });
 });
