@@ -1,11 +1,11 @@
 [
     {
         "term": "APCO",
-        "definition": "Association of Public-Safety Communications Officials."
+        "definition": "APCO (Association of Public Safety Communications Officials). The world's oldest and largest not-for-profit professional organization dedicated to the enhancement of public safety communications."
     },
     {
         "term": "CAD",
-        "definition": "Computer Aided Dispatch. Systems used by dispatchers to track status and location of resources."
+        "definition": "CAD (Computer-Aided Dispatch). A computer-based system that aids PSAP Telecommunicators by automating selected dispatching and record keeping activities."
     },
     {
         "term": "CFAI",
@@ -20,24 +20,32 @@
         "definition": "International Academies of Emergency Dispatch."
     },
     {
+        "term": "Incident",
+        "definition": "A real-world occurrence, or event, for which one or more calls may be received."
+    },
+    {
         "term": "NENA",
-        "definition": "National Emergency Number Association."
+        "definition": "NENA (National Emergency Number Association), also referred to as \"The 9-1-1 Association\". It is fully dedicated to the continued improvement and modernization of the 9-1-1 emergency communication system. NENA's approach includes research, standards development, training, education, certification, outreach, and advocacy through communication with stakeholders. As an ANSI-accredited Standards Developer, NENA works with 9-1-1 professionals, public policy leaders, emergency services and telecommunications industry partners, like-minded public safety associations, and more. Current NENA activities center on awareness, documentation, and implementation for Next Generation 9-1-1 (NG9-1-1) and international three-digit emergency communication systems. NENA's worldwide members join with the emergency response community in striving to protect human life, preserve property, and maintain the security of all communities."
     },
     {
         "term": "NG9-1-1",
-        "definition": "Next Generation 9-1-1. An initiative to update the 9-1-1 service infrastructure to improve public emergency communications services in a wireless mobile society."
+        "definition": "NG9-1-1 (Next Generation 9-1-1). An IP-based system comprised of hardware, software, data, and operational policies and procedures that: (A) provides standardized interfaces from emergency call and message services to support emergency communications; (B) processes all types of emergency calls, including voice, data, and multimedia information; (C) acquires and integrates additional emergency call data useful to call routing and handling; (D) delivers the emergency calls, messages, and data to the appropriate public safety answering point and other appropriate emergency entities; (E) supports data or video communications needs for coordinated incident response and management."
     },
     {
         "term": "PSAP",
-        "definition": "Public Safety Answering Point. A facility equipped and staffed to receive 9-1-1 calls."
+        "definition": "PSAP (Public Safety Answering Point). A physical or virtual entity where 9-1-1 calls are delivered by the 9-1-1 Service Provider."
     },
     {
-        "term": "QA/QI",
-        "definition": "Quality Assurance / Quality Improvement."
+        "term": "QA",
+        "definition": "QA (Quality Assurance). A process taken to ensure that standards and procedures are adhered to and that delivered products or services meet performance requirements."
+    },
+    {
+        "term": "QI",
+        "definition": "QI (Quality Improvement). An organized system that assesses and evaluates the process to improve the quality of services provided."
     },
     {
         "term": "SLA",
-        "definition": "Service Level Agreement. A commitment between a service provider and a client."
+        "definition": "SLA (Service Level Agreement). A contract between a service provider (either internal or external) and the end user that defines the level of service expected from the service provider. SLAs are output-based in that their purpose is specifically to define what the customer will receive."
     },
     {
         "term": "Ten-Digit Emergency",
@@ -45,6 +53,6 @@
     },
     {
         "term": "TTY/TDD",
-        "definition": "Teletypewriter / Telecommunications Device for the Deaf."
+        "definition": "TTY (Teletypewriter). A device capable of information interchange between compatible units using a dial-up or private-line telephone network and VoIP (Voice over Internet Protocol) connections as the transmission mediums. ASCII tones or Baudot codes are used by these units (per EIA PN-1663). Related term: TDD (Telecommunications Device for the Deaf)."
     }
 ]
