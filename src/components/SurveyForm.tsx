@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Question from './Question';
 import surveyData from '../data/survey_data.json';
-import surveyData20260311 from '../data/survey_data_20260311.json';
 import type { SurveyData, Answers, AnswerValue, Question as QuestionType, ResumeContext } from '../types';
 import { useSubject, useObservable } from '../hooks/useObservable';
 import {
@@ -17,10 +16,19 @@ import {
     type AnswerChange,
 } from '../services/surveyService';
 
-/** Map of version keys to their corresponding survey data. */
+/**
+ * Map of version keys to their corresponding survey data.
+ *
+ * Add a new version by dropping a snapshot beside survey_data.json (named
+ * survey_data_YYYYMMDD.json) and adding one line here. The key is what gets
+ * persisted as `survey_version` on a submission and round-tripped through the
+ * resume-token flow.
+ *
+ * An unknown key falls back to 'default' (see activeSurveyData below), so
+ * removing a version here is safe for any submission still carrying it.
+ */
 const SURVEY_VERSIONS: Record<string, SurveyData> = {
     'default':   surveyData as SurveyData,
-    '20260311':  surveyData20260311 as SurveyData,
 };
 const POSITIVE_NUMERIC_OTHER_QUESTION_IDS = new Set(['29', 29]);
 
