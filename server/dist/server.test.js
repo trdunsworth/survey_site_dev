@@ -1,11 +1,13 @@
 // @vitest-environment node
 import { describe, expect, it, vi } from 'vitest';
 import request from 'supertest';
-import { createApp } from './server.ts';
+import { createApp } from './server';
 function createDeps() {
     return {
         createSubmission: vi.fn(async () => undefined),
         saveResponse: vi.fn(async () => undefined),
+        // `valid` is a discriminant on AnswerValidationResult — it must be the
+        // literal type `true`, not `boolean`, or the union won't match.
         validateAnswer: vi.fn(() => ({ valid: true, sanitized: 'ok' })),
         saveSubmissionProgress: vi.fn(async () => undefined),
         markSubmissionComplete: vi.fn(async () => undefined),

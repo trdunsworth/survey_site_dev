@@ -85,7 +85,7 @@ async function loadAnalyticsModule(options: TestHarnessOptions = {}) {
     getCompletedSubmissionsWithAnswers: vi.fn(async () => []),
   }));
 
-  const analytics = await import('./analytics.ts');
+  const analytics = await import('./analytics');
 
   await analytics.initAnalyticsStore();
 

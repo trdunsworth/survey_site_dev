@@ -62,7 +62,7 @@ async function loadAnalyticsModule(options = {}) {
     vi.doMock('./database', () => ({
         getCompletedSubmissionsWithAnswers: vi.fn(async () => []),
     }));
-    const analytics = await import('./analytics.ts');
+    const analytics = await import('./analytics');
     await analytics.initAnalyticsStore();
     return {
         analytics,

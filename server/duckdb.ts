@@ -11,7 +11,7 @@
  *   DUCKDB_PATH — local file path (default: server/survey_responses.db)
  */
 
-import { DuckDBInstance, DuckDBConnection } from '@duckdb/node-api';
+import { DuckDBInstance, DuckDBConnection, type DuckDBValue } from '@duckdb/node-api';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -105,7 +105,7 @@ export function persist(): void {
 /**
  * Run a statement that doesn't return rows (INSERT, UPDATE, DELETE, DDL).
  */
-export async function run(sql: string, params?: unknown[]): Promise<void> {
+export async function run(sql: string, params?: DuckDBValue[]): Promise<void> {
   const conn = getConn();
   await conn.run(sql, params);
 }
@@ -113,7 +113,7 @@ export async function run(sql: string, params?: unknown[]): Promise<void> {
 /**
  * Run a query and return rows as an array of objects.
  */
-export async function query(sql: string, params?: unknown[]): Promise<Record<string, unknown>[]> {
+export async function query(sql: string, params?: DuckDBValue[]): Promise<Record<string, unknown>[]> {
   const conn = getConn();
   const result = await conn.runAndReadAll(sql, params ?? []);
   return result.getRowObjectsJS() as Record<string, unknown>[];
@@ -122,7 +122,7 @@ export async function query(sql: string, params?: unknown[]): Promise<Record<str
 /**
  * Run a query and return the first row, or null if no rows.
  */
-export async function queryOne(sql: string, params?: unknown[]): Promise<Record<string, unknown> | null> {
+export async function queryOne(sql: string, params?: DuckDBValue[]): Promise<Record<string, unknown> | null> {
   const rows = await query(sql, params);
   return rows[0] ?? null;
 }

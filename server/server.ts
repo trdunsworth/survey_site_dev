@@ -56,7 +56,7 @@ function getAllowedOrigins(): Set<string> {
   return new Set(DEFAULT_ALLOWED_ORIGINS.map(normalizeOrigin));
 }
 
-interface ServerDeps {
+export interface ServerDeps {
   createSubmission: typeof createSubmission;
   saveResponse: typeof saveResponse;
   validateAnswer: typeof validateAnswer;

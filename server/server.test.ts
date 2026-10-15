@@ -1,14 +1,23 @@
 // @vitest-environment node
 
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, type MockedFunction } from 'vitest';
 import request from 'supertest';
-import { createApp } from './server.ts';
+import { createApp, type ServerDeps } from './server';
 
-function createDeps() {
+/**
+ * Mocks must satisfy ServerDeps so they can be passed to createApp(), while
+ * still exposing Mock methods (.mockResolvedValueOnce, .not.toHaveBeenCalled)
+ * used by the assertions below. MockedFunction preserves both.
+ */
+type MockedServerDeps = { [K in keyof ServerDeps]: MockedFunction<ServerDeps[K]> };
+
+function createDeps(): MockedServerDeps {
   return {
     createSubmission: vi.fn(async () => undefined),
     saveResponse: vi.fn(async () => undefined),
-    validateAnswer: vi.fn(() => ({ valid: true, sanitized: 'ok' })),
+    // `valid` is a discriminant on AnswerValidationResult — it must be the
+    // literal type `true`, not `boolean`, or the union won't match.
+    validateAnswer: vi.fn(() => ({ valid: true as const, sanitized: 'ok' })),
     saveSubmissionProgress: vi.fn(async () => undefined),
     markSubmissionComplete: vi.fn(async () => undefined),
     syncCompletedSurveyDataframe: vi.fn(async () => ({

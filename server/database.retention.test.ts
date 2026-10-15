@@ -57,7 +57,7 @@ describe('runDataRetentionSweep', () => {
       }),
     }));
 
-    const { runDataRetentionSweep } = await import('./database.ts');
+    const { runDataRetentionSweep } = await import('./database');
 
     const summary = await runDataRetentionSweep({
       now: new Date('2026-06-03T00:00:00.000Z'),
@@ -92,7 +92,7 @@ describe('runDataRetentionSweep', () => {
       }),
     }));
 
-    const { runDataRetentionSweep } = await import('./database.ts');
+    const { runDataRetentionSweep } = await import('./database');
 
     const summary = await runDataRetentionSweep({
       now: new Date('2026-06-03T00:00:00.000Z'),

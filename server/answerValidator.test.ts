@@ -80,7 +80,9 @@ describe('validateAnswer', () => {
     describe('schema coverage for survey_data.json', () => {
         const surveyPath = new URL('../src/data/survey_data.json', import.meta.url);
         const survey = JSON.parse(readFileSync(surveyPath, 'utf8')) as {
-            sections: { questions: { id: string | number; type: string }[] }[];
+            sections: {
+                questions: { id: string | number; type: string; options?: string[] }[];
+            }[];
         };
         const questions = survey.sections.flatMap((s) => s.questions);
 
