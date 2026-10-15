@@ -47,6 +47,7 @@ const SurveyForm: React.FC<{ resumeContext?: ResumeContext; skipStoredResume?: b
     const [answers, setAnswers] = useState<Answers>({});
     const [submissionId, setSubmissionId] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState<boolean>(false);
+const [showReceipt, setShowReceipt] = useState<boolean>(false);
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [showSaveCode, setShowSaveCode] = useState<boolean>(false);
@@ -426,7 +427,7 @@ const SurveyForm: React.FC<{ resumeContext?: ResumeContext; skipStoredResume?: b
                         // Clear localStorage on successful submission
                         localStorage.removeItem('survey_submission_id');
                         localStorage.removeItem(`survey_section_${submissionId}`);
-                        alert('Survey submitted successfully! Thank you for your participation.');
+                        setShowReceipt(true);
                     } else {
                         alert('Survey data saved locally. Thank you!');
                     }
@@ -487,8 +488,151 @@ const SurveyForm: React.FC<{ resumeContext?: ResumeContext; skipStoredResume?: b
         );
     }
 
+    const formatAnswer = (value: unknown): string => {
+        if (value === null || value === undefined) return '';
+        if (Array.isArray(value)) {
+            return value
+                .map(item => {
+                    if (item && typeof item === 'object' && 'agency' in (item as Record<string, unknown>)) {
+                        const rec = item as { agency: string; count: number | string };
+                        return `${rec.agency}: ${rec.count}`;
+                    }
+                    return String(item);
+                })
+                .join('; ');
+        }
+        if (typeof value === 'object') return JSON.stringify(value);
+        return String(value);
+    };
+
+    const buildReceiptText = (): string => {
+        const lines: string[] = [];
+        lines.push('NENA 2026 PSAP Survey - copy of your answers');
+        lines.push('Reference year (per survey): calendar year 2025 (January 1 - December 31, 2025).');
+        lines.push(`Generated: ${new Date().toISOString()}`);
+        lines.push('');
+        lines.push('This copy is generated in your browser and was never sent to any server.');
+        lines.push('');
+        for (const section of sections) {
+            const pairs = section.questions
+                .filter(q => (answers[q.id] !== undefined && answers[q.id] !== null && answers[q.id] !== ''));
+            if (pairs.length === 0) continue;
+            lines.push(`==== ${section.title} ====`);
+            for (const question of pairs) {
+                lines.push('');
+                lines.push(question.text);
+                lines.push(`  -> ${formatAnswer(answers[question.id])}`);
+            }
+            lines.push('');
+        }
+        return lines.join('\\n');
+    };
+
+    const handleDownloadAnswers = (): void => {
+        const blob = new Blob([buildReceiptText()], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'nena-2026-psap-survey-answers.txt';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
+    const handlePrintAnswers = (): void => {
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) return;
+        const escape = (s: string) => s
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+        let html = '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">';
+        html += '<title>NENA 2026 PSAP Survey - Copy of your answers</title>';
+        html += '<style>';
+        html += 'body{font-family:system-ui,Segoe UI,Arial,sans-serif;margin:1rem;color:#111;}';
+        html += 'h1{font-size:1.25rem;margin:0 0 .4rem;}';
+        html += 'h2{font-size:1.05rem;margin:1.2rem 0 .3rem;color:#004085;border-bottom:1px solid #ccc;padding-bottom:.2rem;}';
+        html += 'p.q{font-weight:600;margin:.6rem 0 .1rem;}';
+        html += 'p.a{margin:0 0 .4rem;}';
+        html += 'p.meta{color:#555;font-size:.85rem;margin:.15rem 0;}';
+        html += '@media print{button{display:none;}}';
+        html += '</style></head><body>';
+        html += '<h1>NENA 2026 PSAP Survey - Copy of your answers</h1>';
+        html += `<p class="meta">Reference year (per survey): calendar year 2025 (Jan 1 - Dec 31, 2025). Generated ${escape(new Date().toLocaleString())}.</p>`;
+        html += '<p class="meta">This copy is for your records. It is generated in your browser and was never sent to any server.</p>';
+        for (const section of sections) {
+            const pairs = section.questions.filter(q =>
+                q && answers[q.id] !== undefined && answers[q.id] !== null && answers[q.id] !== '');
+            if (pairs.length === 0) continue;
+            html += `<h2>${escape(section.title)}</h2>`;
+            for (const question of pairs) {
+                html += `<p class="q">${escape(question.text)}</p>`;
+                html += `<p class="a">&rarr; ${escape(formatAnswer(answers[question.id]))}</p>`;
+            }
+        }
+        html += '<button onclick="window.print()">Print / Save as PDF</button></body></html>';
+        printWindow.document.write(html);
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => printWindow.print(), 300);
+    };
+
     return (
         <div className="survey-form">
+            {showReceipt && (
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'rgba(0,0,0,0.55)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 1000,
+                    }}
+                >
+                    <div
+                        style={{
+                            background: '#fff',
+                            color: '#111',
+                            padding: '1.25rem',
+                            borderRadius: '10px',
+                            maxWidth: '480px',
+                            width: '90%',
+                            boxShadow: '0 10px 30px rgba(0,0,0,.25)',
+                        }}
+                    >
+                        <h2 style={{ marginTop: 0 }}>Survey submitted</h2>
+                        <p>Thank you for your participation. Your response has been recorded.</p>
+                        <p>
+                            You can download or print a copy of your own answers now. This is generated entirely
+                            in your browser and was never sent to any server.
+                        </p>
+                        <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+                            <button type="button" className="primary" onClick={handleDownloadAnswers}>
+                                Download (.txt)
+                            </button>
+                            <button type="button" onClick={handlePrintAnswers}>
+                                Print / Save as PDF
+                            </button>
+                            <button type="button" onClick={() => setShowReceipt(false)}>
+                                Close
+                            </button>
+                        </div>
+                        <p style={{ fontSize: '.78rem', color: '#666', marginTop: '1rem' }}>
+                            If you close this without saving, the copy is no longer recoverable from this browser
+                            unless you saved a resume code beforehand. For future submissions, use{' '}
+                            <em>Save &amp; Get Code</em> during the survey.
+                        </p>
+                    </div>
+                </div>
+            )}
             <div className="progress-bar-container">
                 <div className="progress-bar" style={{ width: `${progress}%` }}></div>
             </div>
