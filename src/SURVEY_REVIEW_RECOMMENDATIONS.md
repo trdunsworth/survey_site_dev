@@ -24,7 +24,8 @@ Work is tracked in named passes. Each pass is listed with the items it closed, t
 | **4** — Snapshot removal | 2026-10-15 | hygiene | **deleted** `src/data/survey_data_20260311.json`; `src/components/SurveyForm.tsx` | **95/95 tests passing**; no dangling refs | ✅ `1874630` |
 | **5** — Static rebuild | 2026-10-15 | hygiene | `static/` — new bundle, `index.html` repointed | Bundle verified free of snapshot | ✅ `5fcda39` |
 | **6** — Build gates | 2026-10-15 | infra | `tsconfig.json`, `server/*`, 2 test files | **Both gates 0 errors**; 95/95 tests | ✅ `a65d045` |
-| **7** — Q22 numeric | 2026-10-15 | #3 | `src/data/survey_data.json`, `server/answerValidator.ts`, `server/answerValidator.test.ts` | **Both gates 0 errors**; 96/96 tests; validator probed across 8 inputs | ⏳ pending commit |
+| **7** — Q22 numeric | 2026-10-15 | #3 | `src/data/survey_data.json`, `server/answerValidator.ts`, `server/answerValidator.test.ts` | **Both gates 0 errors**; 96/96 tests; validator probed across 8 inputs | ✅ `37148a1` |
+| **8** — Static rebuild (Q22) | 2026-10-15 | hygiene | `static/` — new bundle, `index.html` repointed | Bundle rebuilt for the numeric input change | ✅ `7c01169` |
 
 ### Pass detail
 
@@ -41,6 +42,10 @@ Work is tracked in named passes. Each pass is listed with the items it closed, t
 **Pass 6 — build gates.** Fixed both broken TypeScript gates, which had left `npm run start:prod` undeployable. Details at §26.
 
 **Pass 7 — Q22 numeric (#3).** `text` → `number`, wording aligned with Q23, and "Estimated" retained as an explicit qualifier rather than deleted. Enabled the Q22↔Q23 consistency check. Details at §3.
+
+**Pass 8 — Q7 examination (#5).** No code change. The recommendation was examined and found weaker than stated; disposition is **HOLD** pending working-group input. Recorded at §5.
+
+**Items deferred 2026-10-15** — #4 (N/A escape hatch) and #5 (Q7/Q9). Both stay open; neither is closed.
 
 ### ✅ All passes committed — working tree clean as of 2026-10-15
 
@@ -77,7 +82,7 @@ Every recommendation cites its source so the working group can verify intent bef
 | 2 | Data hygiene | ~~"events" → "incidents" (Q16–Q21)~~ | 🟠 HIGH | ✅ **DONE** (2026-10-14) | Gary (NENA CRC) |
 | 3 | Data hygiene | ~~Q22 `text` → `number`~~ | 🟠 HIGH | ✅ **DONE** (2026-10-15) — "Estimated" kept as a qualifier | Review note L2 |
 | 4 | Data hygiene | Add "Not available / Don't know" escape hatch | 🟠 HIGH | ⬜ Open | Review note L1, Daniel Hagan |
-| 5 | Structure | Q7 duplicates Q9 | 🟠 HIGH | ⬜ Open | Brian Bond |
+| 5 | Structure | Q7 duplicates Q9 | 🟠 HIGH | ⏸️ **HOLD 2026-10-15** — examination weakened the case; needs working-group input | Brian Bond |
 | 6 | Structure | Transfers: warm/cold, internal/external, reason, NA | 🟠 HIGH | ⬜ Open | Sandy Dyre, Sam Bard, Burt Ray, Daniel |
 | 7 | Definitions | Q36–Q39 processing-time boundary | 🟠 HIGH | ⬜ Open — see §25 | Heather, Crystal, Justin |
 | 8 | Definitions | Shift/staffing work-year denominator (2,080 vs 2,184) | 🟠 HIGH | ⬜ Open | Gary, Rebecca Conners |
@@ -379,6 +384,57 @@ Q7 and Q6 are genuinely redundant. Q7's description claims *"beyond calltaking a
 3. **Move Q7 after Q9**, so respondents have already answered the agency question
 
 > **Recommendation:** option 2. Roxy VanGundy described dispatching mobile crisis — real work that no current question captures. Option 1 loses that signal.
+
+## 🔬 Examination 2026-10-15 — recommendation weakened, issue re-identified
+
+**Disposition: HOLD.** No change made to Q7. This item needs working-group input, not a code fix.
+
+### Verified current state
+
+| ID | Question | Type | Actually asks |
+|---|---|---|---|
+| 6 | What services does the PSAP provide | `checkbox` | Service categories — Call Taking, Dispatching, Walk Up, SMS/Text. **No "Other" option** |
+| 7 | Please list any additional services that you provide | `text` | Service categories, free text |
+| 9 | What agencies does the PSAP answer calls and dispatch for and how many of each | `agencies-with-count` | **Agency types + counts** — Police, Fire, EMS, Sheriff, Animal Control, Other |
+
+### Four challenges to the recommendation as written
+
+**1. It misattributes Brian's concern.** Brian wrote *"duplicate to question 9."* This recommendation concludes *"Q7 and Q6 are genuinely redundant."* Different claims — and the recommendation's own table contradicts Brian, showing Q9 as *agency types* and Q7 as *service categories*. Brian's observation is silently substituted with another.
+
+**2. Brian reported behaviour, not structure.** *"duplicate to question 9"* describes what respondents **do** — answer Q7 with agency names. This converts a field observation into a structural claim and then acts on the structural claim. **Brian's actual observation is never tested or addressed by any of the three options.**
+
+**3. The central claim is wrong as written.** Q6 has **no "Other (Please Specify)" option**, so Q7 is Q6's *only* overflow path. It is load-bearing, not redundant. Option 1 below ("extend Q6 with an Other") concedes this and contradicts the summary sentence.
+
+**4. The disambiguation Brian asked for already exists.** He asked *"Could you define question 7 so the two questions does not overlap."* Q7's description already reads *"what services **beyond calltaking and dispatching** that you provide."* That is the definition requested. The recommendation dismisses it via an unsourced assertion that *"respondents read it alongside Q9"* — but **Q7 is separated from Q9 by Q8 and Q8.1**, and no data is cited.
+
+### A real defect the recommendation missed
+
+**Q7 says "list" and is collected through a single-line input.**
+
+`type: "text"` renders at `Question.tsx:300–308` as `<input type="text">` — one line, no Enter key — for a question asking for a *list*.
+
+> 📌 **`textarea` is fully implemented at `Question.tsx:91–99` and used by zero questions.** The 49 current questions are 33 `number`, 4 `checkbox`, 4 `info`, 3 `radio`, 3 `select`, 1 `agencies-with-count`, 1 `text`.
+
+Switching Q7 to `textarea` is **client-only** — the validator checks the posted *value*, not the widget, so `'7'` stays `kind: 'text'`. The schema-coverage guard maps unrecognised types to `'probe'` and would still pass.
+
+### Assessment of the three options
+
+| Option | Verdict |
+|---|---|
+| **1.** Delete Q7, add Other to Q6 | Mechanically fine, analytically inert. Requires editing Q6's validator option set per §1. Moves the problem; does not solve it. |
+| **2.** Reframe as "non-call-taking, non-dispatch functions" | Closest to Brian's ask — but the description already says this, so the change is cosmetic tightening. |
+| **3.** Move Q7 after Q9 | Addresses the *behavioural* claim, but does so speculatively. If the confusion is semantic rather than positional, relocation changes nothing. |
+
+### Working-group questions before any change
+
+1. **Settle the referent.** Did Brian observe Q7 duplicating **Q9**, or **Q6**? The recommendation acts on Q6 without confirming that.
+2. **Source the observation.** Was *"respondents answer agency names"* a single report, or a pattern across responses? Is there response data behind it?
+3. **Is Q7 still wanted?** If the working group wants it constrained to a checkbox list, the candidate services must be supplied — Roxy's mobile crisis plus evidence room, alerts management, and others. That is a scope decision with a length-budget implication (§24), not a copy edit.
+4. **Separate from the wording.** The `textarea` defect is verifiable from the code today and does not depend on answers to 1–3. Worth landing on its own merits if the group is comfortable with a list box.
+
+### 📌 Adjacent, already logged
+
+Q6's description contains *"operaations"* — the §23 typo, one question away.
 
 ---
 
@@ -1194,11 +1250,12 @@ Ordered by dependency. Steps 1–3 are prerequisites for everything else.
 | **2** | Resolve deadline + reference year + survey name | #10 | 🟠 Yes — affects all 15 count questions |
 | **3** | Decide PSAP identifier & amend privacy text; confirm IRB status | #11 | ⚖️ Yes — affects fielding |
 | **4** | Set question budget | #24 | ⚖️ Yes — gates additions |
-| **5** | Apply agreed data semantics (N/A control, incident/event) | #2, #3, #4 | 🟡 #2 **DONE** (Pass 2), #3 **DONE** (Pass 7); #4 open |
+| **5** | Apply agreed data semantics (N/A control, incident/event) | #2, #3, #4 | 🟡 #2 **DONE** (Pass 2), #3 **DONE** (Pass 7); **#4 DEFERRED 2026-10-15** — pending decision, largest open analytical gap |
 | **6** | Rework transfer questions | #6 | 🟠 |
 | **7** | Add work-year denominator; fix "optimum" definition | #8, #9 | 🟠 Highest analytical value |
 | **7b** | Settle the processing-time boundary | #7 | 🟠 |
-| **8** | Structural edits: Q7/Q9 overlap, Q4, Q3, Q5 | #5, #13, #14, #18 | 🟡 |
+| **8** | Structural edits: Q4, Q3, Q5 | #13, #14, #18 | 🟡 |
+| **8b** | ~~Structural edits: Q7/Q9 overlap~~ | #5 | ⏸️ **HOLD 2026-10-15** — examination weakened the case; awaiting working-group input (questions 18–19) |
 | **9** | Coverage additions (within budget) | #15, #16, #17 | 🟡 |
 | **10a** | Glossary: escape + plural matching in `Question.tsx` | §19, §21 | 🟠 **NEXT** — restores tooltips on 22 questions |
 | **10b** | Glossary: add the ~12 missing terms | §20 | 🟠 |
@@ -1248,6 +1305,9 @@ See §19 Constraint C — ⚠️ the change needs the capture-group fix as well,
 15. **NEW — Should `QA` / `QI` / `APCO` / `NG9-1-1` be retained despite matching no question?** Now NENA-sourced, which makes retention more defensible than when §21 originally suggested removing them. (§19 Constraint A)
 16. **NEW — Should `Q23`'s 100,000/hour cap be tightened?** That is 28 keyups/second sustained — implausible — and its implied annual ceiling (876M) is 8.8× Q22's. Not changed in Pass 7. (§3)
 17. **NEW — Does "leave blank = not recorded" become the survey-wide convention, or just a Q22 local convention?** Pass 7 introduced it for Q22 alone. §4 is the real fix but remains blocked on question 4. (§3, §4)
+18. **NEW — Did Brian observe Q7 duplicating Q9 or Q6?** The recommendation acts on Q6 without settling the referent. (§5)
+19. **NEW — What is the evidence that respondents answer Q7 with agency names?** Single report or pattern? If constrained, the working group must supply the candidate service list. (§5)
+20. **NEW — Should Q4's "not available / don't know" control be built at all?** Deferred 2026-10-15 pending a decision; §4 remains the largest open analytical gap. (§4)
 
 ---
 
