@@ -161,11 +161,11 @@ function s(options: string[]): ReadonlySet<string> {
 
 const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
 
-    // ── ids 0, 0.1, 0.2, 47 — info blocks, no user input ─────────────────────
+    // ── ids 0, 0.1, 0.2, 48 — info blocks, no user input ─────────────────────
     '0':   { kind: 'info' },
     '0.1': { kind: 'info' },
     '0.2': { kind: 'info' },
-    '47':{ kind: 'info' },
+    '48':{ kind: 'info' },
 
     // ── id 1 — state / province select ───────────────────────────────────────
     '1': {
@@ -334,20 +334,27 @@ const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
     '35': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
     '36': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
 
-    // ── ids 37, 38 — average phone answer time (seconds) ─────────────────────
-    // No PSAP's average answer time is realistically above 3600 s (1 hour).
-    '37': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
-    '38': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
-
-    // ── ids 39, 40 — average call processing time (seconds) ──────────────────
-    // Measured answer → dispatch, not talk time, so the same 1 hour ceiling holds.
-    '39': {
-        kind: 'number-or-unknown',
-        min: 0,
-        max: 3_600,
-        integerOnly: false,
-        unknownValue: UNKNOWN_VALUE,
+    // ── id 37 — what work-year basis for FTE (radio) ──────────────────────────
+    // Adds the basis for the FTE figures reported by the staffing block; the
+    // FTE counts themselves depend on this answer. "Unknown" is a real option
+    // rather than a sentinel so it survives pick-list validation.
+    '37': {
+        kind: 'radio',
+        options: s([
+            '2,080 hours (2,080 / 1,728 = standard full-time)',
+            '2,184 hours (12-hour / "Pittman" schedule)',
+            'Other (Please Specify)',
+            'Unknown',
+        ]),
     },
+
+    // ── ids 38, 39 — average phone answer time (seconds) ─────────────────────
+    // No PSAP's average answer time is realistically above 3600 s (1 hour).
+    '38': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
+    '39': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
+
+    // ── ids 40, 41 — average call processing time (seconds) ──────────────────
+    // Measured answer → dispatch, not talk time, so the same 1 hour ceiling holds.
     '40': {
         kind: 'number-or-unknown',
         min: 0,
@@ -355,13 +362,20 @@ const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
         integerOnly: false,
         unknownValue: UNKNOWN_VALUE,
     },
+    '41': {
+        kind: 'number-or-unknown',
+        min: 0,
+        max: 3_600,
+        integerOnly: false,
+        unknownValue: UNKNOWN_VALUE,
+    },
 
-    // ── id 41 — average total call handling time (occupancy) ────────────────
+    // ── id 42 — average total call handling time (occupancy) ────────────────
     // Includes wrap-up time after the call ends. New question added for item 7.
-    '41': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
+    '42': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
 
-    // ── id 42 — average calls handled per TCT FTE per hour (or "Unknown") ─────
-    '42': {
+    // ── id 43 — average calls handled per TCT FTE per hour (or "Unknown") ─────
+    '43': {
         kind: 'number-or-unknown',
         min: 0,
         max: 1_000,
@@ -369,20 +383,13 @@ const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
         unknownValue: UNKNOWN_VALUE,
     },
 
-    // ── id 43 — average time to transfer a call (seconds) ────────────────────
-    '43': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
+    // ── id 44 — average time to transfer a call (seconds) ────────────────────
+    '44': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
 
-    // ── ids 44–46 — average processing time by service type (seconds, or "Unknown") ──
+    // ── ids 45–47 — average processing time by service type (seconds, or "Unknown") ──
     // The working group noted some centers keep a telecommunicator on the line
     // through pre-arrival / post-dispatch instructions, which can push these
     // averages high. Raise this ceiling if real responses get rejected.
-    '44': {
-        kind: 'number-or-unknown',
-        min: 0,
-        max: 3_600,
-        integerOnly: false,
-        unknownValue: UNKNOWN_VALUE,
-    },
     '45': {
         kind: 'number-or-unknown',
         min: 0,
@@ -391,6 +398,13 @@ const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
         unknownValue: UNKNOWN_VALUE,
     },
     '46': {
+        kind: 'number-or-unknown',
+        min: 0,
+        max: 3_600,
+        integerOnly: false,
+        unknownValue: UNKNOWN_VALUE,
+    },
+    '47': {
         kind: 'number-or-unknown',
         min: 0,
         max: 3_600,

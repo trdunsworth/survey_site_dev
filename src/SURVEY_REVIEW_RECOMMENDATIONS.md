@@ -75,6 +75,7 @@ Work is tracked in named passes. Each pass is listed with the items it closed, t
 
 **Pass 11 — internal/external transfer split (#6, partial).** New Q26 for external transfers; Q25 redefined from secondary-PSAP to internal transfers. Inserting at 26 shifted every question from there onward — see the ID map at the top. Also fixed dead `POSITIVE_NUMERIC_OTHER_QUESTION_IDS` in `SurveyForm.tsx`. Details at §6.
 **Pass 12 - processing-time boundary and occupancy (#7, partial).** Adopted answer -> dispatchable across the five processing-time questions (Q39, Q40, Q44-Q46) plus a responseEmphasis defining dispatchable; inserted Q41 (average total call handling time incl. wrap-up). Added the Unknown affordance to the five processing-time questions. Shifted every question from 41 onward a second time. See section 7.
+**Pass 13 - work-year basis question (#8, partial).** Added Q37 (radio: 2,080 / 2,184 / Other / Unknown) at the end of the staffing block; shifted every later question +1. Details at section 8.
 | 7 | Definitions | Q37-Q40 processing-time boundary | MEDIUM | PARTIAL (Pass 12) - answer-dispatchable + Unknown; occupancy Q41 | Heather, Crystal, Justin |
 
 **Item 4 is now partial, not deferred** — the mechanism ships for three questions; the semantics decision (open question 4) remains open.
@@ -117,7 +118,7 @@ Every recommendation cites its source so the working group can verify intent bef
 | 5 | Structure | ~~Q7 duplicates Q9~~ | 🟠 HIGH | ✅ **DONE** (2026-10-15) — overlap closed via Q7 text scoping | Brian Bond |
 | 6 | Structure | Transfers: internal/external landed; warm/cold deferred | 🟠 HIGH | 🟡 **PARTIAL** | Sandy Dyre, Sam Bard, Burt Ray, Daniel |
 | 7 | Definitions | Q37–Q40 processing-time boundary | 🟠 HIGH | ⬜ Open — see §25 | Heather, Crystal, Justin |
-| 8 | Definitions | Shift/staffing work-year denominator (2,080 vs 2,184) | 🟠 HIGH | ⬜ Open | Gary, Rebecca Conners |
+| 8 | Definitions | Shift/staffing work-year denominator (2,080 vs 2,184) | 🟠 HIGH | ⬜ PARTIAL (Pass 13) - Q37 work-year basis radio added | Gary, Rebecca Conners |
 | 9 | Definitions | "Optimum" / "fully staffed" undefined | 🟠 HIGH | ⬜ Open | Barry Hutchins |
 | 10 | Coverage | Outgoing calls unmeasured | 🟡 MEDIUM | ⬜ Open | Crystal, Ernie Qualls |
 | 11 | Coverage | Non-emergency vs. administrative conflated | 🟡 MEDIUM | ⬜ Open | Crystal |

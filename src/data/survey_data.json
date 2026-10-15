@@ -465,6 +465,15 @@
           "responseEmphasis":"Enter a whole-number headcount for your maximum staffing level to supervise normal operations.",
           "options": [],
           "type": "number"
+        },
+        {
+          "id": 37,
+          "text": "What work-year basis does your agency use to calculate Full-Time Equivalent (FTE) positions?",
+          "description": "Your FTE counts above depend on how many hours count as a full-time year. Different agencies use 2,080 (standard 5 x 8-hour weeks), 2,184 (12-hour / Pittman schedules), or another figure. Without a shared basis the FTE counts are not comparable, which is why this question is asked here.",
+          "data_location": "This should come from your agency's HR or scheduling policy documents.",
+          "responseEmphasis": "Pick the basis your agency reports against for the FTE figures you gave above. If your agency uses something other than 2,080 or 2,184, use 'Other (Please Specify)'.",
+          "options": ["2,080 hours (2,080 / 1,728 = standard full-time)", "2,184 hours (12-hour / \"Pittman\" schedule)", "Other (Please Specify)", "Unknown"],
+          "type": "radio"
         }
       ]
     },
@@ -472,7 +481,7 @@
       "title": "Performance Metrics",
       "questions": [
         {
-          "id": 37,
+          "id": 38,
           "text": "What is your average phone answer time for 9-1-1 calls in seconds? (From presentation to answer)",
           "description": "This will allow us to understand how staffing levels may influence phone answer times and how that may influence service quality.",
           "data_location": "This information should come from your phone software.",
@@ -481,7 +490,7 @@
           "type": "number"
         },
         {
-          "id": 38,
+          "id": 39,
           "text": "What is your average phone answer time for non-emergency calls in seconds? (From presentation to answer)",
           "description": "This will allow us to understand how staffing levels may influence phone answer times and how that may influence service quality.",
           "data_location": "This information should come from your phone software.",
@@ -490,7 +499,7 @@
           "type": "number"
         },
         {
-          "id": 39,
+          "id": 40,
           "text": "What is your average call processing time for 9-1-1 calls in seconds? (From answer until the call is dispatchable)",
           "description": "This will allow us to understand how staffing levels may influence call processing times and how that may influence service quality.",
           "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
@@ -500,7 +509,7 @@
           "type": "number-or-unknown"
         },
         {
-          "id": 40,
+          "id": 41,
           "text": "What is your average call processing time for non-emergency calls in seconds? (From answer until the call is dispatchable)",
           "description": "This will allow us to understand how staffing levels may influence call processing times and how that may influence service quality.",
           "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
@@ -510,7 +519,7 @@
           "type": "number-or-unknown"
         },
         {
-          "id": 41,
+          "id": 42,
           "text": "What is the average total call handling time for 9-1-1 calls in seconds? (From answer until the telecommunicator is released back to take the next call, including any wrap-up time after the call ends)",
           "description": "This is the total time a telecommunicator is occupied on a call, which is a more complete measure of workload than call processing time alone. It helps us understand how much of a telecommunicator's time is spent on calls rather than on other duties.",
           "data_location": "This information should come from your phone software or your Computer Aided Dispatch (CAD) software.",
@@ -519,7 +528,7 @@
           "type": "number"
         },
         {
-          "id": 42,
+          "id": 43,
           "text": "What is the average number of calls handled per telecommunicator FTE per hour?",
           "description": "This will allow us to understand how staffing levels may influence the number of calls handled per telecommunicator and how that may influence service quality.",
           "data_location": "This information should come from your phone software or your Computer Aided Dispatch (CAD) software.",
@@ -529,7 +538,7 @@
           "type": "number-or-unknown"
         },
         {
-          "id": 43,
+          "id": 44,
           "text": "What is the average time to transfer a call to another PSAP in seconds? (From answer to transfer)",
           "description": "This allows us to understand the impact of outbound call transfers on telecommunicator workload and how that may influence staffing needs and service quality.",
           "data_location": "This information should come from your phone software. You will need to isolate transfer calls using your phone reporting software and calculate the average time from answer to transfer for those calls.",
@@ -538,7 +547,7 @@
           "type": "number"
         },
         {
-          "id": 44,
+          "id": 45,
           "text": "What is the average processing time for law enforcement service calls in seconds? (From answer until the call is dispatchable)",
           "description": "This will allow us to understand staffing needs to ensure that community expectations and partner agency SLAs are met",
           "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
@@ -548,7 +557,7 @@
           "type": "number-or-unknown"
         },
         {
-          "id": 45,
+          "id": 46,
           "text": "What is the average processing time for fire service calls in seconds? (From answer until the call is dispatchable)",
           "description": "This will allow us to understand staffing needs to ensure that community expectations and partner agency SLAs are met",
           "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
@@ -558,7 +567,7 @@
           "type": "number-or-unknown"
         },
         {
-          "id": 46,
+          "id": 47,
           "text": "What is the average processing time for EMS service calls in seconds? (From answer until the call is dispatchable)",
           "description": "This will allow us to understand staffing needs to ensure that community expectations and partner agency SLAs are met",
           "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
@@ -573,7 +582,7 @@
       "title": "Closing",
       "questions": [
         {
-          "id": 47,
+          "id": 48,
           "text": "Thank you for completing the NENA 2026 PSAP Survey. Your participation is greatly appreciated and will help NENA better understand staffing and call processing standards. Your feedback is valuable throughout the industry and support meaningful solutions, advocacy, and future planning for the 9-1-1 community.",
           "type": "info"
         }
