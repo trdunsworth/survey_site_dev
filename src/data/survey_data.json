@@ -410,14 +410,14 @@
         {
           "id": 30,
           "text": "What is your optimum number of Telecommunicator FTEs (if fully staffed)?",
-          "description": "This allows us to gauge the distribution of expected staffing levels when compared to the call volume and other operational factors.",
+          "description": "The number of Telecommunicator positions your center needs to meet its service commitments, independent of your current budget or vacancies. If your center is currently fully staffed, this will equal your funded Telecommunicator positions. This allows us to gauge the distribution of expected staffing levels when compared to the call volume and other operational factors.",
           "options": [],
           "type": "number"
         },
         {
           "id": 31,
           "text": "What is your optimum number of Supervisor FTEs (if fully staffed)?",
-          "description": "This allows us to gauge the distribution of expected staffing levels when compared to the call volume and other operational factors.",
+          "description": "The number of Supervisor positions your center needs to meet its service commitments, independent of your current budget or vacancies. If your center is currently fully staffed, this will equal your funded Supervisor positions. This allows us to gauge the distribution of expected staffing levels when compared to the call volume and other operational factors.",
           "options": [],
           "type": "number"
         },
