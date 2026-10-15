@@ -16,7 +16,7 @@
       "questions": [
         {
           "id": 0.1,
-          "text": "To complete this survey, you will need to have the following data available to you:\n\u2022Census and demographic data for your PSAP's service area\n\u2022Call volume data for the last calendar year\n\u2022Staffing data including the number of telecommunicators and supervisors\n\u2022Shift length, count, and staffing per shift.\n\u2022Average phone answer times.\n\u2022Call processing times.\nYou may use the 'Save & Get Code' button at any time to save your progress and return later if you need to gather additional information. The code can be used for 7 days from the time it is generated.",
+          "text": "To complete this survey, you will need to have the following data available to you:\n\u2022Census and demographic data for your PSAP's service area\n\u2022Call volume data for the last calendar year\n\u2022Staffing data including the number of telecommunicators and supervisors\n\u2022Shift length, count, and staffing per shift.\n\u2022Average phone answer times.\n\u2022Call processing times.\n\n\u26a0\uFE0F IMPORTANT - REFERENCE YEAR: All volume, staffing, and performance data in this survey should be reported for calendar year 2025 (January 1 - December 31, 2025). This reference year will not change mid-collection.\n\nYou may use the 'Save & Get Code' button at any time to save your progress and return later if you need to gather additional information. The code can be used for 7 days from the time it is generated.",
           "type": "info"
         }
       ]
