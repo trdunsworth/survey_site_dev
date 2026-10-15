@@ -407,9 +407,9 @@ This is the distinction this section asked for: **zero is a value, Unknown is a 
 
 `answerType()` classifies by JS type, so the sentinel surfaces as `'string'` in `kpi_answer_type_mix` — Unknown responses become countable per question without extra work.
 
-### ⚠️ A pre-existing bug found and fixed
+### ⚠️ A pre-existing bug found and fixed — latent, never exercised
 
-Probing revealed that **`''` validated to `0`** — on all 33 `number` questions, not just these three. `Number('') === 0`, so a respondent who typed a value and then backspaced it out had **a real zero recorded in its place**.
+Probing revealed that **`''` validated to `0`** — on all 33 `number` questions, not just these three. `Number('') === 0`, so a respondent who typed a value and then backspaced it out would have had **a real zero recorded in their place**.
 
 This mattered more once the Unknown box existed, because **unchecking posts an empty string** — a routine action that would have written a zero.
 
@@ -420,6 +420,8 @@ if (typeof raw === 'string' && raw.trim() === '') {
     return { valid: true, sanitized: null };
 }
 ```
+
+> ✅ **No data impact — the survey has not been fielded.** Verified 2026-10-15: `server/survey_responses.db` holds 15 submissions and **0 answers**. The bug was live in code from Pass 1 onward but was never reached by respondent data. This is a pre-fielding correctness fix, not a data remediation.
 
 ### Drift guard
 
@@ -1434,7 +1436,8 @@ See §19 Constraint C — ⚠️ the change needs the capture-group fix as well,
 19. ~~What is the evidence that respondents answer Q7 with agency names?~~ — ✅ **CLOSED as not confirmed.** No data was ever cited. Recorded at §5 as a standing observation rather than an open question.
 20. **Should "Unknown" split into "Unknown" and "Not applicable"?** The Pass 10 checkbox conflates "I don't know this figure" with "this figure doesn't exist at our centre". Splitting is now a mechanical addition — the mechanism and storage shape both exist. (§4)
 21. **NEW — Should the Unknown affordance extend to the other 42 numeric questions?** Pass 10 scoped it to Q20/Q22/Q40 per decision. The `number-or-unknown` kind is now generic, so extending it is a per-question one-line change plus the JSON. (§4)
-22. **NEW — Was the `''` → `0` coercion bug affecting real submissions?** Fixed in Pass 10, but any response recorded before that fix may hold a spurious zero where a respondent cleared a numeric field. Worth a backfill audit. (§4)
+22. ~~Was the `''` → `0` coercion bug affecting real submissions?~~ — ✅ **CLOSED 2026-10-15. No impact.** The survey has not been fielded; `server/survey_responses.db` holds 15 submissions and 0 answers, so the bug was never exercised by respondent data. No backfill needed. (§4)
+23. **NEW — Should `server/survey_analytics.duckdb` and its `.wal` be tracked in git?** Both are committed (12 KB). A `.wal` is transient write-ahead log state; committing one invites binary churn and merge conflicts on a file that is rebuilt on every analytics run. Also note `server/survey_responses.db` — the actual answer store — is *not* tracked, so the two are inconsistent. (§26)
 
 ---
 
