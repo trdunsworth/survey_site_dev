@@ -41,9 +41,9 @@ describe('validateAnswer', () => {
         }
     });
 
-    it('requires positive numeric otherText for question 31 (shift length)', () => {
-        const validResult = validateAnswer('31', { option: 'Other (Please Specify)', otherText: '2' });
-        const invalidResult = validateAnswer('31', { option: 'Other (Please Specify)', otherText: '-1' });
+    it('requires positive numeric otherText for question 32 (shift length)', () => {
+        const validResult = validateAnswer('32', { option: 'Other (Please Specify)', otherText: '2' });
+        const invalidResult = validateAnswer('32', { option: 'Other (Please Specify)', otherText: '-1' });
 
         expect(validResult).toEqual({
             valid: true,
@@ -52,9 +52,9 @@ describe('validateAnswer', () => {
         expect(invalidResult.valid).toBe(false);
     });
 
-    it('treats question 29 as a whole-number FTE count, not a radio', () => {
-        expect(validateAnswer('29', '4')).toEqual({ valid: true, sanitized: 4 });
-        expect(validateAnswer('29', 4.5).valid).toBe(false);
+    it('treats question 30 as a whole-number FTE count, not a radio', () => {
+        expect(validateAnswer('30', '4')).toEqual({ valid: true, sanitized: 4 });
+        expect(validateAnswer('30', 4.5).valid).toBe(false);
     });
 
     // Q22 was free text during Pass 1 and became numeric in Pass 7. The

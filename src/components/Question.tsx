@@ -15,7 +15,7 @@ const sortedGlossaryData = [...typedGlossaryData].sort((a, b) => b.term.length -
 // (Please Specify)" option. The validator treats that option's free-text value
 // as a positive number, so the input must render as a number field too.
 // Keep this in sync with QUESTION_SCHEMA in server/answerValidator.ts.
-const NUMERIC_OTHER_QUESTION_IDS = new Set(['31', 31]);
+const NUMERIC_OTHER_QUESTION_IDS = new Set(['32', 32]);
 
 const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
     const { id, text, description, data_location, type, options } = question;

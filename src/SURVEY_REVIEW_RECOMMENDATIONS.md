@@ -8,7 +8,23 @@
 - `src/data/JCM_Chat_Wednesday_20260916.docx` (JCM working-group chat, 2026-09-16)
 - `src/data/JCM Data Collection Session Notes.docx` (data collection working-group session)
 
-**Status:** Items **#1** (validator drift) and **#2** (events → incidents) are **RESOLVED**. Glossary definitions have been **aligned to the NENA Knowledge Base** (see §25). All other items are recommendations only; no further content changes have been made to `survey_data.json`.
+**Status:** Items **#1**, **#2**, **#3**, **#5**, **#26** are **RESOLVED**. **#4** is partial, **#6** partial. Glossary definitions aligned to the NENA Knowledge Base (see §25).
+
+> ⚠️ **⚠️ QUESTION IDs SHIFTED 2026-10-15 (Pass 11).** Adding external transfers as Q26 pushed **every question from 26 onward up by one**. The survey is now **50 questions**. Use this map:
+>
+> | Was | Is now | Question |
+> |---|---|---|
+> | Q26–Q35 | **Q27–Q36** | Staffing block — Funded FTEs, TCT/Supervisor FTEs, optimum, shift length, min/max per shift |
+> | Q36, Q37 | **Q37, Q38** | Average phone answer time (9-1-1 / non-emergency) |
+> | Q38, Q39 | **Q39, Q40** | Average call processing time (9-1-1 / non-emergency) |
+> | Q40 | **Q41** | Average calls handled per TCT FTE per hour — *one of the three `number-or-unknown` questions* |
+> | Q41 | **Q42** | Average time to transfer a call |
+> | Q42–Q44 | **Q43–Q45** | Average processing time by service type |
+> | Q45 | **Q46** | Closing info block |
+>
+> **Q1–Q25 are unchanged.** The renumber was confined to `survey_data.json`, `QUESTION_SCHEMA`, `Question.tsx`, `SurveyForm.tsx`, and `answerValidator.test.ts` — verified 50/50 ID parity with zero type/kind mismatches and zero option drift.
+>
+> **Resolution notes for earlier passes deliberately retain their original numbering.** Passes 1 and 7 describe work done *before* this shift, so rewriting their IDs would misstate what happened. Where a section describes the *current* state, it uses post-shift numbers.
 
 ---
 
@@ -29,7 +45,10 @@ Work is tracked in named passes. Each pass is listed with the items it closed, t
 | **9** — Q7 examination | 2026-10-15 | #5 | doc only | Examination recorded; no code change | ✅ `4e00591` |
 | **10** — Q6/Q7 resolution | 2026-10-15 | #5 | `src/data/survey_data.json`, doc | **Both gates 0 errors**; 96/96 tests | ✅ `5450542` |
 | **11** — Static rebuild (Q7) | 2026-10-15 | hygiene | `static/` | Bundle rebuilt for the textarea change | ✅ `0a54df9` |
-| **12** — Unknown affordance | 2026-10-15 | #4 (partial) | `survey_data.json`, `Question.tsx`, `types`, `answerValidator.ts` + test | **Both gates 0 errors**; **100/100 tests**; drift guard verified to fail on mismatch | ⏳ pending |
+| **12** — Unknown affordance | 2026-10-15 | #4 (partial) | `survey_data.json`, `Question.tsx`, `types`, `answerValidator.ts` + test | **Both gates 0 errors**; **100/100 tests**; drift guard verified to fail on mismatch | ✅ `9ef84f1` |
+| **13** — Static rebuild | 2026-10-15 | hygiene | `static/` | Bundle rebuilt for the Unknown affordance | ✅ `2b1164b` |
+| **14** — No-data-impact record | 2026-10-15 | §4 | doc only | Confirmed 0 answers stored; question 22 closed | ✅ `3ce4ba4` |
+| **15** — Transfer split | 2026-10-15 | #6 (partial) | `survey_data.json`, `answerValidator.ts`, `Question.tsx`, `SurveyForm.tsx` + test | **50/50 ID parity, 0 type/kind mismatches, 0 option drift**; 101/101 tests | ⏳ pending |
 
 ### Pass detail
 
@@ -51,7 +70,9 @@ Work is tracked in named passes. Each pass is listed with the items it closed, t
 
 **Pass 9 — Q6/Q7 resolution (#5).** Q7's scope moved into the question text and aligned to Q6's full option set; the divergent description clause was removed; `text` → `textarea`; Q6's `operaations` typo fixed. Item closed.
 
-**Pass 10 — "Unknown" affordance (#4, partial).** Q20, Q22, Q40 → `number-or-unknown` with an explicit Unknown checkbox. Also fixed a pre-existing `''` → `0` coercion affecting all 33 `number` questions. Details at §4.
+**Pass 10 — "Unknown" affordance (#4, partial).** Q20, Q22, Q40 → `number-or-unknown` with an explicit Unknown checkbox (Q40 is now **Q41** after Pass 11). Also fixed a pre-existing `''` → `0` coercion affecting all `number` questions. Details at §4.
+
+**Pass 11 — internal/external transfer split (#6, partial).** New Q26 for external transfers; Q25 redefined from secondary-PSAP to internal transfers. Inserting at 26 shifted every question from there onward — see the ID map at the top. Also fixed dead `POSITIVE_NUMERIC_OTHER_QUESTION_IDS` in `SurveyForm.tsx`. Details at §6.
 
 **Item 4 is now partial, not deferred** — the mechanism ships for three questions; the semantics decision (open question 4) remains open.
 
@@ -91,8 +112,8 @@ Every recommendation cites its source so the working group can verify intent bef
 | 3 | Data hygiene | ~~Q22 `text` → `number`~~ | 🟠 HIGH | ✅ **DONE** (2026-10-15) — "Estimated" kept as a qualifier | Review note L2 |
 | 4 | Data hygiene | Add "Not available / Don't know" escape hatch | 🟠 HIGH | 🟡 **PARTIAL** — "Unknown" added to Q20/Q22/Q40 (Pass 10); semantics still open | Review note L1, Daniel Hagan |
 | 5 | Structure | ~~Q7 duplicates Q9~~ | 🟠 HIGH | ✅ **DONE** (2026-10-15) — overlap closed via Q7 text scoping | Brian Bond |
-| 6 | Structure | Transfers: warm/cold, internal/external, reason, NA | 🟠 HIGH | ⬜ Open | Sandy Dyre, Sam Bard, Burt Ray, Daniel |
-| 7 | Definitions | Q36–Q39 processing-time boundary | 🟠 HIGH | ⬜ Open — see §25 | Heather, Crystal, Justin |
+| 6 | Structure | Transfers: internal/external landed; warm/cold deferred | 🟠 HIGH | 🟡 **PARTIAL** | Sandy Dyre, Sam Bard, Burt Ray, Daniel |
+| 7 | Definitions | Q37–Q40 processing-time boundary | 🟠 HIGH | ⬜ Open — see §25 | Heather, Crystal, Justin |
 | 8 | Definitions | Shift/staffing work-year denominator (2,080 vs 2,184) | 🟠 HIGH | ⬜ Open | Gary, Rebecca Conners |
 | 9 | Definitions | "Optimum" / "fully staffed" undefined | 🟠 HIGH | ⬜ Open | Barry Hutchins |
 | 10 | Coverage | Outgoing calls unmeasured | 🟡 MEDIUM | ⬜ Open | Crystal, Ernie Qualls |
@@ -595,9 +616,53 @@ Brian's note said Q7 duplicates **Q9**. The examination established that the rec
 
 > ⚠️ **Length caution:** this adds ~2 questions. See #24 on the length budget.
 
+## 🟡 Partial resolution — implemented 2026-10-15 (Pass 11)
+
+The **internal/external split** landed. **Warm/cold deferred.** Burt Ray Simpson's ask is met; Sandy Dyre's is not yet.
+
+### Changes
+
+| ID | Question | Change |
+|---|---|---|
+| 24 | How many calls were transferred in the last calendar year? | unchanged — control total |
+| 25 | …transferred to a **secondary PSAP**? | → **…how many were internal transfers (transferred within your own center)?** |
+| 26 | — | **new** — …how many were external transfers (transferred to another PSAP or agency)? |
+
+Both split questions carry a `responseEmphasis` stating that internal and external should add up to the Q24 total. Q25's `data_location` ("CAD **and/or** phone software") was carried to Q26 — better guidance than Q24's CAD-only.
+
+### The reconciliation check
+
+```
+Q25 (internal) + Q26 (external)  =  Q24 (total)
+```
+
+A triad that doesn't sum flags a misread question — the same class of check as `Q22 ÷ 8,760 ≈ Q23`. ⚠️ **This holds only if the split is exhaustive.** Transfers that fit neither — misrouted, declined, sent to a non-PSAP line — will make the sum come up short, which reads as an error but is a legitimate answer. The deleted 20260311 snapshot had a third *"transferred due to misrouting"* category, so this is not hypothetical.
+
+### 🔬 Findings from the examination
+
+**1. ⚠️ Scope was understated before this pass.** The choice between sequential (Q26) and fractional (Q25.1) numbering was offered as a "10-question cascade". It is **20** — inserting at 26 shifts everything to the end of the survey, including the Performance Metrics block. Sequential numbering was still the right call; the risk was simply larger than described.
+
+**2. 📌 A false claim in §18.** That section states *"Q9 already contains a 'secondary PSAP' reference (via Q25), so the distinction is load-bearing across the survey."* Every occurrence of "secondary" in the survey was checked: there are two — Q25's text, and Q5's classification option. **Q9 does not reference secondary PSAP at all.** The case for preserving Q25 verbatim was therefore weaker than stated, which supports the replacement.
+
+**3. ⚠️ Dead code found in `SurveyForm.tsx`.** `POSITIVE_NUMERIC_OTHER_QUESTION_IDS` held `'29'` — but Q29 is a `number`, and the guard only fires for `radio` type, so it never ran. Only Q31 (shift length) needs numeric-Other validation, and the validator already enforces it server-side. Repointed to the shift-length question with a comment noting that stale entries here are silent.
+
+**4. Q41 already captures transfer *timing*** ("average time to transfer a call… from answer to transfer"), so no timing question was added.
+
+### Warm/cold — deferred, by decision
+
+Sandy Dyre's distinction is **not** implemented. Rationale:
+
+- It requires knowing whether your agent was still on the line at handoff — a judgement phone software often does not record. Rebecca Conners' pattern applies: *"we wont have it until we upgrade."*
+- It is a **second axis**; crossed with internal/external it multiplies questions, against a length budget already under strain (§24).
+- §24 explicitly defers low-payoff additions.
+
+> 📌 **The two axes measure different things.** Internal/external is about *destination*; warm/cold is about *engagement*. For staffing, engagement is arguably the more valuable signal — a warm transfer keeps your agent busy, a cold one costs almost nothing. If the working group wants it later, the cheap version is **one** follow-up question rather than a crossed grid:
+>
+> *"Of the external transfers, how many did your center remain engaged on (on the line until handoff completed)?"*
+
 ---
 
-# 🟠 7. Processing-time boundary (Q36–Q39)
+# 🟠 7. Processing-time boundary (Q37–Q40)
 
 📌 **The most consequential definitional issue in the survey.**
 
@@ -617,7 +682,7 @@ Current text says **"From answer to dispatch."** That is a materially different 
 | Answer → dispatch | Time to create the incident |
 | Answer → **dispatchable** | Time until sufficient info to dispatch (Heather's preference) |
 | Talk time + wrap-up | Full agent occupancy (Crystal's model) |
-| Answer → **transfer** | Q41, already captured separately |
+| Answer → **transfer** | Q42, already captured separately |
 
 > **Recommendation:** if the intent is **agent occupancy** — which is what a staffing model needs — use Crystal's formulation. But note it requires wrap-up time to be measurable, which is not universal (see §20, Justin's question).
 
@@ -633,7 +698,7 @@ Current text says **"From answer to dispatch."** That is a materially different 
 
 ---
 
-# 🟠 8. Work-year denominator (Q26–Q35) — highest analytical value
+# 🟠 8. Work-year denominator (Q27–Q36) — highest analytical value
 
 📌 **Sources:** Gary Bell and Rebecca Conners raised this independently.
 
@@ -737,13 +802,13 @@ A ±20% band accommodates partial-year and seasonal skew. This check was impossi
 
 | ID | Question | Note |
 |---|---|---|
-| 26 | Number of **Funded Operational FTEs** | Description mentions both telecommunicator *and supervisor* positions |
-| 27 | Number of Telecommunicator FTEs in use | |
-| 28 | Number of Supervisor FTEs in use | |
-| 29 | Optimum Telecommunicator FTEs | See #9 |
-| 30 | Optimum Supervisor FTEs | See #9 |
-| 31 | Length of shifts in hours | Validator expects `number` — see #1 |
-| 32–35 | Min/max TCT and Supervisor FTEs per shift | |
+| 27 | Number of **Funded Operational FTEs** | Description mentions both telecommunicator *and supervisor* positions |
+| 28 | Number of Telecommunicator FTEs in use | |
+| 29 | Number of Supervisor FTEs in use | |
+| 30 | Optimum Telecommunicator FTEs | See #9 |
+| 31 | Optimum Supervisor FTEs | See #9 |
+| 32 | Length of shifts in hours | `radio` with numeric `otherText` — see #1 |
+| 33–36 | Min/max TCT and Supervisor FTEs per shift | |
 
 📌 **Crystal:** *"Q24: Break down to Tele and supervisor as in the subsequent questions"* — note this comment refers to the **old numbering**. Under current numbering the analogous request applies to **Q26**.
 
@@ -815,7 +880,7 @@ This needs resolution before any launch:
 | Location | Name |
 |---|---|
 | `survey_data.json` → `title` | `"NENA Survey"` |
-| Q45 closing text | `"NENA 2026 PSAP Survey"` |
+| Q46 closing text | `"NENA 2026 PSAP Survey"` |
 | Q0 welcome text | `"conducting this survey"` (no name) |
 
 **Recommendation:** pick one canonical name, use it in the title, the welcome, and the closing, and define a versioning convention.
@@ -979,8 +1044,8 @@ Current state:
 | ID | Question | Issue |
 |---|---|---|
 | 13 | Total of all **non-emergency** calls | Mixes administrative, utility, and after-hours traffic |
-| 37 | Average phone answer time for **non-emergency** calls | Compares against Q13, so it inherits the same ambiguity |
-| 39 | Average call processing time for **non-emergency** calls | Same |
+| 38 | Average phone answer time for **non-emergency** calls | Compares against Q13, so it inherits the same ambiguity |
+| 40 | Average call processing time for **non-emergency** calls | Same |
 
 **Recommendation:** separate **administrative** from **non-emergency** into distinct lines, so processing times can be compared meaningfully. Administrative calls are typically faster and scripted — averaging them with non-emergency traffic produces a misleading number.
 
@@ -1110,17 +1175,17 @@ Terms used in the survey with **no glossary entry**, verified by cross-reference
 |---|---|---|---|---|
 | **Incident** | Q16–Q21 | Gary's mandated term; currently undefined | Session notes L24 | ✅ **CLOSED 2026-10-15** |
 | **NCIC** | Q20, Q10 area | Q20 asks for transaction counts with no definition | Q20 | ⬜ Open |
-| **Call processing time** | Q36–Q39 | The survey's core metric; boundary disputed (§7) | Heather, Crystal | ⬜ Open — blocked on §7 |
+| **Call processing time** | Q37–Q40 | The survey's core metric; boundary disputed (§7) | Heather, Crystal | ⬜ Open — blocked on §7 |
 | **Wrap-up time** | processing metrics | Affects agent-occupancy models | Justin Prahar | ⬜ Open |
 | **Radio keyup** | Q22, Q23 | Referenced without definition | Q22–Q23 | ⬜ Open |
-| **Warm transfer / Cold transfer** | Q24, Q25, Q41 | Sandy raised the distinction; drives workload model | Sandy Dyre | ⬜ Open — blocked on §6 |
-| **Work year (2,080 / 2,184)** | Q26–Q35 | Prerequisite for FTE normalization | Gary, Rebecca | ⬜ Open — blocked on §8 |
-| **Contracted vs. Net Available Hours** | Q26–Q35 | Crystal's availability model | Crystal Lawrence | ⬜ Open — blocked on §8 |
+| **Warm transfer / Cold transfer** | Q24, Q25, Q26 | Sandy raised the distinction; drives workload model | Sandy Dyre | ⬜ Open — blocked on §6 |
+| **Work year (2,080 / 2,184)** | Q27–Q36 | Prerequisite for FTE normalization | Gary, Rebecca | ⬜ Open — blocked on §8 |
+| **Contracted vs. Net Available Hours** | Q27–Q36 | Crystal's availability model | Crystal Lawrence | ⬜ Open — blocked on §8 |
 | **Concurrent calls / Busy hour** | Q24-ish | The metric that actually drives NGCS cost | Daniel Hagan, Justin | ⬜ Open |
-| **NGCS / ACD** | Q36, Q40 | Pierre's measurement caveats | Pierre Foucault, Sam Bard | ⬜ Open |
+| **NGCS / ACD** | Q37, Q41 | Pierre's measurement caveats | Pierre Foucault, Sam Bard | ⬜ Open |
 | **Backup center / Mutual Aid** | Q9, Q25 | Roxy dispatches for 5 down counties — not captured | Roxy VanGundy | ⬜ Open |
 | **988 / RTT / Satellite SOS** | Q10 | Requested additions to call types | Sandy, Martin Michaud, Diane Dupar | ⬜ Open — blocked on §15 / length budget |
-| **RFA / Call provider type** | Q36, Q40 | Needed for comparable time-series analysis | Daniel Hagan | ⬜ Open |
+| **RFA / Call provider type** | Q37, Q41 | Needed for comparable time-series analysis | Daniel Hagan | ⬜ Open |
 
 **Incident closed 2026-10-15** with the NENA KB definition — *"A real-world occurrence, or event, for which one or more calls may be received."* See §25. ⚠️ The entry exists but its tooltip still never fires (plural mismatch — §19 Constraint C).
 
@@ -1202,15 +1267,15 @@ Normalizing the whitespace will break `showIf` display logic and server-side val
 
 | Spelling | Locations |
 |---|---|
-| **center** | Q29, Q30, Q32, Q33, Q36, Q37, Q40, Q45, and all `responseEmphasis` fields |
-| **centre** | Q32 and Q33 **descriptions** |
+| **center** | Q30, Q31, Q33, Q34, Q37, Q38, Q41, Q46, and all `responseEmphasis` fields |
+| **centre** | Q33 and Q34 **descriptions** |
 
 Standardize on **center** for a US/Canadian survey with mixed spelling. Note that NENA's own style guide may govern — worth confirming.
 
 ### Other consistency notes
 
 - 📌 **Sheriff / Provincial Police:** Kate Pataran noted *"Sheriff/Provincial Police"*; Roxy observed *"All law enforcement is considered part of the Police Service Boundary"* and *"Police in Data Model is the same as Sheriffs."* Q8.1 and Q9 both offer `Police` and `Sheriff` as separate options. Confirm these are intentional and distinguishable in the NENA Data Model.
-- 📌 **Q31 response emphasis:** *"Please indicate the length of your base shifts. If you have multiple shift lengths, select the one that is most common."* — good pattern; consider extending to Q32–Q35, which use `responseEmphasis` but don't explain whether they mean *minimum ever scheduled* or *minimum for normal operations* (the current text says "normal operations").
+- 📌 **Q32 response emphasis:** *"Please indicate the length of your base shifts. If you have multiple shift lengths, select the one that is most common."* — good pattern; consider extending to Q32–Q35, which use `responseEmphasis` but don't explain whether they mean *minimum ever scheduled* or *minimum for normal operations* (the current text says "normal operations").
 
 ---
 
@@ -1378,7 +1443,7 @@ Ordered by dependency. Steps 1–3 are prerequisites for everything else.
 | **3** | Decide PSAP identifier & amend privacy text; confirm IRB status | #11 | ⚖️ Yes — affects fielding |
 | **4** | Set question budget | #24 | ⚖️ Yes — gates additions |
 | **5** | Apply agreed data semantics (N/A control, incident/event) | #2, #3, #4 | 🟡 #2 **DONE**, #3 **DONE**, #4 **PARTIAL** — Unknown ships for Q20/Q22/Q40; open question 4 still governs the other 42 numeric questions |
-| **6** | Rework transfer questions | #6 | 🟠 |
+| **6** | Rework transfer questions | #6 | 🟡 #6 **PARTIAL** (Pass 11) — internal/external landed, warm/cold deferred |
 | **7** | Add work-year denominator; fix "optimum" definition | #8, #9 | 🟠 Highest analytical value |
 | **7b** | Settle the processing-time boundary | #7 | 🟠 |
 | **8** | Structural edits: Q4, Q3, Q5 | #13, #14, #18 | 🟡 |
@@ -1405,8 +1470,8 @@ Pass 3 landed glossary **content** (step 10's second half) before the `Question.
 | Term | Restored on |
 |---|---|
 | `Incident` | Q16, Q17, Q18, Q19, Q21 — **5** |
-| `FTE` | Q26, Q27, Q28, Q29, Q30, Q32, Q33, Q34, Q35 — **9** |
-| `SLA` | Q42, Q43, Q44 — **3** |
+| `FTE` | Q27, Q28, Q29, Q30, Q31, Q33, Q34, Q35, Q36 — **9** |
+| `SLA` | Q43, Q44, Q45 — **3** |
 | `PSAP` | Q0, Q0.2, Q6, Q7, Q8 — **5** |
 
 See §19 Constraint C — ⚠️ the change needs the capture-group fix as well, or it silently no-ops while tests still pass.
@@ -1435,9 +1500,10 @@ See §19 Constraint C — ⚠️ the change needs the capture-group fix as well,
 18. ~~Did Brian observe Q7 duplicating Q9 or Q6?~~ — ✅ **CLOSED 2026-10-15.** The recommendation's own table contradicted Q9; the real overlap was Q6↔Q7, now closed. (§5)
 19. ~~What is the evidence that respondents answer Q7 with agency names?~~ — ✅ **CLOSED as not confirmed.** No data was ever cited. Recorded at §5 as a standing observation rather than an open question.
 20. **Should "Unknown" split into "Unknown" and "Not applicable"?** The Pass 10 checkbox conflates "I don't know this figure" with "this figure doesn't exist at our centre". Splitting is now a mechanical addition — the mechanism and storage shape both exist. (§4)
-21. **NEW — Should the Unknown affordance extend to the other 42 numeric questions?** Pass 10 scoped it to Q20/Q22/Q40 per decision. The `number-or-unknown` kind is now generic, so extending it is a per-question one-line change plus the JSON. (§4)
+21. **NEW — Should the Unknown affordance extend to the remaining numeric questions?** Pass 10 scoped it to Q20, Q22 and Q41. The `number-or-unknown` kind is now generic, so extending it is a per-question one-line schema change plus the JSON. (§4)
 22. ~~Was the `''` → `0` coercion bug affecting real submissions?~~ — ✅ **CLOSED 2026-10-15. No impact.** The survey has not been fielded; `server/survey_responses.db` holds 15 submissions and 0 answers, so the bug was never exercised by respondent data. No backfill needed. (§4)
 23. **NEW — Should `server/survey_analytics.duckdb` and its `.wal` be tracked in git?** Both are committed (12 KB). A `.wal` is transient write-ahead log state; committing one invites binary churn and merge conflicts on a file that is rebuilt on every analytics run. Also note `server/survey_responses.db` — the actual answer store — is *not* tracked, so the two are inconsistent. (§26)
+24. **NEW — Is the internal/external split exhaustive?** Pass 11's reconciliation check (`internal + external = total`) assumes it. Transfers that fit neither — misrouted, declined, sent to a non-PSAP line — will make the sum fall short and read as an error rather than a legitimate answer. The deleted 20260311 snapshot had a "transferred due to misrouting" category, so this is not hypothetical. (§6)
 
 ---
 

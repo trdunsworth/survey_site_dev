@@ -30,7 +30,11 @@ import {
 const SURVEY_VERSIONS: Record<string, SurveyData> = {
     'default':   surveyData as SurveyData,
 };
-const POSITIVE_NUMERIC_OTHER_QUESTION_IDS = new Set(['29', 29]);
+// Mirrors the validator's `otherIsNumeric` flag — question 32 (shift length)
+// is the only radio whose "Other" free text must parse as a positive number.
+// Stale entries here are silent: the guard only fires for type === 'radio',
+// so an ID pointing at a numeric question never runs and never errors.
+const POSITIVE_NUMERIC_OTHER_QUESTION_IDS = new Set(['32', 32]);
 
 // Helper to get URL parameter
 const getUrlParam = (name: string): string | null => {
