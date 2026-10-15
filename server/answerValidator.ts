@@ -161,11 +161,11 @@ function s(options: string[]): ReadonlySet<string> {
 
 const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
 
-    // ── ids 0, 0.1, 0.2, 46 — info blocks, no user input ─────────────────────
+    // ── ids 0, 0.1, 0.2, 47 — info blocks, no user input ─────────────────────
     '0':   { kind: 'info' },
     '0.1': { kind: 'info' },
     '0.2': { kind: 'info' },
-    '46':{ kind: 'info' },
+    '47':{ kind: 'info' },
 
     // ── id 1 — state / province select ───────────────────────────────────────
     '1': {
@@ -341,11 +341,27 @@ const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
 
     // ── ids 39, 40 — average call processing time (seconds) ──────────────────
     // Measured answer → dispatch, not talk time, so the same 1 hour ceiling holds.
-    '39': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
-    '40': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
+    '39': {
+        kind: 'number-or-unknown',
+        min: 0,
+        max: 3_600,
+        integerOnly: false,
+        unknownValue: UNKNOWN_VALUE,
+    },
+    '40': {
+        kind: 'number-or-unknown',
+        min: 0,
+        max: 3_600,
+        integerOnly: false,
+        unknownValue: UNKNOWN_VALUE,
+    },
 
-    // ── id 41 — average calls handled per TCT FTE per hour (or "Unknown") ──────
-    '41': {
+    // ── id 41 — average total call handling time (occupancy) ────────────────
+    // Includes wrap-up time after the call ends. New question added for item 7.
+    '41': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
+
+    // ── id 42 — average calls handled per TCT FTE per hour (or "Unknown") ─────
+    '42': {
         kind: 'number-or-unknown',
         min: 0,
         max: 1_000,
@@ -353,16 +369,34 @@ const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
         unknownValue: UNKNOWN_VALUE,
     },
 
-    // ── id 42 — average time to transfer a call (seconds) ────────────────────
-    '42': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
+    // ── id 43 — average time to transfer a call (seconds) ────────────────────
+    '43': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
 
-    // ── ids 43–45 — average processing time by service type (seconds) ────────
+    // ── ids 44–46 — average processing time by service type (seconds, or "Unknown") ──
     // The working group noted some centers keep a telecommunicator on the line
     // through pre-arrival / post-dispatch instructions, which can push these
     // averages high. Raise this ceiling if real responses get rejected.
-    '43': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
-    '44': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
-    '45': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
+    '44': {
+        kind: 'number-or-unknown',
+        min: 0,
+        max: 3_600,
+        integerOnly: false,
+        unknownValue: UNKNOWN_VALUE,
+    },
+    '45': {
+        kind: 'number-or-unknown',
+        min: 0,
+        max: 3_600,
+        integerOnly: false,
+        unknownValue: UNKNOWN_VALUE,
+    },
+    '46': {
+        kind: 'number-or-unknown',
+        min: 0,
+        max: 3_600,
+        integerOnly: false,
+        unknownValue: UNKNOWN_VALUE,
+    },
 };
 
 // ── Per-kind validators ───────────────────────────────────────────────────────

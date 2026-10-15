@@ -491,24 +491,35 @@
         },
         {
           "id": 39,
-          "text": "What is your average call processing time for 9-1-1 calls in seconds? (From answer to dispatch)",
+          "text": "What is your average call processing time for 9-1-1 calls in seconds? (From answer until the call is dispatchable)",
           "description": "This will allow us to understand how staffing levels may influence call processing times and how that may influence service quality.",
           "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
-          "responseEmphasis": "To report the best estimation for your center, please use the last calendar year of data.",
+          "responseEmphasis": "To report the best estimation for your center, please use the last calendar year of data. A call is dispatchable once the telecommunicator has enough information to dispatch it.",
           "options": [],
-          "type": "number"
+          "unknownOption": "Unknown",
+          "type": "number-or-unknown"
         },
         {
           "id": 40,
-          "text": "What is your average call processing time for non-emergency calls in seconds? (From answer to dispatch)",
+          "text": "What is your average call processing time for non-emergency calls in seconds? (From answer until the call is dispatchable)",
           "description": "This will allow us to understand how staffing levels may influence call processing times and how that may influence service quality.",
           "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
-          "responseEmphasis": "To report the best estimation for your center, please use the last calendar year of data.",
+          "responseEmphasis": "To report the best estimation for your center, please use the last calendar year of data. A call is dispatchable once the telecommunicator has enough information to dispatch it.",
+          "options": [],
+          "unknownOption": "Unknown",
+          "type": "number-or-unknown"
+        },
+        {
+          "id": 41,
+          "text": "What is the average total call handling time for 9-1-1 calls in seconds? (From answer until the telecommunicator is released back to take the next call, including any wrap-up time after the call ends)",
+          "description": "This is the total time a telecommunicator is occupied on a call, which is a more complete measure of workload than call processing time alone. It helps us understand how much of a telecommunicator's time is spent on calls rather than on other duties.",
+          "data_location": "This information should come from your phone software or your Computer Aided Dispatch (CAD) software.",
+          "responseEmphasis": "Include the time the telecommunicator remains occupied after the call ends, including any wrap-up or documentation time required before they are available for the next call.",
           "options": [],
           "type": "number"
         },
         {
-          "id": 41,
+          "id": 42,
           "text": "What is the average number of calls handled per telecommunicator FTE per hour?",
           "description": "This will allow us to understand how staffing levels may influence the number of calls handled per telecommunicator and how that may influence service quality.",
           "data_location": "This information should come from your phone software or your Computer Aided Dispatch (CAD) software.",
@@ -518,7 +529,7 @@
           "type": "number-or-unknown"
         },
         {
-          "id": 42,
+          "id": 43,
           "text": "What is the average time to transfer a call to another PSAP in seconds? (From answer to transfer)",
           "description": "This allows us to understand the impact of outbound call transfers on telecommunicator workload and how that may influence staffing needs and service quality.",
           "data_location": "This information should come from your phone software. You will need to isolate transfer calls using your phone reporting software and calculate the average time from answer to transfer for those calls.",
@@ -527,31 +538,34 @@
           "type": "number"
         },
         {
-          "id": 43,
-          "text": "What is the average processing time for law enforcement service calls in seconds? (From answer to dispatch)",
-          "description": "This will allow us to understand staffing needs to ensure that community expectations and partner agency SLAs are met",
-          "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
-          "responseEmphasis": "To get this, isolate your law enforcement service calls and calculate the average time from answer to dispatch for those calls. To report the best estimation for your center, please use the last calendar year of data.",
-          "options": [],
-          "type": "number"
-        },
-        {
           "id": 44,
-          "text": "What is the average processing time for fire service calls in seconds? (From answer to dispatch)",
+          "text": "What is the average processing time for law enforcement service calls in seconds? (From answer until the call is dispatchable)",
           "description": "This will allow us to understand staffing needs to ensure that community expectations and partner agency SLAs are met",
           "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
-          "responseEmphasis": "To get this, isolate your fire service calls and calculate the average time from answer to dispatch for those calls. To report the best estimation for your center, please use the last calendar year of data.",
+          "responseEmphasis": "To get this, isolate your law enforcement service calls and calculate the average time from answer until the call is dispatchable for those calls. To report the best estimation for your center, please use the last calendar year of data.",
           "options": [],
-          "type": "number"
+          "unknownOption": "Unknown",
+          "type": "number-or-unknown"
         },
         {
           "id": 45,
-          "text": "What is the average processing time for EMS service calls in seconds? (From answer to dispatch)",
+          "text": "What is the average processing time for fire service calls in seconds? (From answer until the call is dispatchable)",
           "description": "This will allow us to understand staffing needs to ensure that community expectations and partner agency SLAs are met",
           "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
-          "responseEmphasis": "To get this, isolate your medical service calls and calculate the average time from answer to dispatch for those calls. To report the best estimation for your center, please use the last calendar year of data.",
+          "responseEmphasis": "To get this, isolate your fire service calls and calculate the average time from answer until the call is dispatchable for those calls. To report the best estimation for your center, please use the last calendar year of data.",
           "options": [],
-          "type": "number"
+          "unknownOption": "Unknown",
+          "type": "number-or-unknown"
+        },
+        {
+          "id": 46,
+          "text": "What is the average processing time for EMS service calls in seconds? (From answer until the call is dispatchable)",
+          "description": "This will allow us to understand staffing needs to ensure that community expectations and partner agency SLAs are met",
+          "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
+          "responseEmphasis": "To get this, isolate your medical service calls and calculate the average time from answer until the call is dispatchable for those calls. To report the best estimation for your center, please use the last calendar year of data.",
+          "options": [],
+          "unknownOption": "Unknown",
+          "type": "number-or-unknown"
         }
       ]
     },
@@ -559,7 +573,7 @@
       "title": "Closing",
       "questions": [
         {
-          "id": 46,
+          "id": 47,
           "text": "Thank you for completing the NENA 2026 PSAP Survey. Your participation is greatly appreciated and will help NENA better understand staffing and call processing standards. Your feedback is valuable throughout the industry and support meaningful solutions, advocacy, and future planning for the 9-1-1 community.",
           "type": "info"
         }
