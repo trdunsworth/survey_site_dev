@@ -43,9 +43,11 @@ Work is tracked in named passes. Each pass is listed with the items it closed, t
 
 **Pass 7 — Q22 numeric (#3).** `text` → `number`, wording aligned with Q23, and "Estimated" retained as an explicit qualifier rather than deleted. Enabled the Q22↔Q23 consistency check. Details at §3.
 
-**Pass 8 — Q7 examination (#5).** No code change. The recommendation was examined and found weaker than stated; disposition is **HOLD** pending working-group input. Recorded at §5.
+**Pass 8 — Q7 examination (#5).** No code change. The recommendation was examined and found weaker than stated; disposition recorded at §5.
 
-**Items deferred 2026-10-15** — #4 (N/A escape hatch) and #5 (Q7/Q9). Both stay open; neither is closed.
+**Pass 9 — Q6/Q7 resolution (#5).** Q7's scope moved into the question text and aligned to Q6's full option set; the divergent description clause was removed; `text` → `textarea`; Q6's `operaations` typo fixed. Item closed.
+
+**Item 4 (N/A escape hatch) remains deferred 2026-10-15** — pending a decision, and the largest open analytical gap.
 
 ### ✅ All passes committed — working tree clean as of 2026-10-15
 
@@ -82,7 +84,7 @@ Every recommendation cites its source so the working group can verify intent bef
 | 2 | Data hygiene | ~~"events" → "incidents" (Q16–Q21)~~ | 🟠 HIGH | ✅ **DONE** (2026-10-14) | Gary (NENA CRC) |
 | 3 | Data hygiene | ~~Q22 `text` → `number`~~ | 🟠 HIGH | ✅ **DONE** (2026-10-15) — "Estimated" kept as a qualifier | Review note L2 |
 | 4 | Data hygiene | Add "Not available / Don't know" escape hatch | 🟠 HIGH | ⬜ Open | Review note L1, Daniel Hagan |
-| 5 | Structure | Q7 duplicates Q9 | 🟠 HIGH | ⏸️ **HOLD 2026-10-15** — examination weakened the case; needs working-group input | Brian Bond |
+| 5 | Structure | ~~Q7 duplicates Q9~~ | 🟠 HIGH | ✅ **DONE** (2026-10-15) — overlap closed via Q7 text scoping | Brian Bond |
 | 6 | Structure | Transfers: warm/cold, internal/external, reason, NA | 🟠 HIGH | ⬜ Open | Sandy Dyre, Sam Bard, Burt Ray, Daniel |
 | 7 | Definitions | Q36–Q39 processing-time boundary | 🟠 HIGH | ⬜ Open — see §25 | Heather, Crystal, Justin |
 | 8 | Definitions | Shift/staffing work-year denominator (2,080 vs 2,184) | 🟠 HIGH | ⬜ Open | Gary, Rebecca Conners |
@@ -434,7 +436,54 @@ Switching Q7 to `textarea` is **client-only** — the validator checks the poste
 
 ### 📌 Adjacent, already logged
 
-Q6's description contains *"operaations"* — the §23 typo, one question away.
+Q6's description contained *"operaations"* — the §23 typo, one question away. Fixed in Pass 9.
+
+## ✅ Resolution — implemented 2026-10-15 (Pass 9)
+
+Item **#5 is closed.** Q7's scope is now defined in a single field, and the input control matches what the question asks for.
+
+**`src/data/survey_data.json`** — four edits across Q6 and Q7:
+
+| ID | Field | Before | After |
+|---|---|---|---|
+| 6 | `description` | *"…may influence **operaations** and staffing."* | *"…may influence **operations** and staffing."* |
+| 7 | `text` | *"Please list any additional services that you provide:"* | *"Please list any additional services that you provide **beyond the options listed in question 6**:"* |
+| 7 | `description` | *"We would like to know what services **beyond calltaking and dispatching that you provide** to understand…"* | *"We would like to know what services you provide to understand…"* |
+| 7 | `type` | `"text"` | `"textarea"` |
+
+### Why this closes the item
+
+**Brian's ask was to define Q7 so the questions do not overlap.** That is now done — and it is done in the question text, which is where a respondent reads it first.
+
+The scoping also **diverged mid-pass**. When the text was rescoped to *"beyond the options listed in question 6"* (all four Q6 options), the untouched description still said *"beyond calltaking and dispatching"* (only two). **Walk Up** and **SMS/Text** were therefore covered by the text but not the description — a PSAP providing those two without call-taking or dispatching would have been told not to repeat them and then invited to repeat them. Removing the redundant clause from the description resolved that; **the scope is now carried by one field only.**
+
+> 📌 **The divergent phrasing was the problem, not the shared rationale.** Q6 and Q7 now carry the same rationale clause — they are two halves of one construct, so that is appropriate.
+
+### Defect fixed
+
+`type: "textarea"` resolves the mismatch between *"please **list**"* and a single-line `<input type="text">`. This uses the `textarea` control already implemented at `Question.tsx:91–99`, which until now was **used by zero of the 49 questions**.
+
+### Validator: no change required, and none made
+
+Per §1's atomic rule, a `type` change normally requires a matching `answerValidator.ts` edit. **This one does not** — the validator checks the posted *value*, not the widget, so `'7'` correctly stays `kind: 'text'`. Probed directly:
+
+| Payload | Result |
+|---|---|
+| multi-line textarea (239 chars) | ✅ ACCEPT |
+| short string | ✅ ACCEPT |
+| empty string | ✅ ACCEPT |
+
+The schema-coverage guard maps unrecognised types to `'probe'` via its `default:` branch, so `textarea` passes without a guard change.
+
+### 📌 Brian's original framing, recorded for accuracy
+
+Brian's note said Q7 duplicates **Q9**. The examination established that the recommendation's own table contradicted this — Q9 asks for agency types, Q7 for services. The overlap that actually existed was **Q6↔Q7**, and that is what has been closed. The Q9 observation was never independently confirmed; if agency names appear in Q7 responses, that is a new finding rather than an unclosed part of this item.
+
+### Verification
+
+- JSON parses; 49 questions
+- **96/96 tests passing**; both TypeScript gates **0 errors**
+- Scope conflict resolved — the description no longer names any excluded option
 
 ---
 
@@ -1255,7 +1304,7 @@ Ordered by dependency. Steps 1–3 are prerequisites for everything else.
 | **7** | Add work-year denominator; fix "optimum" definition | #8, #9 | 🟠 Highest analytical value |
 | **7b** | Settle the processing-time boundary | #7 | 🟠 |
 | **8** | Structural edits: Q4, Q3, Q5 | #13, #14, #18 | 🟡 |
-| **8b** | ~~Structural edits: Q7/Q9 overlap~~ | #5 | ⏸️ **HOLD 2026-10-15** — examination weakened the case; awaiting working-group input (questions 18–19) |
+| **8b** | ~~Structural edits: Q7/Q9 overlap~~ | #5 | ✅ **DONE 2026-10-15** (Pass 9) — Q7 scoped to Q6; `textarea` input |
 | **9** | Coverage additions (within budget) | #15, #16, #17 | 🟡 |
 | **10a** | Glossary: escape + plural matching in `Question.tsx` | §19, §21 | 🟠 **NEXT** — restores tooltips on 22 questions |
 | **10b** | Glossary: add the ~12 missing terms | §20 | 🟠 |
@@ -1305,8 +1354,8 @@ See §19 Constraint C — ⚠️ the change needs the capture-group fix as well,
 15. **NEW — Should `QA` / `QI` / `APCO` / `NG9-1-1` be retained despite matching no question?** Now NENA-sourced, which makes retention more defensible than when §21 originally suggested removing them. (§19 Constraint A)
 16. **NEW — Should `Q23`'s 100,000/hour cap be tightened?** That is 28 keyups/second sustained — implausible — and its implied annual ceiling (876M) is 8.8× Q22's. Not changed in Pass 7. (§3)
 17. **NEW — Does "leave blank = not recorded" become the survey-wide convention, or just a Q22 local convention?** Pass 7 introduced it for Q22 alone. §4 is the real fix but remains blocked on question 4. (§3, §4)
-18. **NEW — Did Brian observe Q7 duplicating Q9 or Q6?** The recommendation acts on Q6 without settling the referent. (§5)
-19. **NEW — What is the evidence that respondents answer Q7 with agency names?** Single report or pattern? If constrained, the working group must supply the candidate service list. (§5)
+18. ~~Did Brian observe Q7 duplicating Q9 or Q6?~~ — ✅ **CLOSED 2026-10-15.** The recommendation's own table contradicted Q9; the real overlap was Q6↔Q7, now closed. (§5)
+19. ~~What is the evidence that respondents answer Q7 with agency names?~~ — ✅ **CLOSED as not confirmed.** No data was ever cited. Recorded at §5 as a standing observation rather than an open question.
 20. **NEW — Should Q4's "not available / don't know" control be built at all?** Deferred 2026-10-15 pending a decision; §4 remains the largest open analytical gap. (§4)
 
 ---

@@ -177,7 +177,7 @@
         {
           "id": 6,
           "text": "What services does the PSAP provide (select one or more):",
-          "description": "This allows the working groups to understand the variety of services provided by PSAPs and how that may influence operaations and staffing.",
+          "description": "This allows the working groups to understand the variety of services provided by PSAPs and how that may influence operations and staffing.",
           "options": [
             "Call Taking",
             "Dispatching",
@@ -188,10 +188,10 @@
         },
         {
           "id": 7,
-          "text": "Please list any additional services that you provide:",
-          "description": "We would like to know what services beyond calltaking and dispatching that you provide to understand the variety of services provided by PSAPs and how that may influence operations and staffing.",
+          "text": "Please list any additional services that you provide beyond the options listed in question 6:",
+          "description": "We would like to know what services you provide to understand the variety of services provided by PSAPs and how that may influence operations and staffing.",
           "options": [],
-          "type": "text"
+          "type": "textarea"
         },
         {
           "id": 8,
