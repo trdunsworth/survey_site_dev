@@ -1,13 +1,47 @@
 # PSAP Survey — Content & Data Review Recommendations
 
 **Prepared:** 2026-10-14
+**Last updated:** 2026-10-15
 **Scope:** `src/data/survey_data.json`, `src/data/glossary_data.json`
 **Inputs reviewed:**
 - `src/data/Consider if certain information is obtai.md`
 - `src/data/JCM_Chat_Wednesday_20260916.docx` (JCM working-group chat, 2026-09-16)
 - `src/data/JCM Data Collection Session Notes.docx` (data collection working-group session)
 
-**Status:** Item #1 (validator drift) is **RESOLVED** — see the resolution note at the end of that section. All other items are recommendations only; no content changes have been made to `survey_data.json` or `glossary_data.json`.
+**Status:** Items **#1** (validator drift) and **#2** (events → incidents) are **RESOLVED**. Glossary definitions have been **aligned to the NENA Knowledge Base** (see §25). All other items are recommendations only; no further content changes have been made to `survey_data.json`.
+
+---
+
+## Change log
+
+Work is tracked in named passes. Each pass is listed with the items it closed, the files it touched, and its verification.
+
+| Pass | Date | Items | Files changed | Verified | Committed |
+|---|---|---|---|---|---|
+| **1** — Validator alignment | 2026-10-14 | #1 | `server/answerValidator.ts`, `src/components/Question.tsx`, `server/answerValidator.test.ts` | 43 → **95 tests passing** | ✅ `c07e487` |
+| **2** — Terminology pass | 2026-10-14 | #2 | `src/data/survey_data.json` | JSON parses; no validator change required | ✅ `07a7f00` |
+| **3** — NENA KB glossary alignment | 2026-10-15 | §25 (aligns with #18, #19, #21) | `src/data/glossary_data.json` | JSON parses; **95/95 tests passing** | ✅ `dd17a6e` |
+| **4** — Snapshot removal | 2026-10-15 | hygiene | **deleted** `src/data/survey_data_20260311.json`; `src/components/SurveyForm.tsx` | **95/95 tests passing**; no dangling refs | ✅ `1874630` |
+| **5** — Static rebuild | 2026-10-15 | hygiene | `static/` — new bundle, `index.html` repointed | Bundle verified free of snapshot | ✅ `5fcda39` |
+| **6** — Build gates | 2026-10-15 | infra | `tsconfig.json`, `server/*`, 2 test files | **Both gates 0 errors**; 95/95 tests | ✅ `a65d045` |
+
+### Pass detail
+
+**Pass 1 — validator drift (#1).** Committed as `c07e487`. Full resolution notes at the end of §1.
+
+**Pass 2 — terminology (#2).** Q16–Q21 changed `events` → `incidents`, and Q21's grammar defect ("Total number other events…") was corrected in the same edit. This was a **text-only** change: no question ID, `type`, or `options` value was touched, so `server/answerValidator.ts` correctly required no matching change — the atomic-unit rule in §1 was satisfied vacuously.
+
+**Pass 3 — NENA KB glossary alignment.** Definitions for 10 of 14 glossary entries were replaced with verbatim NENA Knowledge Base text. Full detail, including the NENA-vs-local split, at §25.
+
+**Pass 4 — snapshot removal.** Deleted the unused 99-question versioning snapshot and removed its `SURVEY_VERSIONS` entry. The snapshot had been shipped in `static/assets/index-Dil3VMbM.js` since `5e37918` (2026-09-10), contrary to the "never deployed" assumption — unreachable, but present. Full detail at §2.
+
+**Pass 5 — static rebuild.** Regenerated `static/` so the deleted snapshot no longer ships.
+
+**Pass 6 — build gates.** Fixed both broken TypeScript gates, which had left `npm run start:prod` undeployable. Details at §26.
+
+### ✅ All passes committed — working tree clean as of 2026-10-15
+
+Six commits on `main`, each independently revertable. Kept separate so review is not buried under deploy-artifact churn (Pass 5 swaps a 224 kB bundle).
 
 ---
 
@@ -15,6 +49,8 @@
 
 | Marker | Meaning |
 |---|---|
+| ✅ **DONE** | Implemented and verified. Section carries a resolution note. |
+| 🟡 **PARTIAL** | Some sub-items resolved; remainder still open. Section carries a status note. |
 | 🔴 **BLOCKER** | Data loss / unanswerable questions. Fix before fielding. |
 | 🟠 **HIGH** | Changes the meaning or usability of collected data. |
 | 🟡 **MEDIUM** | Ambiguity explicitly raised in a working-group session. |
@@ -24,36 +60,42 @@
 
 Every recommendation cites its source so the working group can verify intent before you commit to it.
 
+> ⚠️ **On numbering.** The summary table's row numbers and the section heading numbers **diverge from row 10 onward** — a pre-existing defect. The summary table has 24 rows; the sections run 1–24 sequentially but not in the same order (summary row 10 "Outgoing calls" is section 16; summary row 15 "Dates" is section 10, and so on).
+>
+> **Section headings are authoritative.** This document cross-references by **heading number**. When you see "§7" it means the section headed `# 🟠 7.`, not summary row 7. Renumbering the summary table to match would be a clean follow-up, but must not be done piecemeal — it would invalidate every existing cross-reference in the text.
+
 ---
 
 ## Summary
 
-| # | Area | Recommendation | Priority | Source |
-|---|---|---|---|---|
-| 1 | Validator drift | ~~10 questions rejected server-side~~ **RESOLVED** — see §1 | ✅ DONE | Code audit |
-| 2 | Data hygiene | "events" → "incidents" (Q16–Q21) | 🟠 HIGH | Gary (NENA CRC) |
-| 3 | Data hygiene | Q22 `text` → `number`; remove "Estimated" | 🟠 HIGH | Review note L2 |
-| 4 | Data hygiene | Add "Not available / Don't know" escape hatch | 🟠 HIGH | Review note L1, Daniel Hagan |
-| 5 | Structure | Q7 duplicates Q9 | 🟠 HIGH | Brian Bond |
-| 6 | Structure | Transfers: warm/cold, internal/external, reason, NA | 🟠 HIGH | Sandy Dyre, Sam Bard, Burt Ray, Daniel |
-| 7 | Definitions | Q36–Q39 processing-time boundary | 🟠 HIGH | Heather, Crystal, Justin |
-| 8 | Definitions | Shift/staffing work-year denominator (2,080 vs 2,184) | 🟠 HIGH | Gary, Rebecca Conners |
-| 9 | Definitions | "Optimum" / "fully staffed" undefined | 🟠 HIGH | Barry Hutchins |
-| 10 | Coverage | Outgoing calls unmeasured | 🟡 MEDIUM | Crystal, Ernie Qualls |
-| 11 | Coverage | Non-emergency vs. administrative conflated | 🟡 MEDIUM | Crystal |
-| 12 | Coverage | Q4 add colleges/universities | 🟡 MEDIUM | Session notes L17, Joel McDonald |
-| 13 | Coverage | Q3 peak population escape hatch | 🟡 MEDIUM | Brian Bond (AZ) |
-| 14 | Coverage | Q6 "Call Taking" too generic | 🟡 MEDIUM | Sam Bard |
-| 15 | Dates | Reference year unspecified; **deadline already passed** | 🟠 HIGH | Review note L3 |
-| 16 | Fieldwork | Duplicate-response guardrails + PSAP identifier | ⚖️ DECISION | Review note L5, Brian Bond, Tony |
-| 17 | Fieldwork | Incentives / return of answers | ⚖️ DECISION | Review note L6, Session notes L34 |
-| 18 | Glossary | Dead, broken, and unmatched terms | 🟠 HIGH | Code audit |
-| 19 | Glossary | ~13 missing terms | 🟠 HIGH | Cross-referenced |
-| 20 | Glossary | Tooltips don't render in `description` / `data_location` | 🟠 HIGH | `Question.tsx` audit |
-| 21 | Glossary | Plurals never match tooltips | 🟠 HIGH | `Question.tsx` audit |
-| 22 | Glossary | Definition rewrites (FTE, CAD, PSAP, 10-Digit) | 🟡 MEDIUM | Working group |
-| 23 | Polish | Typos, double-space, centre/center | 🔵 POLISH | Code audit |
-| 24 | Polish | Survey length budget | ⚖️ DECISION | Chet Ripka, Rick Erickson |
+| # | Area | Recommendation | Priority | Status | Source |
+|---|---|---|---|---|---|
+| 1 | Validator drift | ~~10 questions rejected server-side~~ | ✅ DONE | ✅ **DONE** (2026-10-14) | Code audit |
+| 2 | Data hygiene | "events" → "incidents" (Q16–Q21) | 🟠 HIGH | ✅ **DONE** (2026-10-14) | Gary (NENA CRC) |
+| 3 | Data hygiene | Q22 `text` → `number`; remove "Estimated" | 🟠 HIGH | ⬜ Open | Review note L2 |
+| 4 | Data hygiene | Add "Not available / Don't know" escape hatch | 🟠 HIGH | ⬜ Open | Review note L1, Daniel Hagan |
+| 5 | Structure | Q7 duplicates Q9 | 🟠 HIGH | ⬜ Open | Brian Bond |
+| 6 | Structure | Transfers: warm/cold, internal/external, reason, NA | 🟠 HIGH | ⬜ Open | Sandy Dyre, Sam Bard, Burt Ray, Daniel |
+| 7 | Definitions | Q36–Q39 processing-time boundary | 🟠 HIGH | ⬜ Open — see §25 | Heather, Crystal, Justin |
+| 8 | Definitions | Shift/staffing work-year denominator (2,080 vs 2,184) | 🟠 HIGH | ⬜ Open | Gary, Rebecca Conners |
+| 9 | Definitions | "Optimum" / "fully staffed" undefined | 🟠 HIGH | ⬜ Open | Barry Hutchins |
+| 10 | Coverage | Outgoing calls unmeasured | 🟡 MEDIUM | ⬜ Open | Crystal, Ernie Qualls |
+| 11 | Coverage | Non-emergency vs. administrative conflated | 🟡 MEDIUM | ⬜ Open | Crystal |
+| 12 | Coverage | Q4 add colleges/universities | 🟡 MEDIUM | ⬜ Open | Session notes L17, Joel McDonald |
+| 13 | Coverage | Q3 peak population escape hatch | 🟡 MEDIUM | ⬜ Open | Brian Bond (AZ) |
+| 14 | Coverage | Q6 "Call Taking" too generic | 🟡 MEDIUM | ⬜ Open | Sam Bard |
+| 15 | Dates | Reference year unspecified; **deadline already passed** | 🟠 HIGH | ⬜ Open | Review note L3 |
+| 16 | Fieldwork | Duplicate-response guardrails + PSAP identifier | ⚖️ DECISION | ⬜ Open | Review note L5, Brian Bond, Tony |
+| 17 | Fieldwork | Incentives / return of answers | ⚖️ DECISION | ⬜ Open | Review note L6, Session notes L34 |
+| 18 | Glossary | Dead, broken, and unmatched terms | 🟠 HIGH | 🟡 **PARTIAL** — see §25 | Code audit |
+| 19 | Glossary | ~13 missing terms | 🟠 HIGH | 🟡 **PARTIAL** — see §25 | Cross-referenced |
+| 20 | Glossary | Tooltips don't render in `description` / `data_location` | 🟠 HIGH | ⬜ Open | `Question.tsx` audit |
+| 21 | Glossary | Plurals never match tooltips | 🟠 HIGH | ⬜ Open — **regression, see §25** | `Question.tsx` audit |
+| 22 | Glossary | Definition rewrites (FTE, CAD, PSAP, 10-Digit) | 🟡 MEDIUM | 🟡 **PARTIAL** — see §25 | Working group |
+| 23 | Polish | Typos, double-space, centre/center | 🔵 POLISH | ⬜ Open | Code audit |
+| 24 | Polish | Survey length budget | ⚖️ DECISION | ⬜ Open | Chet Ripka, Rick Erickson |
+| 25 | Glossary | NENA KB alignment + provenance metadata | 🟠 HIGH | 🟡 **PARTIAL** — see §25 | NENA KB, 2026-10-15 |
+| 26 | Infrastructure | TypeScript build gates (both were broken) | 🔴 BLOCKER | ✅ **DONE 2026-10-15** | Code audit |
 
 ---
 
@@ -182,6 +224,84 @@ Six questions use "events". Suggested edits:
 > **Note:** Q21 currently reads *"Total number other events not previously covered…"* — missing "of". Worth correcting in the same pass.
 
 **Terminology check:** confirm the NENA-preferred spelling is "incident" (singular) in CAD reporting contexts, and whether "CAD incident" vs. "CAD event" is resolved in the NENA Data Model.
+
+## ✅ Resolution — implemented 2026-10-14 (Pass 2)
+
+All five applicable questions updated in `src/data/survey_data.json`:
+
+| ID | Before | After |
+|---|---|---|
+| 16 | Total number of Law Enforcement **events** processed… | …Law Enforcement **incidents** processed… |
+| 17 | Total number of Fire **events** processed… | …Fire **incidents** processed… |
+| 18 | Total number of EMS **events** processed… | …EMS **incidents** processed… |
+| 19 | Total number of other **events** processed… | …other **incidents** processed… |
+| 21 | Total number other events not previously covered in this survey in the last calendar year. | Total number **of** other **incidents** not covered **elsewhere** in this survey in the last calendar year: |
+
+Q21 received three corrections in one edit: the missing "of", the term change, and "not previously covered" → "not covered elsewhere". A trailing period was normalised to a colon to match the other four questions in the block.
+
+**Validator impact: none required.** This was a text-only edit. No question ID, `type`, or `options` value changed, so `server/answerValidator.ts` correctly needed no matching edit — the atomic-unit rule in §1 was satisfied without action.
+
+### Terminology check — closed 2026-10-15
+
+**Confirmed.** The NENA KB defines *Incident* as *"A real-world occurrence, or event, for which one or more calls may be received."* (NENA-STA-010, NENA-REQ-001, NENA-INF-021). Gary's instruction is consistent with NENA's own usage, and "incident" is the established CAD reporting term.
+
+> 📌 **This has a data-collection consequence worth stating explicitly.** NENA's definition is *not* "one incident = one CAD record" — one incident may generate **multiple calls**. Respondents reading Q16–Q19 need to count **incidents**, not calls, or the incident totals will silently disagree with the call totals in Q11–Q15. Consider whether `responseEmphasis` should say so.
+
+### Two "event" strings deliberately NOT changed
+
+| Location | String | Why left alone |
+|---|---|---|
+| `survey_data.json` Q4 + `answerValidator.ts:181` | `"Event Peaks"` | This is a **population-variation factor** — community events driving call volume — not a dispatched incident. Different sense of the word. Gary's instruction applies to Q16–Q21 only. **Do not "correct" this.** |
+| ~~`survey_data_20260311.json`~~ | "…Law Enforcement **events** processed…" | **DELETED 2026-10-15.** A 99-question versioning snapshot, never fielded. Removed from source and from `SURVEY_VERSIONS`. See Pass 4 below. |
+
+---
+
+## ✅ Resolution — Pass 4, 2026-10-15 — snapshot removal
+
+`src/data/survey_data_20260311.json` deleted. Two files changed.
+
+**`src/components/SurveyForm.tsx`** — import removed; the `20260311` key removed from `SURVEY_VERSIONS`. The versioning mechanism itself was **kept**, not removed, because it is load-bearing:
+
+- `server/db.ts:45` — `survey_version` column, `NOT NULL DEFAULT 'default'`
+- `server/db.ts:75` — `target_survey_version` on the resume-token table
+- `SurveyForm.tsx:59` — `SURVEY_VERSIONS[surveyVersion] ?? SURVEY_VERSIONS['default']`
+- `AnalyticsDashboard.tsx:97` — "Survey Versions" counts distinct values
+
+**Adding a future snapshot is now a two-step operation:** drop the JSON beside `survey_data.json`, add one line to `SURVEY_VERSIONS`.
+
+### ✅ Safe by construction — verified
+
+| Property | Finding |
+|---|---|
+| Unknown version key | Falls back to `'default'` at `SurveyForm.tsx:59`. No crash for a submission or token still carrying `20260311`. |
+| Server allowlist | **None.** `server.ts:151` only type-checks `surveyVersion` as a string; `survey_version` is free-text with `DEFAULT 'default'`. No migration needed. |
+| DB rows | None to migrate — no deployed submission carries the key. |
+
+### ⚠️ The snapshot *was* in a committed build — now removed
+
+The snapshot's content was present in the committed deploy bundle. `"99 question"` — a string unique to the snapshot — was found in `static/assets/index-Dil3VMbM.js`.
+
+**This contradicts the assumption that it was never deployed.** It was never *reachable* through normal navigation (no URL parameter selects a version; reaching it required a submission or token already tagged `20260311`), but it **was shipped** in the static bundle as of `5e37918`, 2026-09-10.
+
+#### ✅ Bundles rebuilt 2026-10-15
+
+| Artifact | Tracked? | Action | Result |
+|---|---|---|---|
+| `static/assets/index-Dil3VMbM.js` | ✅ tracked | `npm run build:static` | **Deleted** — replaced by `index-p0F_8VOI.js` |
+| `static/index.html` | ✅ tracked | rebuilt | Repointed to the new hash |
+| `static/assets/index-p0F_8VOI.js` | new | created | Verified clean: no `"99 question"`, no `20260311` |
+| `dist/` | ❌ **gitignored** (`.gitignore:10`) | `npx vite build` | Regenerated locally only — never a tracked artifact |
+
+> 📌 **Correction to an earlier note in this document:** `dist/` was initially described as a tracked bundle. It is not — `.gitignore:10` excludes it. **`static/` is the only tracked deploy artifact**, and it is now clean.
+
+#### ✅ Build gates fixed 2026-10-15 (Pass 6, commit `a65d045`)
+
+Both TypeScript gates were failing, which meant `npm run start:prod` (`build:server && server:prod`) could not deploy. See §26 for the full resolution.
+
+| Gate | Before | After |
+|---|---|---|
+| `npm run build` (`tsc && vite build`) | **37 errors** | ✅ **0** |
+| `npm run build:server` (`tsc -p server/tsconfig.json`) | **27 errors** | ✅ **0** |
 
 ---
 
@@ -313,7 +433,7 @@ Current text says **"From answer to dispatch."** That is a materially different 
 | Talk time + wrap-up | Full agent occupancy (Crystal's model) |
 | Answer → **transfer** | Q41, already captured separately |
 
-> **Recommendation:** if the intent is **agent occupancy** — which is what a staffing model needs — use Crystal's formulation. But note it requires wrap-up time to be measurable, which is not universal (see #19, Justin's question).
+> **Recommendation:** if the intent is **agent occupancy** — which is what a staffing model needs — use Crystal's formulation. But note it requires wrap-up time to be measurable, which is not universal (see §20, Justin's question).
 
 ### 🛠 Second-order issue — NGCS measurement
 
@@ -640,17 +760,20 @@ const regex = new RegExp(`\\b(${term})\\b`, 'gi');
 
 Three structural constraints limit what the glossary can do today. All were verified by running every current term against the full survey text.
 
-## Constraint A — four terms never match anything
+## Constraint A — five terms never match anything
 
-| Term | Status |
-|---|---|
-| `CFAI` | Never appears in the survey |
-| `APCO` | Never appears in the survey |
-| `IAED` | Never appears in the survey |
-| `NG9-1-1` | Never appears in the survey |
-| `QA/QI` | Never appears in the survey |
+*Re-verified 2026-10-15 against the current survey text.*
 
-They are still shown in the Glossary panel, so they are not *wrong* — but they provide no in-context help.
+| Term | Status | In NENA KB? |
+|---|---|---|
+| `CFAI` | Never appears in the survey | ❌ No |
+| `APCO` | Never appears in the survey | ✅ Yes |
+| `IAED` | Never appears in the survey | ❌ No |
+| `NG9-1-1` | Never appears in the survey | ✅ Yes |
+| `QA` | Never appears in the survey (split from `QA/QI`, 2026-10-15) | ✅ Yes |
+| `QI` | Never appears in the survey (split from `QA/QI`, 2026-10-15) | ✅ Yes |
+
+They are still shown in the Glossary panel, so they are not *wrong* — but they provide no in-context help. Note that three of these (`APCO`, `NG9-1-1`, `QA`/`QI`) are now NENA-sourced (§25), which makes them *more* likely to be worth keeping for future survey phases rather than less.
 
 ## Constraint B — one term is structurally broken
 
@@ -658,21 +781,36 @@ They are still shown in the Glossary panel, so they are not *wrong* — but they
 { "term": "Ten-Digit Emergency", "definition": "Emergency calls received on a standard 10-digit phone line rather than the 9-1-1 network." }
 ```
 
-The survey uses **`10-digit emergency`** (Q10 option, Q12 question). The glossary term spells it **`Ten-Digit Emergency`** — spelled-out number *and* differing hyphenation. **It can never match.**
+The survey uses **`10-digit emergency`** (Q10 option, Q12 question, Q10 `data_location`). The glossary term spells it **`Ten-Digit Emergency`** — spelled-out number *and* differing hyphenation. **It can never match.**
 
 📌 This matters: Canadian and some US centers are significant users of 10-digit emergency lines, and this is one of the more consequential definitions in the survey.
+
+> **Still open.** Deliberately untouched on 2026-10-15 — the NENA KB has **no entry** for this concept, so there is no authoritative text to sync to. Nearest KB relative is `AEAN (Alternate Emergency Access Number)`, which is a narrower VoIP-era construct and is *not* a general definition. Renaming the key to `10-Digit Emergency` still needs doing; sourcing its text needs a decision from the working group.
 
 ## Constraint C — plurals and possessives never match
 
 The `\b` word boundary requires a non-word character after the term. `PSAPs` and `PSAP's` therefore get **no tooltip**.
 
-| Term | Plural form | Questions affected |
-|---|---|---|
-| `PSAP` | `PSAPs` / `PSAP's` | 6 |
-| `FTE` | `FTEs` / `FTE's` | 9 |
-| `SLA` | `SLAs` | 3 |
+*Match counts re-measured 2026-10-15: exact vs. exact-plus-optional-suffix.*
 
-📌 **`SLA` is the clearest casualty:** Q42–Q44 say *"partner agency **SLAs**"* — plural, so the tooltip never fires on the only questions that use the term.
+| Term | Exact matches today | Recoverable with suffix fix | Questions affected |
+|---|---|---|---|
+| `PSAP` | 22 | **27** (+5) | 6 |
+| `FTE` | 2 | **11** (+9) | 9 |
+| `SLA` | 0 | **3** (+3) | 3 |
+| `Incident` | 0 | **5** (+5) | Q16–Q21 |
+
+### ⚠️ `Incident` is a regression introduced by Pass 2
+
+Before the events → incidents change, the survey read "Total number of Law Enforcement **events** processed", which did not match `Incident` either — so this was always broken. **But the fix direction has now flipped:** the term and the survey now agree on wording and disagree only on number.
+
+| | Before Pass 2 | After Pass 2 |
+|---|---|---|
+| Survey text | "Law Enforcement **events**" | "Law Enforcement **incidents**" |
+| Glossary term | `Incident` | `Incident` |
+| Tooltip fires? | ❌ No — wrong word | ❌ No — plural |
+
+📌 **`Incident` now has the correct term but still produces zero tooltips across all five questions that use it.** This is the highest-value single fix available in the glossary: the term is now right, and only the matcher stands in the way. Gary mandated this term for these questions — the tooltip that explains it should actually appear.
 
 ### 🛠 Recommended fix
 
@@ -682,41 +820,74 @@ Allow an optional suffix:
 const regex = new RegExp(`\\b(${term})(?:['’]s|s)?\\b`, 'gi');
 ```
 
+**⚠️ Two additional defects to fix in the same edit:**
+
+1. **`term` is interpolated into a `RegExp` unescaped.** Every current term is metacharacter-clean (verified 2026-10-15 — no `.` `+` `*` `?` `(` `)` `[` `]` `{` `}` `|` `^` `$` `\`, and `/` is safe in a non-`RegExp` constructor). But any future term containing a metacharacter will either throw or silently mis-match. Add `escapeRegExp(term)`:
+
+   ```ts
+   const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+   const regex = new RegExp(`\\b(${escaped})(?:['’]s|s)?\\b`, 'gi');
+   ```
+
+2. **The `segment.toLowerCase() === term.toLowerCase()` equality check at `Question.tsx:50` will break** once the regex can match a suffix. With a matched group of `"PSAPs"` the segment no longer equals `"PSAP"`, so the tooltip will not render even though the regex matched. The comparison must compare against the **capture group**, not the whole segment:
+
+   ```ts
+   const split = part.split(regex);       // odd indices are capture-group 1
+   for (let i = 0; i < split.length; i++) {
+       const segment = split[i];
+       if (i % 2 === 1) {                 // was: segment.toLowerCase() === term.toLowerCase()
+           newParts.push(<Tooltip key={...} text={definition}>{segment}</Tooltip>);
+       } else {
+           newParts.push(segment);
+       }
+   }
+   ```
+
+   > Without this, the "fix" silently does nothing and the tests will still pass — the tooltip count assertion would need to assert on rendered output, not just that `Tooltip` was constructed.
+
 ---
 
 # 🔵 20. Glossary — missing terms
 
 Terms used in the survey with **no glossary entry**, verified by cross-reference:
 
-| Term | Used in | Why it matters | Source |
-|---|---|---|---|
-| **Incident** | Q16–Q21 | Gary's mandated term; currently undefined | Session notes L24 |
-| **NCIC** | Q20, Q10 area | Q20 asks for transaction counts with no definition | Q20 |
-| **Call processing time** | Q36–Q39 | The survey's core metric; boundary disputed (#7) | Heather, Crystal |
-| **Wrap-up time** | processing metrics | Affects agent-occupancy models | Justin Prahar |
-| **Radio keyup** | Q22, Q23 | Referenced without definition | Q22–Q23 |
-| **Warm transfer / Cold transfer** | Q24, Q25, Q41 | Sandy raised the distinction; drives workload model | Sandy Dyre |
-| **Work year (2,080 / 2,184)** | Q26–Q35 | Prerequisite for FTE normalization | Gary, Rebecca |
-| **Contracted vs. Net Available Hours** | Q26–Q35 | Crystal's availability model | Crystal Lawrence |
-| **Concurrent calls / Busy hour** | Q24-ish | The metric that actually drives NGCS cost | Daniel Hagan, Justin |
-| **NGCS / ACD** | Q36, Q40 | Pierre's measurement caveats | Pierre Foucault, Sam Bard |
-| **Backup center / Mutual Aid** | Q9, Q25 | Roxy dispatches for 5 down counties — not captured | Roxy VanGundy |
-| **988 / RTT / Satellite SOS** | Q10 | Requested additions to call types | Sandy, Martin Michaud, Diane Dupar |
-| **RFA / Call provider type** | Q36, Q40 | Needed for comparable time-series analysis | Daniel Hagan |
+| Term | Used in | Why it matters | Source | Status |
+|---|---|---|---|---|
+| **Incident** | Q16–Q21 | Gary's mandated term; currently undefined | Session notes L24 | ✅ **CLOSED 2026-10-15** |
+| **NCIC** | Q20, Q10 area | Q20 asks for transaction counts with no definition | Q20 | ⬜ Open |
+| **Call processing time** | Q36–Q39 | The survey's core metric; boundary disputed (§7) | Heather, Crystal | ⬜ Open — blocked on §7 |
+| **Wrap-up time** | processing metrics | Affects agent-occupancy models | Justin Prahar | ⬜ Open |
+| **Radio keyup** | Q22, Q23 | Referenced without definition | Q22–Q23 | ⬜ Open |
+| **Warm transfer / Cold transfer** | Q24, Q25, Q41 | Sandy raised the distinction; drives workload model | Sandy Dyre | ⬜ Open — blocked on §6 |
+| **Work year (2,080 / 2,184)** | Q26–Q35 | Prerequisite for FTE normalization | Gary, Rebecca | ⬜ Open — blocked on §8 |
+| **Contracted vs. Net Available Hours** | Q26–Q35 | Crystal's availability model | Crystal Lawrence | ⬜ Open — blocked on §8 |
+| **Concurrent calls / Busy hour** | Q24-ish | The metric that actually drives NGCS cost | Daniel Hagan, Justin | ⬜ Open |
+| **NGCS / ACD** | Q36, Q40 | Pierre's measurement caveats | Pierre Foucault, Sam Bard | ⬜ Open |
+| **Backup center / Mutual Aid** | Q9, Q25 | Roxy dispatches for 5 down counties — not captured | Roxy VanGundy | ⬜ Open |
+| **988 / RTT / Satellite SOS** | Q10 | Requested additions to call types | Sandy, Martin Michaud, Diane Dupar | ⬜ Open — blocked on §15 / length budget |
+| **RFA / Call provider type** | Q36, Q40 | Needed for comparable time-series analysis | Daniel Hagan | ⬜ Open |
+
+**Incident closed 2026-10-15** with the NENA KB definition — *"A real-world occurrence, or event, for which one or more calls may be received."* See §25. ⚠️ The entry exists but its tooltip still never fires (plural mismatch — §19 Constraint C).
+
+> 📌 **Five of these have NENA KB equivalents** that could be sourced rather than drafted, consistent with Gary's position that definitions live in the KB. Verified present on 2026-10-15: `ACD (Automatic Call Distributor)`, `Busy Hour`, `Average Busy Hour`, `Call Handling`, `988`, `RTT (Real-Time Text)`, `Transfer`.
+>
+> **`NCIC`, `Radio keyup`, `Wrap-up time`, `Work year`, `Concurrent calls`, `Warm/Cold transfer`, `Contracted vs. Net Available Hours` and `RFA` have no KB entry** — those need working-group authorship, and several are blocked on open decisions elsewhere in this document.
 
 ---
 
 # 🔵 21. Glossary — definition rewrites
 
-| Term | Current definition | Issue | Suggested |
-|---|---|---|---|
-| **FTE** | *"A unit that indicates the workload of an employed person"* | Too thin; omits the work-year basis and part-time/job-share treatment | Include the 2,080 / 2,184 denominator (see #8) and state whether part-time and job-share are included |
-| **CAD** | *"Computer Aided Dispatch. Systems used by dispatchers to track status and location of resources."* | Defines dispatch systems generally, not the **data source** that `data_location` fields depend on | State which data comes from CAD vs. phone software — Joel: *"the source of truth is two different data tables, the call answer solutions, and the CAD solution"* |
-| **PSAP** | *"A facility equipped and staffed to receive 9-1-1 calls."* | No Primary/Secondary distinction | Add, **by reference to the EPRC** (see #18) |
-| **10-Digit Emergency** | Currently named `"Ten-Digit Emergency"` | Never matches (see #19) | Rename to `"10-Digit Emergency"`; clarify the boundary vs. non-emergency/admin |
-| **APCO** | *"Association of Public-Safety Communications Officials"* | ⚠️ Verify the official expansion — the hyphenation looks incorrect | Confirm against APCO's official name |
+*Status as of 2026-10-15. Superseded in part by §25 — read that section before acting.*
 
-📌 **Also consider removing** `CFAI`, `IAED`, `APCO`, `NG9-1-1`, and `QA/QI` from the visible glossary — they match no question. If they're wanted for future phases, move them to a separate "reserved terms" list so the panel reflects what actually helps respondents.
+| Term | Original definition | Issue | Disposition |
+|---|---|---|---|
+| **FTE** | *"A unit that indicates the workload of an employed person"* | Too thin; omits the work-year basis and part-time/job-share treatment | ⬜ **OPEN** — no NENA KB entry exists. Blocked on §8 (2,080 vs 2,184) and the open question on part-time/job-share. Must be locally authored. |
+| **CAD** | *"Computer Aided Dispatch. Systems used by dispatchers to track status and location of resources."* | Defines dispatch systems generally, not the **data source** that `data_location` fields depend on | ✅ **CLOSED** — NENA KB verbatim (§25) |
+| **PSAP** | *"A facility equipped and staffed to receive 9-1-1 calls."* | No Primary/Secondary distinction | 🟡 **PARTIAL** — NENA KB verbatim applied (§25); Primary/Secondary remains open (§18) |
+| **10-Digit Emergency** | Currently named `"Ten-Digit Emergency"` | Never matches (§19 Constraint B) | ⬜ **OPEN** — no NENA KB entry; needs both a key rename and locally authored text |
+| **APCO** | *"Association of Public-Safety Communications Officials"* | ⚠️ Verify the official expansion — the hyphenation looks incorrect | ✅ **CLOSED** — hyphen confirmed incorrect, removed (§25) |
+
+**Status on the "reserved terms" suggestion:** `CFAI`, `IAED`, `APCO`, `NG9-1-1`, `QA`/`QI` still match no question. The recommendation to hide or relocate them **stands but is deferred** — the NENA-sourced text makes them more defensible to keep for future survey phases, and the §20 restructure will change the panel anyway. Revisit once the missing terms land.
 
 ---
 
@@ -734,6 +905,17 @@ Tooltips render in **`text`** and **`responseEmphasis`** only. They do **not** r
 **Why this is a problem:** `data_location` is where the CAD / phone-software guidance lives, and where measurement caveats would naturally go. Any definition placed there gets **no glossary support**.
 
 **Recommendation:** route `description` and `data_location` through `renderTextWithTooltips` as well.
+
+### 🗓️ Status 2026-10-15 — open, but now cheaper
+
+Still open. It interacts with two completed passes:
+
+- **§25 has landed** — the definitions that would populate these fields now exist and are NENA-authoritative. Do this step **after** §20 adds the missing terms, so the work is done once.
+- **§19 Constraint C's matcher fix should land first.** `plainDescription` and `data_location` are both pre-stripped of HTML (`Question.tsx:23–29`) before rendering, so they are safe for the tooltip splitter. But if the plural fix lands afterward, those fields would be split by *two* different code paths and the capture-group bug would have to be fixed in both.
+
+**Recommended order:** §19 Constraint C → §20 missing terms → **this step** → §25 provenance metadata.
+
+> 📌 **Note on `description` specifically:** it is the field §8 uses to define the work-year basis and §9 uses to define "optimum." Both are open questions the working group still needs to answer. Routing `description` through tooltips makes any glossary term used in those new definitions clickable, which is the reason to do this before those edits land rather than after.
 
 ---
 
@@ -802,39 +984,269 @@ Q0 promises *"approximately 20 to 30 minutes."* With data gathering (Q0.1 lists 
 
 ---
 
+# 🟠 25. Glossary — NENA Knowledge Base alignment
+
+*Added 2026-10-15. Closes or advances #18, #19, #21.*
+
+📌 **Source of authority:** [`kb.nena.org/wiki/Category:Glossary`](https://kb.nena.org/wiki/Category:Glossary) — **637 entries**. Session notes L20, Gary: *"they want to keep the definitions within NENA Kb."*
+
+## Method
+
+All 637 KB terms were extracted and diffed against the 13 local glossary entries. Result: **7 exact term matches**, **2 partial** (the KB structures the concept differently), **4 with no KB counterpart**. The 10 matching entries were then re-fetched individually via the MediaWiki API and their definitions replaced verbatim.
+
+## What was applied (Pass 3)
+
+| Term | NENA KB page | Substantive change |
+|---|---|---|
+| **PSAP** | `PSAP (Public Safety Answering Point)` | ⚠️ Now **"a physical or *virtual* entity"**; drops the unstated staffing requirement |
+| **APCO** | `APCO (Association of Public Safety Communications Officials)` | ⚠️ Hyphen **removed** — "Public **Safety**", confirming the §21 suspicion |
+| **Incident** | `Incident` | ⚠️ Redefined from a CAD record to a data-model-neutral occurrence — see §2 |
+| **NG9-1-1** | `NG9-1-1 (Next Generation 9-1-1)` | Obsolete "initiative" framing → formal five-clause (A)–(E) system definition |
+| **CAD** | `CAD (Computer-Aided Dispatch)` | Retargeted to telecommunicator automation; hyphenated "Computer-**Aided**" |
+| **SLA** | `SLA (Service Level Agreement)` | Gains internal/external distinction and output-based framing |
+| **NENA** | `NENA (National Emergency Number Association)` | Full organisational description, incl. "The 9-1-1 Association" |
+| **TTY/TDD** | `TTY (Teletypewriter)` | NENA's full device definition; TDD demoted to a related-term pointer |
+| **QA** | `QA (Quality Assurance)` | Split from `QA/QI`; NENA's process definition |
+| **QI** | `QI (Quality Improvement)` | Split from `QA/QI`; NENA's system definition |
+
+### 📌 Three findings that change respondent-facing meaning
+
+1. **PSAP now says "virtual."** The old wording implied a staffed physical facility. NENA's definition admits a virtual PSAP — directly relevant to Canadian respondents and to any NG9-1-1 virtual-PSAP migration.
+2. **Incident is no longer "one CAD record."** NENA's definition explicitly allows **multiple calls per incident**. Respondents must count incidents, not calls — see the note at §2, which is now a live data-quality risk for Q16–Q19.
+3. **NG9-1-1 is a system, not an initiative.** The old text described a programme; NENA-STA-010 defines a technical system with five mandatory capabilities (A)–(E).
+
+## Deliberately not changed
+
+| Term | Reason |
+|---|---|
+| `CFAI` | No KB entry. Zero search hits across the entire wiki. |
+| `IAED` | No KB entry. Zero search hits across the entire wiki. |
+| `FTE` | No KB entry. Zero search hits — not even a "Full-Time Equivalent" page. Needs local authorship; blocked on §8. |
+| `Ten-Digit Emergency` | No KB entry for the general concept. Nearest relative `AEAN (Alternate Emergency Access Number)` is a VoIP-specific construct and is **not** a general definition — unsuitable. |
+
+> ⚠️ **`CFAI` and `IAED` are themselves suspect entries.** They are private accreditation bodies, not 9-1-1 terminology. Their absence from the KB is meaningful rather than an oversight. Recommend raising removal with the working group rather than retaining them (see §21).
+
+## Verification (2026-10-15)
+
+- JSON parses; **14 entries**; no duplicate `term` values
+- **95/95 tests passing** — unchanged from Pass 1
+- `tsc --noEmit`: **37 errors before and after** the change, all pre-existing vitest-typing noise in `.test` files; **zero in application code**
+- Glossary match counts against survey text re-measured and recorded at §19
+
+## 🛠 Provenance metadata — requirements
+
+**Problem.** Ten of fourteen definitions are now copies of an external, living document. Nothing in the repo records *which* ones, *where* they came from, or *when* they were last checked. Three concrete consequences:
+
+- A future sync cannot tell which entries are safe to overwrite wholesale and which must be preserved
+- Drift is invisible — if NENA revises *Incident*, nobody finds out
+- The stated position that "definitions live in the NENA KB" (Gary, session notes L20) is **unauditable**
+
+### 1. Fields required on `GlossaryItem` (`src/types/index.ts`)
+
+```ts
+export interface GlossaryItem {
+    term: string;
+    definition: string;
+    source?: 'nena-kb' | 'local';
+    sourceRef?: string;       // KB slug, e.g. 'PSAP_(Public_Safety_Answering_Point)'
+    sourceRetrieved?: string; // ISO date of last KB check
+    nenaTerm?: string;        // canonical KB title, when it differs from term
+    localNote?: string;       // text WE appended — held separately from definition
+}
+```
+
+### 2. Why each field is required
+
+| Field | Needed for |
+|---|---|
+| `source` | Distinguishes the 10 KB-sourced entries from the 4 local ones. Without it a re-sync cannot tell an authoritative definition from a local one it must not clobber. |
+| `sourceRef` | Makes each definition traceable and re-checkable against a specific KB page. |
+| `sourceRetrieved` | The KB states *"Approved updates to NENA Knowledge Base Glossary last made: **September 30, 2026**"*. Recording our retrieval date lets a reviewer see both how current our copy is and how current the KB itself was when we read it. |
+| `nenaTerm` | **Load-bearing — see §3.** |
+| `localNote` | **Load-bearing — see §4.** |
+
+### 3. `nenaTerm` is required, not optional
+
+KB titles are `PSAP (Public Safety Answering Point)`, but `Question.tsx:41` builds the tooltip regex from `term`. **Renaming `term` to the KB's canonical form makes it permanently unmatchable** — the parenthetical expansion never appears in survey text. Therefore:
+
+- `term` must remain the short, matchable string (`PSAP`, `TTY/TDD`, `QA`)
+- `nenaTerm` carries the canonical display name (`PSAP (Public Safety Answering Point)`)
+
+📌 `Glossary.tsx:24` currently renders `item.term` as the panel label. To display canonical names **without** breaking tooltips it must render `item.nenaTerm ?? item.term`.
+
+### 4. `localNote` must be a separate field, not a convention
+
+`TTY/TDD` currently reads: NENA's verbatim TTY definition, then *"Related term: TDD (Telecommunications Device for the Deaf)."* **That suffix is ours, not NENA's.** If it lives inside `definition`, the next re-sync overwrites it silently. Holding it in `localNote` makes the re-sync rule mechanical:
+
+> Replace `definition` only. Never touch `term`, `nenaTerm`, or `localNote`. Skip entirely any entry where `source !== 'nena-kb'`.
+
+### 5. Component changes required
+
+| File | Change |
+|---|---|
+| `src/types/index.ts` | Extend `GlossaryItem` with the optional fields above |
+| `src/data/glossary_data.json` | Populate `source`, `sourceRef`, `sourceRetrieved` (`2026-10-15`) on the 10 KB entries; mark the other 4 `local` |
+| `src/components/Glossary.tsx` | Render `item.nenaTerm ?? item.term`; optionally show a source marker |
+| `src/components/Question.tsx` | Tooltip body may append `localNote`. **Backwards compatible** — it currently reads only `term` and `definition` |
+| *(new)* sync/verify script | Re-fetch each `sourceRef`, diff against `definition`, report drift |
+
+### 6. Backwards compatibility — confirmed 2026-10-15
+
+Both consumers read only `term` and `definition` (`Glossary.tsx:24`, `Question.tsx:39–41`), so adding optional fields breaks nothing. Verified against current source.
+
+### 7. Suggested guard test
+
+Extend the existing regression-guard pattern from §1 (`server/answerValidator.test.ts`) with glossary assertions:
+
+- every entry with `source === 'nena-kb'` has both `sourceRef` and `sourceRetrieved`
+- every `sourceRef` resolves to a page in `Category:Glossary`
+- no duplicate `term` values
+- every `term` is regex-metacharacter-clean — guards the escaping fix required by §19
+- at least one `localNote` is non-empty, so the field cannot silently rot
+
+### 8. ⚠️ Open questions — working-group input needed
+
+- **Should provenance be visible to respondents?** Displaying "Source: NENA KB" in the Glossary panel signals to PSAPs that definitions are authoritative and centrally maintained — a trust benefit. If it is internal-only, it belongs in the repo and not the UI.
+- **Re-sync cadence** — manual, or scheduled? The KB's own currency marker (Sept 30, 2026) suggests quarterly is plausible, but a stale `sourceRetrieved` is worse than none if nobody acts on it.
+- **Does NENA require attribution?** Copying ~10 definitions verbatim from the NENA KB into a NENA-owned survey is likely fine, but confirm rather than assume.
+
+---
+
 # 📋 Implementation sequence
 
 Ordered by dependency. Steps 1–3 are prerequisites for everything else.
 
 | Step | Action | Items | Blocking? |
 |---|---|---|---|
-| **1** | ~~Fix validator/JSON ID drift; add CI guard~~ | #1 | ✅ **DONE 2026-10-14** |
+| **1** | ~~Fix validator/JSON ID drift; add CI guard~~ | #1 | ✅ **DONE 2026-10-14** (Pass 1) |
 | **2** | Resolve deadline + reference year + survey name | #10 | 🟠 Yes — affects all 15 count questions |
 | **3** | Decide PSAP identifier & amend privacy text; confirm IRB status | #11 | ⚖️ Yes — affects fielding |
 | **4** | Set question budget | #24 | ⚖️ Yes — gates additions |
-| **5** | Apply agreed data semantics (N/A control, incident/event) | #2, #3, #4 | 🟠 |
+| **5** | Apply agreed data semantics (N/A control, incident/event) | #2, #3, #4 | 🟡 #2 **DONE** (Pass 2); #3, #4 open |
 | **6** | Rework transfer questions | #6 | 🟠 |
 | **7** | Add work-year denominator; fix "optimum" definition | #8, #9 | 🟠 Highest analytical value |
 | **7b** | Settle the processing-time boundary | #7 | 🟠 |
 | **8** | Structural edits: Q7/Q9 overlap, Q4, Q3, Q5 | #5, #13, #14, #18 | 🟡 |
 | **9** | Coverage additions (within budget) | #15, #16, #17 | 🟡 |
-| **10** | Glossary: `Question.tsx` fixes, then content | #19, #20, #21, #22 | 🟠 |
+| **10a** | Glossary: escape + plural matching in `Question.tsx` | §19, §21 | 🟠 **NEXT** — restores tooltips on 22 questions |
+| **10b** | Glossary: add the ~12 missing terms | §20 | 🟠 |
+| **10c** | Glossary: tooltips in `description` / `data_location` | §22 | 🟠 |
+| **10d** | Glossary: provenance metadata + sync script | §25 | 🟡 Do before the next content change |
 | **11** | Copy fixes — atomic across all three files | #23 | 🔵 |
 | **12** | Incentives decision; re-time survey; update Q0 estimate | #12, #24 | ⚖️ |
 
 > ⚠️ **Do not reorder steps 1 and 11's atomic changes.** Any edit to a question ID, a `type`, or an option string requires the matching `answerValidator.ts` change in the same commit.
 
+### Step 10 was reordered 2026-10-15
+
+Pass 3 landed glossary **content** (step 10's second half) before the `Question.tsx` **matching** fixes (step 10's first half). That was the right call — the NENA-sourced definitions are correct regardless of whether tooltips fire — but it leaves the matching bugs untouched. Specifically:
+
+- `Incident` has the right term and the right definition and **still renders zero tooltips** across Q16–Q19 and Q21
+- `SLA` and `FTE` likewise
+
+**Step 10a is now the highest-value remaining glossary task.** A single regex change restores tooltips on **22 distinct questions** (measured 2026-10-15 across all 49):
+
+| Term | Restored on |
+|---|---|
+| `Incident` | Q16, Q17, Q18, Q19, Q21 — **5** |
+| `FTE` | Q26, Q27, Q28, Q29, Q30, Q32, Q33, Q34, Q35 — **9** |
+| `SLA` | Q42, Q43, Q44 — **3** |
+| `PSAP` | Q0, Q0.2, Q6, Q7, Q8 — **5** |
+
+See §19 Constraint C — ⚠️ the change needs the capture-group fix as well, or it silently no-ops while tests still pass.
+
 ---
 
 # ❓ Open questions requiring working-group input
 
-1. **What exactly is the processing-time boundary?** Answer→dispatch, answer→dispatchable, or talk time + wrap-up? (#7)
-2. **Which work-year denominator is canonical** — 2,080 or 2,184? (#8)
-3. **Does FTE include part-time, job-share, and casual staff?** (#8)
-4. **What should each blank answer mean** in the dataset — not applicable, unavailable, or unknown? (#4)
-5. **Will the survey go through IRB review?** Unanswered in both source documents. (#11)
-6. **Can a PSAP identifier be collected** without invalidating the Q0.2 anonymity promise? (#11)
-7. **Is the 07/31/2026 deadline an error, or has the launch already lapsed?** (#10)
-8. **What is the correct reference year** — 2025 or 2026 partial? (#10)
-9. **Is the survey length budget fixed, and at what number?** (#24)
-10. **Is "Incident" confirmed as the NENA-preferred term** for all of Q16–Q21? (#2)
+1. **What exactly is the processing-time boundary?** Answer→dispatch, answer→dispatchable, or talk time + wrap-up? (§7)
+2. **Which work-year denominator is canonical** — 2,080 or 2,184? (§8)
+3. **Does FTE include part-time, job-share, and casual staff?** (§8) — also blocks the FTE glossary definition (§21)
+4. **What should each blank answer mean** in the dataset — not applicable, unavailable, or unknown? (§4)
+5. **Will the survey go through IRB review?** Unanswered in both source documents. (§11)
+6. **Can a PSAP identifier be collected** without invalidating the Q0.2 anonymity promise? (§11)
+7. **Is the 07/31/2026 deadline an error, or has the launch already lapsed?** (§10)
+8. **What is the correct reference year** — 2025 or 2026 partial? (§10)
+9. **Is the survey length budget fixed, and at what number?** (§24)
+10. ~~Is "Incident" confirmed as the NENA-preferred term for all of Q16–Q21?~~ — ✅ **CLOSED 2026-10-15.** Confirmed against the NENA KB. See §2 and §25.
+11. **NEW — Should respondents count incidents or CAD records in Q16–Q21?** NENA's definition allows multiple calls per incident. Without `responseEmphasis` guidance, incident totals may not reconcile with call totals. (§2)
+12. **NEW — Should `CFAI` and `IAED` be removed from the glossary?** Neither appears in the NENA KB, neither matches any question, and neither is 9-1-1 terminology. (§21, §25)
+13. **NEW — Should glossary provenance be visible to respondents, and on what re-sync cadence?** (§25)
+14. **NEW — Who owns a locally-authored `10-Digit Emergency` definition?** No NENA KB entry exists; it needs a working-group author. (§19 Constraint B, §21)
+15. **NEW — Should `QA` / `QI` / `APCO` / `NG9-1-1` be retained despite matching no question?** Now NENA-sourced, which makes retention more defensible than when §21 originally suggested removing them. (§19 Constraint A)
+
+---
+
+# 🔵 26. TypeScript build gates — both were broken
+
+*Added 2026-10-15. Fixed in Pass 6, commit `a65d045`.*
+
+📌 **Not a survey-content issue.** Found while verifying Pass 4. Both gates were failing, so `npm run start:prod` could not deploy.
+
+## Impact
+
+| Gate | Command | Before | After |
+|---|---|---|---|
+| Front-end | `npm run build` = `tsc && vite build` | **37 errors** | ✅ **0** |
+| Server | `npm run build:server` = `tsc -p server/tsconfig.json` | **27 errors** | ✅ **0** |
+
+`npm run start:prod` is `build:server && server:prod`, so **production deploy was blocked entirely**. Artifacts had to be produced by invoking `vite build` directly, bypassing the gate.
+
+**Confirmed pre-existing:** both counts reproduce at `c07e487` with all Pass 2–5 changes stashed. Nothing in this work caused them.
+
+## Front-end root cause — 35 of 37
+
+`vite.config.ts:20` sets `test.globals = true`, so `vi` / `describe` / `it` / `expect` / `beforeEach` **exist at runtime**. But `tsconfig.json` had `"include": ["src"]` and declared no `types`, so TypeScript never loaded `vitest/globals` and could not see them.
+
+Fix: add `"types": ["vitest/globals", "node"]`. One line, matches config that was already there.
+
+> 📌 This was latent because the repo has **two styles** of test. Five files (`surveyService`, `analytics`, `answerValidator`, `database.retention`, `server`) import explicitly `from 'vitest'`. Three (`App`, `Question`, `SurveyLanding`) relied on ambient globals. Only the latter three failed. An alternative fix — adding explicit imports to those three — would also work but leaves `globals: true` doing real work while looking unused.
+
+**Remaining 2** were `noUnusedLocals` on `import React from 'react'` in `Question.test.tsx` and `SurveyLanding.test.tsx` — unnecessary under `jsx: "react-jsx"`. `App.test.tsx` legitimately keeps its import (uses `React.ReactNode` as a type).
+
+## Server root causes — all 27
+
+| Count | Cause | Fix |
+|---|---|---|
+| 4 | `.ts` extension in import specifiers | Dropped the extension. **Enabling `allowImportingTsExtensions` was not viable** — `server/tsconfig.json` emits JS, and that flag requires `noEmit` or `emitDeclarationOnly` |
+| 22 | `createDeps()` mock had drifted from the `ServerDeps` interface | Exported `ServerDeps`; annotated `createDeps()` with a mapped `MockedFunction` type |
+| 1 | `answerValidator.test.ts` inline survey type omitted `options` | Added `options?: string[]` |
+| 2 | `duckdb.ts` passed `unknown[]` to the DuckDB driver | Typed params as `DuckDBValue[]` |
+
+**The mock-drift fix has a subtlety worth recording.** Annotating `createDeps(): ServerDeps` alone *worsened* things — it erased the `Mock` type, so `.mockResolvedValueOnce`, `.mockReturnValueOnce` and `.not.toHaveBeenCalled()` stopped compiling (22 errors → 8). The fix is to map over the interface so each member stays a `Mock`:
+
+```ts
+type MockedServerDeps = { [K in keyof ServerDeps]: MockedFunction<ServerDeps[K]> };
+```
+
+This satisfies `createApp(deps)` **and** keeps assertion methods. A second one-line fix was needed: `validateAnswer`'s mock returned `{ valid: true }` whose inferred type is `boolean`, but `AnswerValidationResult` is a discriminated union keyed on the literal `true`. Required `valid: true as const`.
+
+📌 **These mock errors were real drift, not noise.** The mocks had fallen behind the `ServerDeps` interface — meaning the route tests were asserting against a dependency shape the server no longer actually uses. Worth re-running the suite after any interface change.
+
+## Follow-up — not fixed here
+
+- **`server/dist/` is tracked** (`.gitignore:10` only excludes root `/dist`) and `server/tsconfig.json` has `include: ["**/*.ts"]`, so **four compiled test files are committed as build output**. Should be excluded.
+- `tsconfig.node.json` is declared in `references` but plain `tsc` never builds it — only `tsc --build` would.
+
+## Verification
+
+- `npm run build` → 0 errors, bundle emitted
+- `npm run build:server` → 0 errors, exit 0
+- `npm test -- --run` → **95/95 passing**, 8 files
+
+---
+
+# 📌 Commit state
+
+**Working tree clean.** All six passes committed to `main` on 2026-10-15 and pushed to `origin/main`.
+
+| Commit | Pass | Contents |
+|---|---|---|
+| `c07e487` | 1 | Validator alignment (pre-existing) |
+| `07a7f00` | 2 | events → incidents, Q16–Q21 |
+| `dd17a6e` | 3 | NENA KB glossary alignment, 10 entries |
+| `1874630` | 4 | Snapshot removal (877 lines) |
+| `5fcda39` | 5 | Static rebuild — new bundle, `index.html` repointed |
+| `a65d045` | 6 | Build gates — both TypeScript gates to 0 errors |
+
+> Each is a single logical change and independently revertable. Pass 5 is deliberately separate so the 224 kB bundle swap does not obscure the source change in review.
