@@ -24,6 +24,7 @@ Work is tracked in named passes. Each pass is listed with the items it closed, t
 | **4** — Snapshot removal | 2026-10-15 | hygiene | **deleted** `src/data/survey_data_20260311.json`; `src/components/SurveyForm.tsx` | **95/95 tests passing**; no dangling refs | ✅ `1874630` |
 | **5** — Static rebuild | 2026-10-15 | hygiene | `static/` — new bundle, `index.html` repointed | Bundle verified free of snapshot | ✅ `5fcda39` |
 | **6** — Build gates | 2026-10-15 | infra | `tsconfig.json`, `server/*`, 2 test files | **Both gates 0 errors**; 95/95 tests | ✅ `a65d045` |
+| **7** — Q22 numeric | 2026-10-15 | #3 | `src/data/survey_data.json`, `server/answerValidator.ts`, `server/answerValidator.test.ts` | **Both gates 0 errors**; 96/96 tests; validator probed across 8 inputs | ⏳ pending commit |
 
 ### Pass detail
 
@@ -38,6 +39,8 @@ Work is tracked in named passes. Each pass is listed with the items it closed, t
 **Pass 5 — static rebuild.** Regenerated `static/` so the deleted snapshot no longer ships.
 
 **Pass 6 — build gates.** Fixed both broken TypeScript gates, which had left `npm run start:prod` undeployable. Details at §26.
+
+**Pass 7 — Q22 numeric (#3).** `text` → `number`, wording aligned with Q23, and "Estimated" retained as an explicit qualifier rather than deleted. Enabled the Q22↔Q23 consistency check. Details at §3.
 
 ### ✅ All passes committed — working tree clean as of 2026-10-15
 
@@ -71,8 +74,8 @@ Every recommendation cites its source so the working group can verify intent bef
 | # | Area | Recommendation | Priority | Status | Source |
 |---|---|---|---|---|---|
 | 1 | Validator drift | ~~10 questions rejected server-side~~ | ✅ DONE | ✅ **DONE** (2026-10-14) | Code audit |
-| 2 | Data hygiene | "events" → "incidents" (Q16–Q21) | 🟠 HIGH | ✅ **DONE** (2026-10-14) | Gary (NENA CRC) |
-| 3 | Data hygiene | Q22 `text` → `number`; remove "Estimated" | 🟠 HIGH | ⬜ Open | Review note L2 |
+| 2 | Data hygiene | ~~"events" → "incidents" (Q16–Q21)~~ | 🟠 HIGH | ✅ **DONE** (2026-10-14) | Gary (NENA CRC) |
+| 3 | Data hygiene | ~~Q22 `text` → `number`~~ | 🟠 HIGH | ✅ **DONE** (2026-10-15) — "Estimated" kept as a qualifier | Review note L2 |
 | 4 | Data hygiene | Add "Not available / Don't know" escape hatch | 🟠 HIGH | ⬜ Open | Review note L1, Daniel Hagan |
 | 5 | Structure | Q7 duplicates Q9 | 🟠 HIGH | ⬜ Open | Brian Bond |
 | 6 | Structure | Transfers: warm/cold, internal/external, reason, NA | 🟠 HIGH | ⬜ Open | Sandy Dyre, Sam Bard, Burt Ray, Daniel |
@@ -477,6 +480,75 @@ Crystal proposed a two-tier availability model:
 Optionally, if schedule detail is needed, split contracted vs. net available hours — but that is 2 questions, so weigh against the length budget.
 
 > **Verify:** confirm 2,184 is the correct figure for the schedule convention NENA intends to standardize on, and whether it should be stated as a derived value (182 × 12) or a flat constant.
+
+## ✅ Resolution — implemented 2026-10-15 (Pass 7)
+
+Q22 is now numeric. Three files changed, atomically per the §1 rule.
+
+**`src/data/survey_data.json`**
+- `text` → `"Total number of radio keyups in the last calendar year (an estimate is acceptable):"`
+- `type`: `"text"` → `"number"`
+- `data_location`: appended *"If your center does not record radio keyups, please leave this blank."*
+
+**`server/answerValidator.ts`**
+- `'22'`: `kind: 'text'` → `kind: 'number', min: 0, max: 100_000_000, integerOnly: true`
+- Comment updated — it previously read *"estimated radio keyups (free text — see survey data)"*
+
+**`server/answerValidator.test.ts`** — the Pass 1 test that asserted Q22 accepted free text was obsolete and was split into two: one covering Q22 numeric behaviour, one retaining the Q20 assertions.
+
+### Why "Estimated" was not simply deleted
+
+Three findings shaped this, all verified 2026-10-15.
+
+**1. The `text` type was deliberate, not drift.** §1's Pass 1 did not *miss* Q22 — it **changed it from `number` to `text`**, and recorded that as the fix. The original validator comment read *"estimated radio keyups (free text — see survey data)"*. This recommendation therefore reverses a deliberate Pass 1 decision. 📌 **Worth confirming with whoever made that call before the next pass.**
+
+**2. The payoff is a Q22↔Q23 consistency check.** The two questions are the same quantity at different time scales, so `Q22 ÷ 8,760 ≈ Q23`. Verified:
+
+| Q22 total | Q22 ÷ 8760 | Q23 reported | Verdict |
+|---|---|---|---|
+| 8,760,000 | 1,000.0 | 1,000 | consistent |
+| 17,520,000 | 2,000.0 | 2,000 | consistent |
+| 8,760,000 | 1,000.0 | 10 | ⚠️ FLAG ×0.01 — daily read as hourly |
+| 438,000 | 50.0 | 5,000 | ⚠️ FLAG ×100 — understated |
+
+A ±20% band accommodates partial-year and seasonal skew. This check was impossible before, because `text` can hold *"about 2 million"*, *"unknown"*, and a typo'd *"2,000,000"* indistinguishably.
+
+**3. ⚠️ The numeric change removes an accidental escape hatch — mitigated, not solved.** With `text`, a centre that cannot produce keyup data typed `"Not available"` and it was stored verbatim. With `number`, that answer is rejected (`"Answer must be a finite number"`). Confirmed by direct probe:
+
+| Input | Result |
+|---|---|
+| `87600` | ✅ ACCEPT `87600` |
+| `43800000` | ✅ ACCEPT `43800000` |
+| `100000001` | ❌ REJECT — exceeds cap |
+| `12.5` | ❌ REJECT — must be a whole number |
+| `-5` | ❌ REJECT — must be at least 0 |
+| `approx 2 million` | ❌ REJECT — must be a finite number |
+| `N/A` | ❌ REJECT — must be a finite number |
+
+**Mitigation:** the `data_location` now tells respondents to leave the field blank if they do not record keyups, and the question text keeps *"an estimate is acceptable"* rather than demanding precision the respondent may not have.
+
+> ⚠️ **Open convention, deliberately local.** For Q22, **blank now means "not recorded / not available."** That is a per-field convention chosen here, not a survey-wide one. §4 remains the proper fix — a genuine escape hatch across all affected questions — and is still blocked on open question 4. Note that **no question in the survey is `required: true`**, so a blank was always possible; this change moves the failure mode from typed-honesty to silent-blank, it does not create a new one.
+
+### Cap: 100M is correct, and the inconsistency runs the other way
+
+§3 asked whether yearly totals might exceed the cap. Checked — they do not:
+
+| Implied rate | Yearly total | Under 100M |
+|---|---|---|
+| 50 keyups/hr | 438,000 | ✅ |
+| 2,000 keyups/hr | 17,520,000 | ✅ |
+| 5,000 keyups/hr | 43,800,000 | ✅ |
+
+100M/yr ≈ 11,400 keyups/hr sustained — generous but defensible for a large multi-jurisdiction centre.
+
+> 📌 **The loose cap is Q23's, not Q22's.** Q23 is capped at 100,000/hour, which is **28 keyups per second sustained** — implausible. Its implied yearly maximum (876M) is 8.8× the Q22 cap, so the two ceilings are not derived from one another. Not changed here, but worth tightening: at ~10,000/hr the implied annual ceiling becomes 87.6M, which would sit consistently under Q22's 100M.
+
+### Verification
+
+- JSON parses; 49 questions; Q22 `type: "number"`
+- Both TypeScript gates: **0 errors**
+- **96/96 tests passing** (was 95 — the split test adds one)
+- Validator behaviour probed directly across 8 inputs, tabulated above
 
 ### 🛠 Existing FTE questions to review
 
@@ -1122,7 +1194,7 @@ Ordered by dependency. Steps 1–3 are prerequisites for everything else.
 | **2** | Resolve deadline + reference year + survey name | #10 | 🟠 Yes — affects all 15 count questions |
 | **3** | Decide PSAP identifier & amend privacy text; confirm IRB status | #11 | ⚖️ Yes — affects fielding |
 | **4** | Set question budget | #24 | ⚖️ Yes — gates additions |
-| **5** | Apply agreed data semantics (N/A control, incident/event) | #2, #3, #4 | 🟡 #2 **DONE** (Pass 2); #3, #4 open |
+| **5** | Apply agreed data semantics (N/A control, incident/event) | #2, #3, #4 | 🟡 #2 **DONE** (Pass 2), #3 **DONE** (Pass 7); #4 open |
 | **6** | Rework transfer questions | #6 | 🟠 |
 | **7** | Add work-year denominator; fix "optimum" definition | #8, #9 | 🟠 Highest analytical value |
 | **7b** | Settle the processing-time boundary | #7 | 🟠 |
@@ -1174,6 +1246,8 @@ See §19 Constraint C — ⚠️ the change needs the capture-group fix as well,
 13. **NEW — Should glossary provenance be visible to respondents, and on what re-sync cadence?** (§25)
 14. **NEW — Who owns a locally-authored `10-Digit Emergency` definition?** No NENA KB entry exists; it needs a working-group author. (§19 Constraint B, §21)
 15. **NEW — Should `QA` / `QI` / `APCO` / `NG9-1-1` be retained despite matching no question?** Now NENA-sourced, which makes retention more defensible than when §21 originally suggested removing them. (§19 Constraint A)
+16. **NEW — Should `Q23`'s 100,000/hour cap be tightened?** That is 28 keyups/second sustained — implausible — and its implied annual ceiling (876M) is 8.8× Q22's. Not changed in Pass 7. (§3)
+17. **NEW — Does "leave blank = not recorded" become the survey-wide convention, or just a Q22 local convention?** Pass 7 introduced it for Q22 alone. §4 is the real fix but remains blocked on question 4. (§3, §4)
 
 ---
 

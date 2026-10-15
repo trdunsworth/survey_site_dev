@@ -57,11 +57,23 @@ describe('validateAnswer', () => {
         expect(validateAnswer('29', 4.5).valid).toBe(false);
     });
 
-    it('accepts free text for question 22 (radio keyups) and rejects a bare number for question 20', () => {
-        expect(validateAnswer('22', 'approx 1.2 million')).toEqual({
-            valid: true,
-            sanitized: 'approx 1.2 million',
-        });
+    // Q22 was free text during Pass 1 and became numeric in Pass 7. The
+    // "an estimate is acceptable" qualifier lives in the question text, so
+    // the field itself only has to accept an integer — it does not have to
+    // be exact. Free-text answers are now rejected; centres that cannot
+    // produce a figure are directed to leave the field blank.
+    it('accepts an integer for question 22 (radio keyups) and rejects free text', () => {
+        expect(validateAnswer('22', '87600')).toEqual({ valid: true, sanitized: 87600 });
+        expect(validateAnswer('22', '43800000')).toEqual({ valid: true, sanitized: 43800000 });
+        // Beyond the 100,000,000/yr cap (roughly 11,400 keyups/hr sustained).
+        expect(validateAnswer('22', '100000001').valid).toBe(false);
+        // An "estimate" must still be written as a number.
+        expect(validateAnswer('22', 'approx 1.2 million').valid).toBe(false);
+        expect(validateAnswer('22', '12.5').valid).toBe(false);
+        expect(validateAnswer('22', '-5').valid).toBe(false);
+    });
+
+    it('rejects a bare non-number for question 20 but accepts digits', () => {
         expect(validateAnswer('20', 'n/a').valid).toBe(false);
         expect(validateAnswer('20', '4200')).toEqual({ valid: true, sanitized: 4200 });
     });

@@ -255,8 +255,8 @@ const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
     // ── id 21 — other incidents not covered elsewhere ────────────────────────
     '21': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
 
-    // ── id 22 — estimated radio keyups (free text — see survey data) ─────────
-    '22': { kind: 'text', maxLength: MAX_TEXT_LENGTH },
+    // ── id 22 — total radio keyups (numeric; an estimate is acceptable) ──────
+    '22': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
 
     // ── id 23 — average radio keyups per hour ────────────────────────────────
     '23': { kind: 'number', min: 0, max: 100_000, integerOnly: false },
