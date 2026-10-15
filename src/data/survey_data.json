@@ -302,28 +302,28 @@
         },
         {
           "id": 16,
-          "text": "Total number of Law Enforcement events processed in the last calendar year:",
+          "text": "Total number of Law Enforcement incidents processed in the last calendar year:",
           "data_location": "This data should come from your Computer Aided Dispatch (CAD) software.",
           "options": [],
           "type": "number"
         },
         {
           "id": 17,
-          "text": "Total number of Fire events processed in the last calendar year:",
+          "text": "Total number of Fire incidents processed in the last calendar year:",
           "data_location": "This data should come from your Computer Aided Dispatch (CAD) software.",
           "options": [],
           "type": "number"
         },
         {
           "id": 18,
-          "text": "Total number of EMS events processed in the last calendar year:",
+          "text": "Total number of EMS incidents processed in the last calendar year:",
           "data_location": "This data should come from your Computer Aided Dispatch (CAD) software.",
           "options": [],
           "type": "number"
         },
         {
           "id": 19,
-          "text": "Total number of other events processed in the last calendar year:",
+          "text": "Total number of other incidents processed in the last calendar year:",
           "data_location": "This data may come from your Computer Aided Dispatch (CAD) software or other relevant sources.",
           "options": [],
           "type": "number"
@@ -337,7 +337,7 @@
         },
         {
           "id": 21,
-          "text": "Total number other events not previously covered in this survey in the last calendar year.",
+          "text": "Total number of other incidents not covered elsewhere in this survey in the last calendar year:",
           "data_location": "This data can be found from your records",
           "options": [],
           "type": "number"
