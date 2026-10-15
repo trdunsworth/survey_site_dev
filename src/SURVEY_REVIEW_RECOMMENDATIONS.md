@@ -26,6 +26,10 @@ Work is tracked in named passes. Each pass is listed with the items it closed, t
 | **6** — Build gates | 2026-10-15 | infra | `tsconfig.json`, `server/*`, 2 test files | **Both gates 0 errors**; 95/95 tests | ✅ `a65d045` |
 | **7** — Q22 numeric | 2026-10-15 | #3 | `src/data/survey_data.json`, `server/answerValidator.ts`, `server/answerValidator.test.ts` | **Both gates 0 errors**; 96/96 tests; validator probed across 8 inputs | ✅ `37148a1` |
 | **8** — Static rebuild (Q22) | 2026-10-15 | hygiene | `static/` — new bundle, `index.html` repointed | Bundle rebuilt for the numeric input change | ✅ `7c01169` |
+| **9** — Q7 examination | 2026-10-15 | #5 | doc only | Examination recorded; no code change | ✅ `4e00591` |
+| **10** — Q6/Q7 resolution | 2026-10-15 | #5 | `src/data/survey_data.json`, doc | **Both gates 0 errors**; 96/96 tests | ✅ `5450542` |
+| **11** — Static rebuild (Q7) | 2026-10-15 | hygiene | `static/` | Bundle rebuilt for the textarea change | ✅ `0a54df9` |
+| **12** — Unknown affordance | 2026-10-15 | #4 (partial) | `survey_data.json`, `Question.tsx`, `types`, `answerValidator.ts` + test | **Both gates 0 errors**; **100/100 tests**; drift guard verified to fail on mismatch | ⏳ pending |
 
 ### Pass detail
 
@@ -47,7 +51,9 @@ Work is tracked in named passes. Each pass is listed with the items it closed, t
 
 **Pass 9 — Q6/Q7 resolution (#5).** Q7's scope moved into the question text and aligned to Q6's full option set; the divergent description clause was removed; `text` → `textarea`; Q6's `operaations` typo fixed. Item closed.
 
-**Item 4 (N/A escape hatch) remains deferred 2026-10-15** — pending a decision, and the largest open analytical gap.
+**Pass 10 — "Unknown" affordance (#4, partial).** Q20, Q22, Q40 → `number-or-unknown` with an explicit Unknown checkbox. Also fixed a pre-existing `''` → `0` coercion affecting all 33 `number` questions. Details at §4.
+
+**Item 4 is now partial, not deferred** — the mechanism ships for three questions; the semantics decision (open question 4) remains open.
 
 ### ✅ All passes committed — working tree clean as of 2026-10-15
 
@@ -83,7 +89,7 @@ Every recommendation cites its source so the working group can verify intent bef
 | 1 | Validator drift | ~~10 questions rejected server-side~~ | ✅ DONE | ✅ **DONE** (2026-10-14) | Code audit |
 | 2 | Data hygiene | ~~"events" → "incidents" (Q16–Q21)~~ | 🟠 HIGH | ✅ **DONE** (2026-10-14) | Gary (NENA CRC) |
 | 3 | Data hygiene | ~~Q22 `text` → `number`~~ | 🟠 HIGH | ✅ **DONE** (2026-10-15) — "Estimated" kept as a qualifier | Review note L2 |
-| 4 | Data hygiene | Add "Not available / Don't know" escape hatch | 🟠 HIGH | ⬜ Open | Review note L1, Daniel Hagan |
+| 4 | Data hygiene | Add "Not available / Don't know" escape hatch | 🟠 HIGH | 🟡 **PARTIAL** — "Unknown" added to Q20/Q22/Q40 (Pass 10); semantics still open | Review note L1, Daniel Hagan |
 | 5 | Structure | ~~Q7 duplicates Q9~~ | 🟠 HIGH | ✅ **DONE** (2026-10-15) — overlap closed via Q7 text scoping | Brian Bond |
 | 6 | Structure | Transfers: warm/cold, internal/external, reason, NA | 🟠 HIGH | ⬜ Open | Sandy Dyre, Sam Bard, Burt Ray, Daniel |
 | 7 | Definitions | Q36–Q39 processing-time boundary | 🟠 HIGH | ⬜ Open — see §25 | Heather, Crystal, Justin |
@@ -365,6 +371,76 @@ The current UI has no "N/A" affordance. Adding one requires:
 **Alternative, lower effort:** keep the numeric input but add a single checkbox per question — *"I cannot access this data."* Less elegant, far smaller change surface.
 
 > **Recommendation:** agree on the analytical convention first (what each state means in the dataset), then choose the UI. Implementing the control without deciding the semantics just moves the ambiguity downstream.
+
+## 🟡 Partial resolution — implemented 2026-10-15 (Pass 10)
+
+An explicit **"Unknown"** affordance added to **Q20, Q22, Q40** — the three questions named in this section. Narrower than originally proposed, by decision.
+
+### What respondents see
+
+A number input plus a checkbox labelled `Unknown`. Ticking the box disables the number field and stores the label as the answer.
+
+### Four distinguishable states, verified
+
+| Respondent does | Stored | Meaning |
+|---|---|---|
+| Types a figure | `"87600"` | The figure |
+| Types `0` | `"0"` | Genuinely zero |
+| Ticks **Unknown** | `"Unknown"` | Positive statement: the centre does not know |
+| Leaves blank | `null` | Not offered / skipped / not applicable |
+
+This is the distinction this section asked for: **zero is a value, Unknown is a statement, and blank is the absence of an answer.**
+
+### Implementation
+
+| File | Change |
+|---|---|
+| `src/types/index.ts` | `Question.unknownOption?: string` |
+| `src/data/survey_data.json` | Q20, Q22, Q40 → `type: "number-or-unknown"`, `unknownOption: "Unknown"` |
+| `src/components/Question.tsx` | New `number-or-unknown` render case |
+| `server/answerValidator.ts` | New `number-or-unknown` kind, `UNKNOWN_VALUE` sentinel, `NumericBounds` extraction, dispatch case |
+| `server/answerValidator.test.ts` | `probeFor` case; per-question sentinel suite |
+
+### 🛠 Storage: no migration needed
+
+`database.saveResponse` stores `JSON.stringify(answer)` — the **raw posted value**. Numeric inputs therefore *already* persist as JSON strings (`"87600"`), so a string sentinel is **shape-consistent with existing data**. Wide-table columns are `JSON` (`analytics.ts`), so the pivot is unaffected.
+
+`answerType()` classifies by JS type, so the sentinel surfaces as `'string'` in `kpi_answer_type_mix` — Unknown responses become countable per question without extra work.
+
+### ⚠️ A pre-existing bug found and fixed
+
+Probing revealed that **`''` validated to `0`** — on all 33 `number` questions, not just these three. `Number('') === 0`, so a respondent who typed a value and then backspaced it out had **a real zero recorded in its place**.
+
+This mattered more once the Unknown box existed, because **unchecking posts an empty string** — a routine action that would have written a zero.
+
+Fix in `validateNumber`: an empty or whitespace-only string now returns `sanitized: null`, matching the existing `null`/`undefined` "clear this answer" path.
+
+```ts
+if (typeof raw === 'string' && raw.trim() === '') {
+    return { valid: true, sanitized: null };
+}
+```
+
+### Drift guard
+
+`answerValidator.test.ts` asserts every `number-or-unknown` question's `unknownOption` equals `UNKNOWN_VALUE`, and that the sentinel is accepted while near-misses are not. **Verified to fail** when the JSON is changed to `"Not sure"` — 3 tests fail.
+
+### ⚠️ What this does *not* decide
+
+The table at the top of this section lists **four** distinct meanings for a non-answer. This implements one of them.
+
+| State | Meaning | Handled? |
+|---|---|---|
+| Service not provided | `0` or not-applicable | ✅ explicit `0` |
+| Data exists but wasn't retrieved | missing (incomplete) | ❌ still collapses to blank |
+| Doesn't exist at any source | "Not available" | ❌ **same as Unknown** |
+| Genuinely unknown | "Don't know" | ✅ **Unknown** |
+
+⚠️ **"Unknown" currently conflates "I don't know this figure" with "this figure doesn't exist at our centre."** Both are plausible readings of the same checkbox. If the working group needs them separated, the sentinel becomes a second option — the mechanism is now in place, and the storage shape will not need to change again.
+
+### Open question 4 — narrowed, not closed
+
+Still asks what each blank means. This narrows it to: **should "Unknown" split into "Unknown" and "Not applicable"?**
 
 ---
 
@@ -1299,7 +1375,7 @@ Ordered by dependency. Steps 1–3 are prerequisites for everything else.
 | **2** | Resolve deadline + reference year + survey name | #10 | 🟠 Yes — affects all 15 count questions |
 | **3** | Decide PSAP identifier & amend privacy text; confirm IRB status | #11 | ⚖️ Yes — affects fielding |
 | **4** | Set question budget | #24 | ⚖️ Yes — gates additions |
-| **5** | Apply agreed data semantics (N/A control, incident/event) | #2, #3, #4 | 🟡 #2 **DONE** (Pass 2), #3 **DONE** (Pass 7); **#4 DEFERRED 2026-10-15** — pending decision, largest open analytical gap |
+| **5** | Apply agreed data semantics (N/A control, incident/event) | #2, #3, #4 | 🟡 #2 **DONE**, #3 **DONE**, #4 **PARTIAL** — Unknown ships for Q20/Q22/Q40; open question 4 still governs the other 42 numeric questions |
 | **6** | Rework transfer questions | #6 | 🟠 |
 | **7** | Add work-year denominator; fix "optimum" definition | #8, #9 | 🟠 Highest analytical value |
 | **7b** | Settle the processing-time boundary | #7 | 🟠 |
@@ -1356,7 +1432,9 @@ See §19 Constraint C — ⚠️ the change needs the capture-group fix as well,
 17. **NEW — Does "leave blank = not recorded" become the survey-wide convention, or just a Q22 local convention?** Pass 7 introduced it for Q22 alone. §4 is the real fix but remains blocked on question 4. (§3, §4)
 18. ~~Did Brian observe Q7 duplicating Q9 or Q6?~~ — ✅ **CLOSED 2026-10-15.** The recommendation's own table contradicted Q9; the real overlap was Q6↔Q7, now closed. (§5)
 19. ~~What is the evidence that respondents answer Q7 with agency names?~~ — ✅ **CLOSED as not confirmed.** No data was ever cited. Recorded at §5 as a standing observation rather than an open question.
-20. **NEW — Should Q4's "not available / don't know" control be built at all?** Deferred 2026-10-15 pending a decision; §4 remains the largest open analytical gap. (§4)
+20. **Should "Unknown" split into "Unknown" and "Not applicable"?** The Pass 10 checkbox conflates "I don't know this figure" with "this figure doesn't exist at our centre". Splitting is now a mechanical addition — the mechanism and storage shape both exist. (§4)
+21. **NEW — Should the Unknown affordance extend to the other 42 numeric questions?** Pass 10 scoped it to Q20/Q22/Q40 per decision. The `number-or-unknown` kind is now generic, so extending it is a per-question one-line change plus the JSON. (§4)
+22. **NEW — Was the `''` → `0` coercion bug affecting real submissions?** Fixed in Pass 10, but any response recorded before that fix may hold a spurious zero where a respondent cleared a numeric field. Worth a backfill audit. (§4)
 
 ---
 

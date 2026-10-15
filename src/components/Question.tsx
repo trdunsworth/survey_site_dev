@@ -296,6 +296,36 @@ const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
                         onChange={(e) => onChange(id, e.target.value)}
                     />
                 );
+            case 'number-or-unknown': {
+                // A numeric field with an explicit "I don't know" affordance.
+                // Ticking the box stores the label itself as the answer, so
+                // "unknown" is distinguishable from blank and from 0.
+                const unknownLabel = question.unknownOption ?? 'Unknown';
+                const isUnknown = value === unknownLabel;
+                return (
+                    <>
+                        <input
+                            type="number"
+                            id={`q-${id}`}
+                            disabled={isUnknown}
+                            placeholder={isUnknown ? unknownLabel : undefined}
+                            value={isUnknown ? '' : (typeof value === 'string' ? value : '')}
+                            onChange={(e) => onChange(id, e.target.value)}
+                        />
+                        <label
+                            className="unknown-option"
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}
+                        >
+                            <input
+                                type="checkbox"
+                                checked={isUnknown}
+                                onChange={(e) => onChange(id, e.target.checked ? unknownLabel : '')}
+                            />
+                            {unknownLabel}
+                        </label>
+                    </>
+                );
+            }
             case 'text':
             default:
                 return (

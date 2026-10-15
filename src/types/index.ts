@@ -26,8 +26,14 @@ export interface Question {
   description?: string;
   data_location?: string;
   responseEmphasis?: string;
-  type: 'text' | 'textarea' | 'radio' | 'checkbox' | 'select' | 'number' | 'agencies-with-count' | string;
+  type: 'text' | 'textarea' | 'radio' | 'checkbox' | 'select' | 'number' | 'agencies-with-count' | 'number-or-unknown' | string;
   options?: string[];
+  /**
+   * Label for the explicit "unknown" affordance, used by `number-or-unknown`
+   * questions. The respondent ticking this box stores this exact string as
+   * the answer, which the validator accepts alongside a numeric value.
+   */
+  unknownOption?: string;
   required?: boolean;
   showIf?: {
     questionId: string | number;

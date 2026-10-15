@@ -333,7 +333,8 @@
           "text": "Total number of NCIC transactions conducted in the last calendar year:",
           "data_location": "This data may come from your state NCIC provider. You may have to request this in advance of taking the survey.",
           "options": [],
-          "type": "number"
+          "unknownOption": "Unknown",
+          "type": "number-or-unknown"
         },
         {
           "id": 21,
@@ -345,9 +346,10 @@
         {
           "id": 22,
           "text": "Total number of radio keyups in the last calendar year (an estimate is acceptable):",
-          "data_location": "This information should come from your radio communication logs or other relevant sources. If your center does not record radio keyups, please leave this blank.",
+          "data_location": "This information should come from your radio communication logs or other relevant sources. If your center does not record radio keyups, select Unknown below.",
           "options": [],
-          "type": "number"
+          "unknownOption": "Unknown",
+          "type": "number-or-unknown"
         },
         {
           "id": 23,
@@ -503,7 +505,8 @@
           "data_location": "This information should come from your phone software or your Computer Aided Dispatch (CAD) software.",
           "responseEmphasis": "To get this information, take the average number of calls from your phone or CAD software and divide by the average number of telecommunicators per day.",
           "options": [],
-          "type": "number"
+          "unknownOption": "Unknown",
+          "type": "number-or-unknown"
         },
         {
           "id": 41,

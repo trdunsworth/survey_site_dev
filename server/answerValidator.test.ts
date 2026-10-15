@@ -2,7 +2,7 @@
 
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { validateAnswer } from './answerValidator';
+import { UNKNOWN_VALUE, validateAnswer } from './answerValidator';
 
 describe('validateAnswer', () => {
     it('rejects unknown question IDs', () => {
@@ -93,7 +93,12 @@ describe('validateAnswer', () => {
         const surveyPath = new URL('../src/data/survey_data.json', import.meta.url);
         const survey = JSON.parse(readFileSync(surveyPath, 'utf8')) as {
             sections: {
-                questions: { id: string | number; type: string; options?: string[] }[];
+                questions: {
+                    id: string | number;
+                    type: string;
+                    options?: string[];
+                    unknownOption?: string;
+                }[];
             }[];
         };
         const questions = survey.sections.flatMap((s) => s.questions);
@@ -101,6 +106,7 @@ describe('validateAnswer', () => {
         const probeFor = (type: string, options?: string[]): unknown => {
             switch (type) {
                 case 'number':   return '1';            // client posts numeric strings
+                case 'number-or-unknown': return '1';  // sentinel covered separately
                 case 'text':     return 'probe';
                 case 'select':
                 case 'radio':    return options?.[0] ?? 'probe';
@@ -131,6 +137,45 @@ describe('validateAnswer', () => {
                 const result = validateAnswer(id, probeFor(type, options));
                 const reason = result.valid ? '' : result.reason;
                 expect(result.valid, `question ${id} declared "${type}" but was rejected: ${reason}`).toBe(true);
+            },
+        );
+
+        // Every number-or-unknown question must carry an unknownOption, and it
+        // must equal the sentinel the validator accepts. The client sends this
+        // exact string, so drift here would silently reject every "Unknown".
+        const unknownQuestions = questions.filter((q) => q.type === 'number-or-unknown');
+        it('declares at least one number-or-unknown question', () => {
+            expect(unknownQuestions.length).toBeGreaterThan(0);
+        });
+
+        it.each(unknownQuestions.map((q) => [String(q.id), q.unknownOption]))(
+            'question %s unknownOption matches the accepted sentinel',
+            (id: string, unknownOption: string | undefined) => {
+                expect(unknownOption).toBe(UNKNOWN_VALUE);
+
+                const result = validateAnswer(id, UNKNOWN_VALUE);
+                expect(result.valid, `question ${id} rejected the Unknown sentinel`).toBe(true);
+                if (result.valid) {
+                    expect(result.sanitized).toBe(UNKNOWN_VALUE);
+                }
+
+                // A near-miss is a typo, not an "unknown".
+                expect(validateAnswer(id, 'unknown').valid).toBe(false);
+                expect(validateAnswer(id, 'N/A').valid).toBe(false);
+                expect(validateAnswer(id, 'UNKOWN').valid).toBe(false);
+
+                // Numeric behaviour is unchanged alongside the sentinel.
+                // (integerOnly is not asserted here: Q20/Q22 reject decimals,
+                // Q40 accepts them. That difference is covered by the
+                // per-question tests above.)
+                expect(validateAnswer(id, '0')).toEqual({ valid: true, sanitized: 0 });
+                expect(validateAnswer(id, '-1').valid).toBe(false);
+                expect(validateAnswer(id, '100000001').valid).toBe(false);
+
+                // Unchecking the box posts an empty string. That must clear
+                // the answer, not record a zero — `Number('') === 0`.
+                expect(validateAnswer(id, '')).toEqual({ valid: true, sanitized: null });
+                expect(validateAnswer(id, '   ')).toEqual({ valid: true, sanitized: null });
             },
         );
     });

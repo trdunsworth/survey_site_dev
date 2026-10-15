@@ -29,6 +29,7 @@ type QuestionKind =
     | 'checkbox'
     | 'text'
     | 'number'
+    | 'number-or-unknown'
     | 'agencies-with-count';
 
 interface BaseSchema {
@@ -61,11 +62,35 @@ interface TextSchema extends BaseSchema {
     maxLength: number;
 }
 
-interface NumberSchema extends BaseSchema {
-    kind: 'number';
+/** Shared numeric bounds, used by both `number` and `number-or-unknown`. */
+interface NumericBounds {
     min: number;
     max: number;
     integerOnly: boolean;
+}
+
+interface NumberSchema extends BaseSchema, NumericBounds {
+    kind: 'number';
+}
+
+/**
+ * A numeric field with an explicit "I don't know" affordance.
+ *
+ * Answers are stored as JSON text (see database.saveResponse), so numeric
+ * inputs already persist as JSON *strings* ("87600"). The sentinel is
+ * therefore shape-consistent with existing data — it adds no new storage
+ * type, no migration, and no change to the wide-table JSON columns.
+ *
+ * Distinguishing this from a blank matters: blank is ambiguous (not
+ * offered / skipped / not applicable), whereas the sentinel is a positive
+ * statement that the centre does not know the figure.
+ *
+ * Keep `unknownValue` in step with each question's `unknownOption` in
+ * src/data/survey_data.json — answerValidator.test.ts asserts they match.
+ */
+interface NumberOrUnknownSchema extends BaseSchema, NumericBounds {
+    kind: 'number-or-unknown';
+    unknownValue: string;
 }
 
 interface AgenciesWithCountSchema extends BaseSchema {
@@ -80,6 +105,7 @@ type SchemaEntry =
     | CheckboxSchema
     | TextSchema
     | NumberSchema
+    | NumberOrUnknownSchema
     | AgenciesWithCountSchema;
 
 // ── Result type ───────────────────────────────────────────────────────────────
@@ -94,6 +120,16 @@ const MAX_TEXT_LENGTH = 2000;
 
 /** Identify the "other" option label used across the survey. */
 const OTHER_LABEL = 'Other (Please Specify)';
+
+/**
+ * Sentinel stored when a respondent ticks the explicit "unknown" box on a
+ * `number-or-unknown` question. Exported so analytics and tests can match
+ * on it rather than hard-coding the literal.
+ *
+ * Must equal the `unknownOption` on each affected question in
+ * src/data/survey_data.json; answerValidator.test.ts asserts that.
+ */
+export const UNKNOWN_VALUE = 'Unknown';
 
 function isOtherLabel(s: string): boolean {
     return /\bother\b/i.test(s);
@@ -249,14 +285,26 @@ const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
     '18': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
     '19': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
 
-    // ── id 20 — NCIC transactions ─────────────────────────────────────────────
-    '20': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
+    // ── id 20 — NCIC transactions (numeric, or explicit "Unknown") ────────────
+    '20': {
+        kind: 'number-or-unknown',
+        min: 0,
+        max: 100_000_000,
+        integerOnly: true,
+        unknownValue: UNKNOWN_VALUE,
+    },
 
     // ── id 21 — other incidents not covered elsewhere ────────────────────────
     '21': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
 
-    // ── id 22 — total radio keyups (numeric; an estimate is acceptable) ──────
-    '22': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
+    // ── id 22 — total radio keyups (numeric, or explicit "Unknown") ───────────
+    '22': {
+        kind: 'number-or-unknown',
+        min: 0,
+        max: 100_000_000,
+        integerOnly: true,
+        unknownValue: UNKNOWN_VALUE,
+    },
 
     // ── id 23 — average radio keyups per hour ────────────────────────────────
     '23': { kind: 'number', min: 0, max: 100_000, integerOnly: false },
@@ -295,8 +343,14 @@ const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
     '38': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
     '39': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
 
-    // ── id 40 — average calls handled per telecommunicator FTE per hour ──────
-    '40': { kind: 'number', min: 0, max: 1_000, integerOnly: false },
+    // ── id 40 — average calls handled per TCT FTE per hour (or "Unknown") ──────
+    '40': {
+        kind: 'number-or-unknown',
+        min: 0,
+        max: 1_000,
+        integerOnly: false,
+        unknownValue: UNKNOWN_VALUE,
+    },
 
     // ── id 41 — average time to transfer a call (seconds) ────────────────────
     '41': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
@@ -429,8 +483,15 @@ function validateText(
 
 function validateNumber(
     raw: unknown,
-    schema: NumberSchema,
+    schema: NumericBounds,
 ): AnswerValidationResult {
+    // An empty or whitespace-only input means "cleared", not zero.
+    // `Number('') === 0`, so without this a respondent who types a value and
+    // then backspaces it out — or unchecks the "Unknown" box — would have a
+    // genuine zero recorded in their place.
+    if (typeof raw === 'string' && raw.trim() === '') {
+        return { valid: true, sanitized: null };
+    }
     const num = typeof raw === 'string' ? Number(raw) : raw;
     if (typeof num !== 'number' || !Number.isFinite(num)) {
         return { valid: false, reason: 'Answer must be a finite number' };
@@ -448,6 +509,17 @@ function validateNumber(
         return { valid: false, reason: 'Value must be a whole number' };
     }
     return { valid: true, sanitized: num };
+}
+
+function validateNumberOrUnknown(
+    raw: unknown,
+    schema: NumberOrUnknownSchema,
+): AnswerValidationResult {
+    // Exact match only — a near-miss is a typo, not an "unknown".
+    if (raw === schema.unknownValue) {
+        return { valid: true, sanitized: schema.unknownValue };
+    }
+    return validateNumber(raw, schema);
 }
 
 function validateAgenciesWithCount(
@@ -557,6 +629,8 @@ export function validateAnswer(
             return validateText(rawAnswer, schema);
         case 'number':
             return validateNumber(rawAnswer, schema);
+        case 'number-or-unknown':
+            return validateNumberOrUnknown(rawAnswer, schema);
         case 'agencies-with-count':
             return validateAgenciesWithCount(rawAnswer, schema);
     }
