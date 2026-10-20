@@ -130,7 +130,7 @@ Every recommendation cites its source so the working group can verify intent bef
 | 16 | Fieldwork | Duplicate-response guardrails + PSAP identifier | ⚖️ DECISION | ✅ **DONE** (2026-10-20) | Review note L5, Brian Bond, Tony |
 | 17 | Fieldwork | Incentives / return of answers | ✅ DONE | ⬜ Open (budgetary) | Review note L6, Session notes L34 |
 | 18 | Glossary | Dead, broken, and unmatched terms | 🟠 HIGH | 🟡 **PARTIAL** — see §25 | Code audit |
-| 19 | Glossary | ~13 missing terms | 🟠 HIGH | 🟡 **PARTIAL** — see §25 | Cross-referenced |
+| 19 | Glossary | ~13 missing terms | 🟠 HIGH | ✅ **DONE** (2026-10-20) | Cross-referenced |
 | 20 | Glossary | Tooltips don't render in `description` / `data_location` | 🟠 HIGH | ✅ **DONE** (2026-10-20) | `Question.tsx` audit |
 | 21 | Glossary | Plurals never match tooltips | 🟠 HIGH | ✅ **DONE** (2026-10-20) | `Question.tsx` audit |
 | 22 | Glossary | Definition rewrites (FTE, CAD, PSAP, 10-Digit) | 🟡 MEDIUM | 🟡 **PARTIAL** — see §25 | Working group |
@@ -1270,6 +1270,19 @@ Terms used in the survey with **no glossary entry**, verified by cross-reference
 > 📌 **Five of these have NENA KB equivalents** that could be sourced rather than drafted, consistent with Gary's position that definitions live in the KB. Verified present on 2026-10-15: `ACD (Automatic Call Distributor)`, `Busy Hour`, `Average Busy Hour`, `Call Handling`, `988`, `RTT (Real-Time Text)`, `Transfer`.
 >
 > **`NCIC`, `Radio keyup`, `Wrap-up time`, `Work year`, `Concurrent calls`, `Warm/Cold transfer`, `Contracted vs. Net Available Hours` and `RFA` have no KB entry** — those need working-group authorship, and several are blocked on open decisions elsewhere in this document.
+
+
+## ✅ Resolution - implemented 2026-10-20
+
+Added 19 new terms to `src/data/glossary_data.json` (14 → 33 total), including all terms listed in the table above plus renamed `Ten-Digit Emergency` → `10-Digit Emergency` (Constraint B fix). Glossary is now sorted alphabetically.
+
+New terms: 10-Digit Emergency, 988, ACD, Backup center, Busy hour, Call processing time, Cold transfer, Concurrent calls, Contracted hours, Incident, Mutual aid, NCIC, Net available hours, NGCS, Radio keyup, RFA, RTT, Satellite SOS, Warm transfer, Work year, Wrap-up time.
+
+Combined with the #21 plural fix and #20 tooltip-field fix, glossary tooltips now render across all four text fields (text, description, data_location, responseEmphasis) for plurals and possessives.
+
+`server/dist/` rebuilt; tests 110 passing; type-check clean.
+
+---
 
 ---
 
