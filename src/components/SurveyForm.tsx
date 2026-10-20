@@ -34,7 +34,22 @@ const SURVEY_VERSIONS: Record<string, SurveyData> = {
 // is the only radio whose "Other" free text must parse as a positive number.
 // Stale entries here are silent: the guard only fires for type === 'radio',
 // so an ID pointing at a numeric question never runs and never errors.
+// Question 31 is "What is the length of shifts in hours?" — the only radio
+// whose "Other (Please Specify)" free text must parse as a positive number.
+// Keep this in sync with QUESTION_SCHEMA in server/answerValidator.ts and with
+// NUMERIC_OTHER_QUESTION_IDS in Question.tsx.
 const POSITIVE_NUMERIC_OTHER_QUESTION_IDS = new Set(['32', 32]);
+
+/**
+ * Whether the answer copy (downloaded .txt and printed PDF) includes the
+ * question text alongside each answer.
+ *
+ * PENDING DISCUSSION: the working group has not yet decided whether respondents
+ * should receive a file that pairs questions with their answers, or answers
+ * only. Flip this flag to change both outputs without touching the render code.
+ * Tracked as recommendation #12 in src/SURVEY_REVIEW_RECOMMENDATIONS.md.
+ */
+const INCLUDE_QUESTIONS_IN_RECEIPT = true;
 
 // Helper to get URL parameter
 const getUrlParam = (name: string): string | null => {
@@ -520,7 +535,9 @@ const [showReceipt, setShowReceipt] = useState<boolean>(false);
             lines.push(`==== ${section.title} ====`);
             for (const question of pairs) {
                 lines.push('');
-                lines.push(question.text);
+                if (INCLUDE_QUESTIONS_IN_RECEIPT) {
+                    lines.push(question.text);
+                }
                 lines.push(`  -> ${formatAnswer(answers[question.id])}`);
             }
             lines.push('');
@@ -567,7 +584,9 @@ const [showReceipt, setShowReceipt] = useState<boolean>(false);
             if (pairs.length === 0) continue;
             html += `<h2>${escape(section.title)}</h2>`;
             for (const question of pairs) {
-                html += `<p class="q">${escape(question.text)}</p>`;
+                if (INCLUDE_QUESTIONS_IN_RECEIPT) {
+                    html += `<p class="q">${escape(question.text)}</p>`;
+                }
                 html += `<p class="a">&rarr; ${escape(formatAnswer(answers[question.id]))}</p>`;
             }
         }
@@ -863,6 +882,41 @@ const [showReceipt, setShowReceipt] = useState<boolean>(false);
                         />
                     ))}
             </div>
+
+            {/* Answer-copy option on the Closing section.
+                Independent of the "Save & Get Code" resume flow, which may not
+                survive the final output. Format (questions alongside answers)
+                is governed by INCLUDE_QUESTIONS_IN_RECEIPT above. */}
+            {currentSectionIndex === sections.length - 1 && (
+                <div
+                    style={{
+                        marginTop: '1.25rem',
+                        padding: '1rem',
+                        border: '1px solid #cfe2ff',
+                        borderRadius: '6px',
+                        background: '#f0f6ff',
+                    }}
+                >
+                    <p style={{ margin: '0 0 .5rem', fontWeight: 600 }}>
+                        Keep a copy of your answers
+                    </p>
+                    <p style={{ margin: '0 0 .75rem', fontSize: '.9rem', color: '#333' }}>
+                        You can download or print a copy of your own answers now. This is
+                        generated entirely in your browser and is never sent to any server.
+                        {INCLUDE_QUESTIONS_IN_RECEIPT
+                            ? ' The file includes each question alongside your answer.'
+                            : ' The file includes your answers only.'}
+                    </p>
+                    <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
+                        <button type="button" className="secondary" onClick={handleDownloadAnswers}>
+                            Download (.txt)
+                        </button>
+                        <button type="button" className="secondary" onClick={handlePrintAnswers}>
+                            Print / Save as PDF
+                        </button>
+                    </div>
+                </div>
+            )}
 
             <div className="pagination-controls">
                 <button

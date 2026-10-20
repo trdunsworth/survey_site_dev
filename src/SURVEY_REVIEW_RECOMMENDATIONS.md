@@ -128,7 +128,7 @@ Every recommendation cites its source so the working group can verify intent bef
 | 14 | Coverage | Q6 "Call Taking" too generic | 🟡 MEDIUM | ⬜ Open | Sam Bard |
 | 15 | Dates | Reference year unspecified; **deadline already passed** | 🟠 HIGH | ⬜ Open | Review note L3 |
 | 16 | Fieldwork | Duplicate-response guardrails + PSAP identifier | ⚖️ DECISION | ⬜ Open | Review note L5, Brian Bond, Tony |
-| 17 | Fieldwork | Incentives / return of answers | ⚖️ DECISION | ⬜ Open | Review note L6, Session notes L34 |
+| 17 | Fieldwork | Incentives / return of answers | ✅ DONE | ⬜ Open (budgetary) | Review note L6, Session notes L34 |
 | 18 | Glossary | Dead, broken, and unmatched terms | 🟠 HIGH | 🟡 **PARTIAL** — see §25 | Code audit |
 | 19 | Glossary | ~13 missing terms | 🟠 HIGH | 🟡 **PARTIAL** — see §25 | Cross-referenced |
 | 20 | Glossary | Tooltips don't render in `description` / `data_location` | 🟠 HIGH | ⬜ Open | `Question.tsx` audit |
@@ -978,7 +978,21 @@ No answer appears in either source document. **Confirm this before collecting an
 - Creates a second engagement touchpoint (participant sees their data → becomes interested in the aggregate results)
 - Reinforces the confidentiality promise in Q0.2, since it proves data is handled in aggregate
 
-**Implementation note:** the "Save & Get Code" mechanism already exists — a returned-answers report can be generated from the same resume code at completion.
+**Implementation note:** the "Save & Get Code" mechanism already exists - a returned-answers report can be generated from the same resume code at completion.
+
+## ✅ Resolution - implemented 2026-10-20 (additional incentives out of scope)
+
+The "return your answers" half of this recommendation is now implemented, **independent of the Save & Get Code flow** (per the concern that the resume-code mechanism may not survive the final output):
+
+- `src/components/SurveyForm.tsx` gained a `INCLUDE_QUESTIONS_IN_RECEIPT` flag (default `true`) and a download/print block on the Closing section (last section), reusing the existing `handleDownloadAnswers` / `handlePrintAnswers` handlers.
+- The block renders a "Keep a copy of your answers" panel with **Download (.txt)** and **Print / Save as PDF** buttons, available before submission and without a resume code.
+- The post-submission receipt modal continues to work unchanged.
+- The flag controls whether question text is paired with each answer in **both** outputs, so the pending group discussion ("questions alongside answers vs. answers only") can be settled by flipping one constant.
+
+**Resolved decisions:**
+- Additional monetary/non-monetary incentives (shirt, conference registration, NENA services) are **out of scope** for this work.
+- The returned file currently includes **questions alongside answers** (default `INCLUDE_QUESTIONS_IN_RECEIPT = true`); flip the flag if the working group settles on answers-only.
+- Aggregate survey results are **not** included in the returned file.
 
 ### 📌 Related — survey fatigue
 
@@ -996,9 +1010,16 @@ Overlapping NENA surveys are a participation-cost problem, not merely a contact 
 { "id": 4, "text": "What are most common factors contiubting to the population variation? (Select all that apply)" }
 ```
 
-**Add:** `"Educational Instability (College/University Population)"` as a distinct option from `"Seasonal Peaks"`.
+**Add:** `"College/University Population"` as a distinct option from `"Seasonal Peaks"` (implemented as `"College/University Population"` rather than the suggested `"Educational Instability (College/University Population)"`).
 
-> **Also fix:** `"contiubting"` → `"contributing"` (see #23)
+> **Also fix:** `"contiubting"` → `"contributing"` — already applied in `survey_data.json`.
+
+## ✅ Resolution - implemented 2026-10-20
+
+- `src/data/survey_data.json` Q4: added `"College/University Population"` to the option list; typo `"contiubting"` corrected to `"contributing"`.
+- `server/answerValidator.ts` Q4: added `"College/University Population"` to the checkbox option set so the new value validates.
+- `server/dist/` rebuilt so the compiled validator matches.
+- Tests: 108 passing; full source/validator alignment re-verified.
 
 ---
 
@@ -1011,7 +1032,14 @@ Gary's suggested workaround: *"Do you have a Tourism or Business Bureau within y
 **Recommendations:**
 - Add `"No reliable source available"` to the Q3 option list, or a companion boolean
 - Update Q3's `data_location` to mention the tourism/business bureau fallback
-- Consider narrowing the bands — the current 8 bands span from "<10,000" to ">1,000,000", which is coarse for correlating with call volume
+- Consider narrowing the bands - the current 8 bands span from "<10,000" to ">1,000,000", which is coarse for correlating with call volume
+
+## ✅ Resolution - implemented 2026-10-20
+
+- `src/data/survey_data.json` Q3: added `"Unknown"` to the option list (escape hatch for centers without a reliable peak-population source); `data_location` updated to mention the tourism board / business bureau fallback (Gary's suggestion).
+- `server/answerValidator.ts` Q3: added `"Unknown"` to the select option set.
+- `server/dist/` rebuilt.
+- Tests: 108 passing; full alignment re-verified.
 
 ---
 
@@ -1481,7 +1509,7 @@ Ordered by dependency. Steps 1–3 are prerequisites for everything else.
 | **10c** | Glossary: tooltips in `description` / `data_location` | §22 | 🟠 |
 | **10d** | Glossary: provenance metadata + sync script | §25 | 🟡 Do before the next content change |
 | **11** | Copy fixes — atomic across all three files | #23 | 🔵 |
-| **12** | Incentives decision; re-time survey; update Q0 estimate | #12, #24 | ⚖️ |
+| **12** | ~~Incentives decision;~~ re-time survey; update Q0 estimate | #12, #24 | ✅ #12 done |
 
 > ⚠️ **Do not reorder steps 1 and 11's atomic changes.** Any edit to a question ID, a `type`, or an option string requires the matching `answerValidator.ts` change in the same commit.
 

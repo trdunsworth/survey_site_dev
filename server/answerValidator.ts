@@ -204,7 +204,7 @@ const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
         options: s([
             'Less than 10,000', '10,000 - 25,000', '25,000 - 50,000',
             '50,000 - 100,000', '100,000 - 250,000', '250,000 - 500,000',
-            '500,000 - 1,000,000', 'Over 1,000,000',
+            '500,000 - 1,000,000', 'Over 1,000,000', 'Unknown',
         ]),
     },
 
@@ -215,7 +215,9 @@ const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
             'Daytime Increase (Worker Influx)',
             'Seasonal Peaks',
             'Event Peaks',
+            'College/University Population',
             'None',
+            'Unknown',
             OTHER_LABEL,
         ]),
     },
