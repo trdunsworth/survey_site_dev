@@ -83,7 +83,7 @@ interface NumberSchema extends BaseSchema, NumericBounds {
  *
  * Distinguishing this from a blank matters: blank is ambiguous (not
  * offered / skipped / not applicable), whereas the sentinel is a positive
- * statement that the centre does not know the figure.
+ * statement that the center does not know the figure.
  *
  * Keep `unknownValue` in step with each question's `unknownOption` in
  * src/data/survey_data.json — answerValidator.test.ts asserts they match.
@@ -241,8 +241,8 @@ const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
     '8': {
         kind: 'radio',
         options: s([
-            'Federal Government (Airport, Tribal, LEO, Miliary, Other)',
-            'State Government  (LEO, Other)',
+            'Federal Government (Airport, Tribal, LEO, Military, Other)',
+            'State Government (LEO, Other)',
             'County Government (Sheriff, Fire, EMS, Other)',
             'Municipal Government (Fire, EMS, LEO, Other)',
             'Independent Tax Funded Authority',

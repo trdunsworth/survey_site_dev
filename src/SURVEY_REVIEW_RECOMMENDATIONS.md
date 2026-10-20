@@ -134,7 +134,7 @@ Every recommendation cites its source so the working group can verify intent bef
 | 20 | Glossary | Tooltips don't render in `description` / `data_location` | 🟠 HIGH | ⬜ Open | `Question.tsx` audit |
 | 21 | Glossary | Plurals never match tooltips | 🟠 HIGH | ⬜ Open — **regression, see §25** | `Question.tsx` audit |
 | 22 | Glossary | Definition rewrites (FTE, CAD, PSAP, 10-Digit) | 🟡 MEDIUM | 🟡 **PARTIAL** — see §25 | Working group |
-| 23 | Polish | Typos, double-space, centre/center | 🔵 POLISH | ⬜ Open | Code audit |
+| 23 | Polish | Typos, double-space, centre/center | 🔵 POLISH | ✅ **DONE** (2026-10-20) | Code audit |
 | 24 | Polish | Survey length budget | ⚖️ DECISION | ⬜ Open | Chet Ripka, Rick Erickson |
 | 25 | Glossary | NENA KB alignment + provenance metadata | 🟠 HIGH | 🟡 **PARTIAL** — see §25 | NENA KB, 2026-10-15 |
 | 26 | Infrastructure | TypeScript build gates (both were broken) | 🔴 BLOCKER | ✅ **DONE 2026-10-15** | Code audit |
@@ -1331,6 +1331,14 @@ Standardize on **center** for a US/Canadian survey with mixed spelling. Note tha
 
 - 📌 **Sheriff / Provincial Police:** Kate Pataran noted *"Sheriff/Provincial Police"*; Roxy observed *"All law enforcement is considered part of the Police Service Boundary"* and *"Police in Data Model is the same as Sheriffs."* Q8.1 and Q9 both offer `Police` and `Sheriff` as separate options. Confirm these are intentional and distinguishable in the NENA Data Model.
 - 📌 **Q32 response emphasis:** *"Please indicate the length of your base shifts. If you have multiple shift lengths, select the one that is most common."* — good pattern; consider extending to Q32–Q35, which use `responseEmphasis` but don't explain whether they mean *minimum ever scheduled* or *minimum for normal operations* (the current text says "normal operations").
+
+
+## ✅ Resolution - implemented 2026-10-20
+
+- **Typos fixed** in `src/data/survey_data.json` and `server/answerValidator.ts`: `contiubting` → `contributing` (Q4), `Miliary` → `Military` (Q8 option), `operaations` → `operations` (Q6 description).
+- **Double space fixed** in all three locations atomically: `survey_data.json` (Q8 option + `showIf.anyOf`), `server/answerValidator.ts` (Q8 option set). "State Government  (LEO, Other)" → "State Government (LEO, Other)".
+- **centre → center** standardized across Q33-Q36 descriptions in `survey_data.json` and the validator comment.
+- `server/dist/` rebuilt; tests 108 passing; full alignment re-verified.
 
 ---
 
