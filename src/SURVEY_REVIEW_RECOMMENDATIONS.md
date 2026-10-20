@@ -959,6 +959,10 @@ Rebecca Conners asked: *"@Tony or April - will this be going through the IRB pro
 
 **Resolved: no IRB review is required for this survey.** The duplicate-response guardrails (#16) will instead be addressed in the front of the survey (welcome / data-privacy sections), so the privacy language in Q0.2 may still need a small amendment to describe the identifier used for deduplication, but no IRB submission is needed.
 
+## ✅ Resolution - implemented 2026-10-20
+
+**No IRB review is required** for this survey. The duplicate-response guardrails will instead be addressed in the **front of the survey** (welcome / data-privacy sections, Q0 and Q0.2): a PSAP identifier will be collected there for deduplication and response-rate tracking, and Q0.2's privacy language will be amended to distinguish internal record-keeping from published output. No IRB submission is needed.
+
 ---
 
 # ⚖️ 12. DECISION — Incentives
