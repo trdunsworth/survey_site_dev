@@ -135,7 +135,7 @@ Every recommendation cites its source so the working group can verify intent bef
 | 21 | Glossary | Plurals never match tooltips | 🟠 HIGH | ✅ **DONE** (2026-10-20) | `Question.tsx` audit |
 | 22 | Glossary | Definition rewrites (FTE, CAD, PSAP, 10-Digit) | 🟡 MEDIUM | 🟡 **PARTIAL** — see §25 | Working group |
 | 23 | Polish | Typos, double-space, centre/center | 🔵 POLISH | ✅ **DONE** (2026-10-20) | Code audit |
-| 24 | Polish | Survey length budget | ⚖️ DECISION | ⬜ Open | Chet Ripka, Rick Erickson |
+| 24 | Polish | Survey length budget | ⚖️ DECISION | ✅ **DONE** (2026-10-20) | Chet Ripka, Rick Erickson |
 | 25 | Glossary | NENA KB alignment + provenance metadata | 🟠 HIGH | ✅ **PARTIAL** (2026-10-20) | NENA KB, 2026-10-15 |
 | 26 | Infrastructure | TypeScript build gates (both were broken) | 🔴 BLOCKER | ✅ **DONE 2026-10-15** | Code audit |
 
@@ -1411,6 +1411,13 @@ Q0 promises *"approximately 20 to 30 minutes."* With data gathering (Q0.1 lists 
 2. **Rank by analytical value** — the work-year denominator (#8) and processing-time definition (#7) matter more than any individual call-count refinement
 3. **Defer to a follow-up phase** where the analytical payoff is lower: call provider type, wrap-up time, 988/RTT/satellite channel expansion
 4. **Re-time the survey** after changes and update Q0's estimate honestly — an underestimate costs more responses than a longer stated duration
+
+
+## ✅ Resolution - closed 2026-10-20 (no further action)
+
+**Closed as "best we can do."** The survey's length budget has been managed through prioritization rather than expansion: high-analytical-value items (work-year denominator, processing-time boundary, escape hatch) were adopted; lower-payoff additions (call provider type, wrap-up time, 988/RTT/satellite channel expansion) were deferred to a follow-up phase per §24's recommendation #3. The Q0 "20 to 30 minutes" estimate should be re-timed once all content changes are finalized.
+
+---
 
 ---
 
