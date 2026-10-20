@@ -316,6 +316,14 @@ const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
     '25': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
     '26': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
 
+    // ── id 53 — outbound calls placed (number-or-unknown) ─────────────────────
+    '53': {
+        kind: 'number-or-unknown',
+        min: 0,
+        max: 100_000_000,
+        integerOnly: true,
+        unknownValue: UNKNOWN_VALUE,
+    },
     // ── ids 27–31 — FTE counts ────────────────────────────────────────────────
     '27': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
     '28': { kind: 'number', min: 0, max: 10_000, integerOnly: true },

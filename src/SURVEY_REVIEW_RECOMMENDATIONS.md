@@ -121,7 +121,7 @@ Every recommendation cites its source so the working group can verify intent bef
 | 7 | Definitions | Q37–Q40 processing-time boundary | 🟠 HIGH | ⬜ Open — see §25 | Heather, Crystal, Justin |
 | 8 | Definitions | Shift/staffing work-year denominator (2,080 vs 2,184) | 🟠 HIGH | ⬜ PARTIAL (Pass 13) - Q37 work-year basis radio added | Gary, Rebecca Conners |
 | 9 | Definitions | "Optimum" / "fully staffed" undefined | 🟠 HIGH | PARTIAL (Pass 14) - description field now carries definition | Barry Hutchins |
-| 10 | Coverage | Outgoing calls unmeasured | 🟡 MEDIUM | ⬜ Open | Crystal, Ernie Qualls |
+| 10 | Coverage | Outgoing calls unmeasured | 🟡 MEDIUM | ✅ **DONE** (2026-10-20) | Crystal, Ernie Qualls |
 | 11 | Coverage | Non-emergency vs. administrative conflated | 🟡 MEDIUM | ⬜ Open | Crystal |
 | 12 | Coverage | Q4 add colleges/universities | 🟡 MEDIUM | ✅ **DONE** (2026-10-20) | Session notes L17, Joel McDonald |
 | 13 | Coverage | Q3 peak population escape hatch | 🟡 MEDIUM | ✅ **DONE** (2026-10-20) | Brian Bond (AZ) |
@@ -1642,4 +1642,13 @@ This satisfies `createApp(deps)` **and** keeps assertion methods. A second one-l
 | `5fcda39` | 5 | Static rebuild — new bundle, `index.html` repointed |
 | `a65d045` | 6 | Build gates — both TypeScript gates to 0 errors |
 
-> Each is a single logical change and independently revertable. Pass 5 is deliberately separate so the 224 kB bundle swap does not obscure the source change in review.
+> Each is a single logical change and independently revertable. Pass 5 is deliberately separate so the 224 kB bundle swap does not obscure the source change in review
+
+## ✅ Resolution - implemented 2026-10-20
+
+- `src/data/survey_data.json`: added Q53 — "Total number of outbound calls placed by your center in the last calendar year:" (type `number-or-unknown`, with `Unknown` escape hatch) in the Yearly Call Counts section, after the transfer questions.
+- `server/answerValidator.ts`: added Q53 schema entry (`number-or-unknown`, 0–100,000,000, integer, `unknownValue: UNKNOWN_VALUE`).
+- `server/dist/` rebuilt; tests 110 passing; full alignment re-verified (53/53, 0 mismatches).
+
+---
+.

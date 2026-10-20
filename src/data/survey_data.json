@@ -16,7 +16,7 @@
       "questions": [
         {
           "id": 0.1,
-          "text": "To complete this survey, you will need to have the following data available to you:\n\u2022Census and demographic data for your PSAP's service area\n\u2022Call volume data for the last calendar year\n\u2022Staffing data including the number of telecommunicators and supervisors\n\u2022Shift length, count, and staffing per shift.\n\u2022Average phone answer times.\n\u2022Call processing times.\n\n\u26a0\uFE0F IMPORTANT - REFERENCE YEAR: All volume, staffing, and performance data in this survey should be reported for calendar year 2025 (January 1 - December 31, 2025). This reference year will not change mid-collection.\n\nYou may use the 'Save & Get Code' button at any time to save your progress and return later if you need to gather additional information. The code can be used for 7 days from the time it is generated.",
+          "text": "To complete this survey, you will need to have the following data available to you:\n\u2022Census and demographic data for your PSAP's service area\n\u2022Call volume data for the last calendar year\n\u2022Staffing data including the number of telecommunicators and supervisors\n\u2022Shift length, count, and staffing per shift.\n\u2022Average phone answer times.\n\u2022Call processing times.\n\n\u26a0\ufe0f IMPORTANT - REFERENCE YEAR: All volume, staffing, and performance data in this survey should be reported for calendar year 2025 (January 1 - December 31, 2025). This reference year will not change mid-collection.\n\nYou may use the 'Save & Get Code' button at any time to save your progress and return later if you need to gather additional information. The code can be used for 7 days from the time it is generated.",
           "type": "info"
         }
       ]
@@ -383,6 +383,15 @@
           "responseEmphasis": "Internal transfers are those that stay inside your own center. External transfers are those handed to another PSAP or agency. These two should add up to your total in question 24.",
           "options": [],
           "type": "number"
+        },
+        {
+          "id": 53,
+          "text": "Total number of outbound calls placed by your center in the last calendar year:",
+          "description": "Outbound calls (callbacks, notifications to partner agencies, inter-PSAP coordination) consume telecommunicator time but are often not captured in inbound call counts.",
+          "data_location": "This information may come from your phone software or Computer Aided Dispatch (CAD) software.",
+          "options": [],
+          "unknownOption": "Unknown",
+          "type": "number-or-unknown"
         }
       ]
     },
@@ -449,7 +458,7 @@
           "id": 34,
           "text": "Minimum number of supervisor FTEs per shift",
           "description": "This allows us to understand what your center considers to be viable minimal staffing levels for supervisors and how that may influence scheduling practices and service quality.",
-          "responseEmphasis":"Enter a whole-number headcount for your minimum staffing level to supervise normal operations.",
+          "responseEmphasis": "Enter a whole-number headcount for your minimum staffing level to supervise normal operations.",
           "options": [],
           "type": "number"
         },
@@ -457,7 +466,7 @@
           "id": 35,
           "text": "Maximum number of telecommunicator FTEs per shift",
           "description": "This allows us to understand what your center considers to be maximum staffing levels for telecommunicators and how that may influence scheduling practices and service quality.",
-          "responseEmphasis":"Enter a whole-number headcount for your maximum staffing level for normal operations.",
+          "responseEmphasis": "Enter a whole-number headcount for your maximum staffing level for normal operations.",
           "options": [],
           "type": "number"
         },
@@ -465,7 +474,7 @@
           "id": 36,
           "text": "Maximum number of supervisor FTEs per shift",
           "description": "This allows us to understand what your center considers to be maximum staffing levels for supervisors and how that may influence scheduling practices and service quality.",
-          "responseEmphasis":"Enter a whole-number headcount for your maximum staffing level to supervise normal operations.",
+          "responseEmphasis": "Enter a whole-number headcount for your maximum staffing level to supervise normal operations.",
           "options": [],
           "type": "number"
         },
@@ -475,7 +484,12 @@
           "description": "Your FTE counts above depend on how many hours count as a full-time year. Different agencies use 2,080 (standard 5 x 8-hour weeks), 2,184 (12-hour / Pittman schedules), or another figure. Without a shared basis the FTE counts are not comparable, which is why this question is asked here.",
           "data_location": "This should come from your agency's HR or scheduling policy documents.",
           "responseEmphasis": "Pick the basis your agency reports against for the FTE figures you gave above. If your agency uses something other than 2,080 or 2,184, use 'Other (Please Specify)'.",
-          "options": ["2,080 hours (2,080 / 1,728 = standard full-time)", "2,184 hours (12-hour / \"Pittman\" schedule)", "Other (Please Specify)", "Unknown"],
+          "options": [
+            "2,080 hours (2,080 / 1,728 = standard full-time)",
+            "2,184 hours (12-hour / \"Pittman\" schedule)",
+            "Other (Please Specify)",
+            "Unknown"
+          ],
           "type": "radio"
         }
       ]
