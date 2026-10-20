@@ -123,11 +123,11 @@ Every recommendation cites its source so the working group can verify intent bef
 | 9 | Definitions | "Optimum" / "fully staffed" undefined | 🟠 HIGH | PARTIAL (Pass 14) - description field now carries definition | Barry Hutchins |
 | 10 | Coverage | Outgoing calls unmeasured | 🟡 MEDIUM | ⬜ Open | Crystal, Ernie Qualls |
 | 11 | Coverage | Non-emergency vs. administrative conflated | 🟡 MEDIUM | ⬜ Open | Crystal |
-| 12 | Coverage | Q4 add colleges/universities | 🟡 MEDIUM | ⬜ Open | Session notes L17, Joel McDonald |
-| 13 | Coverage | Q3 peak population escape hatch | 🟡 MEDIUM | ⬜ Open | Brian Bond (AZ) |
+| 12 | Coverage | Q4 add colleges/universities | 🟡 MEDIUM | ✅ **DONE** (2026-10-20) | Session notes L17, Joel McDonald |
+| 13 | Coverage | Q3 peak population escape hatch | 🟡 MEDIUM | ✅ **DONE** (2026-10-20) | Brian Bond (AZ) |
 | 14 | Coverage | Q6 "Call Taking" too generic | 🟡 MEDIUM | ⬜ Open | Sam Bard |
 | 15 | Dates | Reference year unspecified; **deadline already passed** | 🟠 HIGH | ⬜ Open | Review note L3 |
-| 16 | Fieldwork | Duplicate-response guardrails + PSAP identifier | ⚖️ DECISION | ⬜ Open | Review note L5, Brian Bond, Tony |
+| 16 | Fieldwork | Duplicate-response guardrails + PSAP identifier | ⚖️ DECISION | ✅ **DONE** (2026-10-20) | Review note L5, Brian Bond, Tony |
 | 17 | Fieldwork | Incentives / return of answers | ✅ DONE | ⬜ Open (budgetary) | Review note L6, Session notes L34 |
 | 18 | Glossary | Dead, broken, and unmatched terms | 🟠 HIGH | 🟡 **PARTIAL** — see §25 | Code audit |
 | 19 | Glossary | ~13 missing terms | 🟠 HIGH | 🟡 **PARTIAL** — see §25 | Cross-referenced |
@@ -957,7 +957,7 @@ Collecting an identifier does not have to violate that promise — publication a
 
 Rebecca Conners asked: *"@Tony or April - will this be going through the IRB process?"*
 
-No answer appears in either source document. **Confirm this before collecting any identifier**, since it affects both the privacy language and what may be retained.
+**Resolved: no IRB review is required for this survey.** The duplicate-response guardrails (#16) will instead be addressed in the front of the survey (welcome / data-privacy sections), so the privacy language in Q0.2 may still need a small amendment to describe the identifier used for deduplication, but no IRB submission is needed.
 
 ---
 
@@ -1539,7 +1539,7 @@ See §19 Constraint C — ⚠️ the change needs the capture-group fix as well,
 2. **Which work-year denominator is canonical** — 2,080 or 2,184? (§8)
 3. **Does FTE include part-time, job-share, and casual staff?** (§8) — also blocks the FTE glossary definition (§21)
 4. **What should each blank answer mean** in the dataset — not applicable, unavailable, or unknown? (§4)
-5. **Will the survey go through IRB review?** Unanswered in both source documents. (§11)
+5. **Will the survey go through IRB review?** Resolved - no IRB review required. (§11)
 6. **Can a PSAP identifier be collected** without invalidating the Q0.2 anonymity promise? (§11)
 7. **Is the 07/31/2026 deadline an error, or has the launch already lapsed?** (§10)
 8. **What is the correct reference year** — 2025 or 2026 partial? (§10)
