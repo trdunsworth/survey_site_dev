@@ -131,7 +131,7 @@ Every recommendation cites its source so the working group can verify intent bef
 | 17 | Fieldwork | Incentives / return of answers | ✅ DONE | ⬜ Open (budgetary) | Review note L6, Session notes L34 |
 | 18 | Glossary | Dead, broken, and unmatched terms | 🟠 HIGH | 🟡 **PARTIAL** — see §25 | Code audit |
 | 19 | Glossary | ~13 missing terms | 🟠 HIGH | 🟡 **PARTIAL** — see §25 | Cross-referenced |
-| 20 | Glossary | Tooltips don't render in `description` / `data_location` | 🟠 HIGH | ⬜ Open | `Question.tsx` audit |
+| 20 | Glossary | Tooltips don't render in `description` / `data_location` | 🟠 HIGH | ✅ **DONE** (2026-10-20) | `Question.tsx` audit |
 | 21 | Glossary | Plurals never match tooltips | 🟠 HIGH | ✅ **DONE** (2026-10-20) | `Question.tsx` audit |
 | 22 | Glossary | Definition rewrites (FTE, CAD, PSAP, 10-Digit) | 🟡 MEDIUM | 🟡 **PARTIAL** — see §25 | Working group |
 | 23 | Polish | Typos, double-space, centre/center | 🔵 POLISH | ✅ **DONE** (2026-10-20) | Code audit |
@@ -1314,6 +1314,17 @@ Still open. It interacts with two completed passes:
 **Recommended order:** §19 Constraint C → §20 missing terms → **this step** → §25 provenance metadata.
 
 > 📌 **Note on `description` specifically:** it is the field §8 uses to define the work-year basis and §9 uses to define "optimum." Both are open questions the working group still needs to answer. Routing `description` through tooltips makes any glossary term used in those new definitions clickable, which is the reason to do this before those edits land rather than after.
+
+
+## ✅ Resolution - implemented 2026-10-20
+
+`src/components/Question.tsx` now routes both `description` (as `plainDescription`) and `data_location` through `renderTextWithTooltips`, so glossary terms are highlighted in those fields as well as in `text` and `responseEmphasis`. The HTML-stripping for `plainDescription` happens before tooltip processing, so the splitter receives clean text.
+
+Result: glossary terms in `data_location` (CAD/phone-software guidance) and `description` (measurement caveats) now produce tooltips. Combined with the #21 plural fix, this restores tooltips across all four rendered text fields.
+
+`server/dist/` rebuilt; tests 110 passing; type-check clean.
+
+---
 
 ---
 

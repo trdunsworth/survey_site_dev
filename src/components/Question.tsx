@@ -356,12 +356,12 @@ const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
                 {question.required && <span style={{ color: 'var(--nena-red)', fontSize: '0.85em', marginLeft: '0.5rem', fontStyle: 'italic' }}>(Required)</span>}
                 {plainDescription && (
                     <span className="question-description" style={{ whiteSpace: 'pre-line' }}>
-                        {plainDescription}
+                        {renderTextWithTooltips(plainDescription)}
                     </span>
                 )}
                 {data_location && (
                     <span className="question-data-location" style={{ whiteSpace: 'pre-line' }}>
-                        {data_location}
+                        {renderTextWithTooltips(data_location)}
                     </span>
                 )}
                 {question.responseEmphasis && (
