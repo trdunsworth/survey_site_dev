@@ -38,7 +38,13 @@ const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
         sortedGlossaryData.forEach(item => {
             const term = item.term;
             const definition = item.definition;
-            const regex = new RegExp(`\\b(${term})\\b`, 'gi');
+            // Escape regex metacharacters in the term so future entries that
+            // contain '.', '+', '*', etc. do not break or silently mis-match.
+            const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            // Allow an optional plural/possessive suffix so that "PSAPs",
+            // "FTE's", "SLAs", etc. still receive a tooltip. The base term
+            // is capture group 1, so odd split-indices are matches.
+            const regex = new RegExp(`\\b(${escaped})(?:['’]s|s)?\\b`, 'gi');
 
             const newParts: (string | ReactNode)[] = [];
             parts.forEach(part => {
@@ -47,7 +53,7 @@ const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
                     if (split.length > 1) {
                         for (let i = 0; i < split.length; i++) {
                             const segment = split[i];
-                            if (segment.toLowerCase() === term.toLowerCase()) {
+                            if (i % 2 === 1 && segment.length > 0) {
                                 newParts.push(
                                     <Tooltip key={`${id}-${term}-${i}`} text={definition}>
                                         <span className="tooltip-trigger">{segment}</span>

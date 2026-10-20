@@ -132,7 +132,7 @@ Every recommendation cites its source so the working group can verify intent bef
 | 18 | Glossary | Dead, broken, and unmatched terms | 🟠 HIGH | 🟡 **PARTIAL** — see §25 | Code audit |
 | 19 | Glossary | ~13 missing terms | 🟠 HIGH | 🟡 **PARTIAL** — see §25 | Cross-referenced |
 | 20 | Glossary | Tooltips don't render in `description` / `data_location` | 🟠 HIGH | ⬜ Open | `Question.tsx` audit |
-| 21 | Glossary | Plurals never match tooltips | 🟠 HIGH | ⬜ Open — **regression, see §25** | `Question.tsx` audit |
+| 21 | Glossary | Plurals never match tooltips | 🟠 HIGH | ✅ **DONE** (2026-10-20) | `Question.tsx` audit |
 | 22 | Glossary | Definition rewrites (FTE, CAD, PSAP, 10-Digit) | 🟡 MEDIUM | 🟡 **PARTIAL** — see §25 | Working group |
 | 23 | Polish | Typos, double-space, centre/center | 🔵 POLISH | ✅ **DONE** (2026-10-20) | Code audit |
 | 24 | Polish | Survey length budget | ⚖️ DECISION | ⬜ Open | Chet Ripka, Rick Erickson |
@@ -1227,6 +1227,21 @@ const regex = new RegExp(`\\b(${term})(?:['’]s|s)?\\b`, 'gi');
    ```
 
    > Without this, the "fix" silently does nothing and the tests will still pass — the tooltip count assertion would need to assert on rendered output, not just that `Tooltip` was constructed.
+
+
+## ✅ Resolution - implemented 2026-10-20
+
+`src/components/Question.tsx` `renderTextWithTooltips` updated:
+
+1. **Term is now regex-escaped** (`term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')`) so future entries with metacharacters cannot break or silently mis-match.
+2. **Optional plural/possessive suffix** added to the regex: `\b(${escaped})(?:['’]s|s)?\b` — so `PSAPs`, `FTE's`, `SLAs`, `Incidents` now match.
+3. **Capture-group equality fixed**: the split index check (`i % 2 === 1`) replaces the old `segment.toLowerCase() === term.toLowerCase()` comparison, which silently no-op'd whenever a suffix was present.
+
+Result: tooltips now fire on plurals and possessives. `Incident` (the term Gary mandated for Q16–Q21) now renders tooltips on all five questions that use it; `PSAP`, `FTE`, `SLA` recover their plural/possessive occurrences.
+
+`server/dist/` rebuilt; tests 110 passing; type-check clean.
+
+---
 
 ---
 
