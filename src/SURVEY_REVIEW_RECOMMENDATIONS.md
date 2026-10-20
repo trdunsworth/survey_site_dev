@@ -122,7 +122,7 @@ Every recommendation cites its source so the working group can verify intent bef
 | 8 | Definitions | Shift/staffing work-year denominator (2,080 vs 2,184) | 🟠 HIGH | ⬜ PARTIAL (Pass 13) - Q37 work-year basis radio added | Gary, Rebecca Conners |
 | 9 | Definitions | "Optimum" / "fully staffed" undefined | 🟠 HIGH | PARTIAL (Pass 14) - description field now carries definition | Barry Hutchins |
 | 10 | Coverage | Outgoing calls unmeasured | 🟡 MEDIUM | ✅ **DONE** (2026-10-20) | Crystal, Ernie Qualls |
-| 11 | Coverage | Non-emergency vs. administrative conflated | 🟡 MEDIUM | ⬜ Open | Crystal |
+| 11 | Coverage | Non-emergency vs. administrative conflated | 🟡 MEDIUM | ✅ **CLOSED** (no change) | Crystal |
 | 12 | Coverage | Q4 add colleges/universities | 🟡 MEDIUM | ✅ **DONE** (2026-10-20) | Session notes L17, Joel McDonald |
 | 13 | Coverage | Q3 peak population escape hatch | 🟡 MEDIUM | ✅ **DONE** (2026-10-20) | Brian Bond (AZ) |
 | 14 | Coverage | Q6 "Call Taking" too generic | 🟡 MEDIUM | ⬜ Open | Sam Bard |
@@ -1107,6 +1107,10 @@ Current state:
 | 40 | Average call processing time for **non-emergency** calls | Same |
 
 **Recommendation:** separate **administrative** from **non-emergency** into distinct lines, so processing times can be compared meaningfully. Administrative calls are typically faster and scripted — averaging them with non-emergency traffic produces a misleading number.
+
+## ✅ Resolution - closed 2026-10-20 (no change)
+
+**Left as-is.** Some centers do not differentiate between non-emergency and administrative lines — for them it is either 9-1-1 or a non-emergency trunk line, so a separate "administrative" bucket would be unanswerable or would duplicate the non-emergency count. The original recommendation assumed a three-way split that does not hold across all PSAPs. The current single "non-emergency" line stays.
 
 ---
 
