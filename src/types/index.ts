@@ -1,6 +1,16 @@
 export interface GlossaryItem {
   term: string;
   definition: string;
+  /** Where the definition came from. */
+  source?: 'nena-kb' | 'local';
+  /** NENA KB page slug, e.g. 'PSAP_(Public_Safety_Answering_Point)'. */
+  sourceRef?: string;
+  /** ISO date the KB page was last checked. */
+  sourceRetrieved?: string;
+  /** Canonical KB title when it differs from `term` (e.g. 'PSAP (Public Safety Answering Point)'). */
+  nenaTerm?: string;
+  /** Text we appended that is NOT from the KB — kept separate so re-syncs don't clobber it. */
+  localNote?: string;
 }
 
 export interface QuestionOption {

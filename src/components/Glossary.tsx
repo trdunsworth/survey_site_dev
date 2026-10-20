@@ -21,7 +21,10 @@ const Glossary: React.FC = () => {
                 <ul className="glossary-list">
                     {typedGlossaryData.map((item, idx) => (
                         <li key={idx}>
-                            <strong>{item.term}</strong>: {item.definition}
+                            <strong>{item.nenaTerm ?? item.term}</strong>: {item.definition}
+                            {item.localNote && (
+                                <span style={{ color: '#666', fontSize: '0.9em' }}> {item.localNote}</span>
+                            )}
                         </li>
                     ))}
                 </ul>

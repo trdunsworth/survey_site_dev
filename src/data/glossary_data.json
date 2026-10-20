@@ -1,134 +1,226 @@
 [
-  {
-    "term": "10-Digit Emergency",
-    "definition": "Emergency calls received on a standard 10-digit phone line rather than through the 9-1-1 network."
-  },
-  {
-    "term": "988",
-    "definition": "The three-digit number for the Suicide & Crisis Lifeline in the United States and Canada."
-  },
-  {
-    "term": "ACD",
-    "definition": "Automatic Call Distributor. A telephony system that distributes incoming calls to available agents based on predefined rules."
-  },
-  {
-    "term": "APCO",
-    "definition": "Association of Public Safety Communications Officials."
-  },
-  {
-    "term": "Backup center",
-    "definition": "A PSAP or dispatch center that assumes call-taking or dispatch responsibilities when another center is unavailable or overwhelmed."
-  },
-  {
-    "term": "Busy hour",
-    "definition": "The 60-minute period with the highest call volume in a given day or period. Used for capacity planning."
-  },
-  {
-    "term": "CAD",
-    "definition": "Computer-Aided Dispatch. Systems used by dispatchers to track status and location of resources."
-  },
-  {
-    "term": "Call processing time",
-    "definition": "The interval from when a call is answered until it is dispatched, or until the call is dispatchable \u00e2\u20ac\u201d that is, until the telecommunicator has enough information to dispatch it."
-  },
-  {
-    "term": "CFAI",
-    "definition": "Commission on Fire Accreditation International."
-  },
-  {
-    "term": "Cold transfer",
-    "definition": "A call transfer where the transferring telecommunicator disconnects once the call is routed, without confirming the receiving party has answered."
-  },
-  {
-    "term": "Concurrent calls",
-    "definition": "The number of calls being handled simultaneously at a given moment. A key driver of NG9-1-1 system capacity and cost."
-  },
-  {
-    "term": "Contracted hours",
-    "definition": "The total hours a telecommunicator is scheduled to work in a year, per their employment agreement."
-  },
-  {
-    "term": "FTE",
-    "definition": "Full-Time Equivalent. A unit that indicates the workload of an employed person."
-  },
-  {
-    "term": "IAED",
-    "definition": "International Academies of Emergency Dispatch."
-  },
-  {
-    "term": "Incident",
-    "definition": "A real-world occurrence, or event, for which one or more calls may be received."
-  },
-  {
-    "term": "Mutual aid",
-    "definition": "An agreement between agencies or jurisdictions to provide assistance and resources during emergencies."
-  },
-  {
-    "term": "NCIC",
-    "definition": "National Crime Information Center. The FBI's criminal justice information system, used by PSAPs for warrant checks, stolen vehicle lookups, and other law-enforcement queries."
-  },
-  {
-    "term": "NENA",
-    "definition": "National Emergency Number Association."
-  },
-  {
-    "term": "Net available hours",
-    "definition": "Contracted hours minus vacation, training, sick leave, and other non-operational time. Represents actual time available for call handling."
-  },
-  {
-    "term": "NG9-1-1",
-    "definition": "Next Generation 9-1-1. An initiative to update the 9-1-1 service infrastructure to improve public emergency communications services in a wireless mobile society."
-  },
-  {
-    "term": "NGCS",
-    "definition": "Next Generation Core Services. The IP-based infrastructure that routes 9-1-1 calls in an NG9-1-1 environment."
-  },
-  {
-    "term": "PSAP",
-    "definition": "Public Safety Answering Point. A facility equipped and staffed to receive 9-1-1 calls."
-  },
-  {
-    "term": "QA",
-    "definition": "Quality Assurance."
-  },
-  {
-    "term": "QI",
-    "definition": "Quality Improvement."
-  },
-  {
-    "term": "Radio keyup",
-    "definition": "A transmission on a radio channel, typically initiated by pressing the push-to-talk button. Counted as a workload unit in dispatch operations."
-  },
-  {
-    "term": "RFA",
-    "definition": "Request for Assistance. A request from one agency to another for support or resources."
-  },
-  {
-    "term": "RTT",
-    "definition": "Real-Time Text. A text-based communication method that transmits characters as they are typed, used for accessibility."
-  },
-  {
-    "term": "Satellite SOS",
-    "definition": "Emergency messaging via satellite, available on certain mobile devices when cellular service is unavailable."
-  },
-  {
-    "term": "SLA",
-    "definition": "Service Level Agreement. A commitment between a service provider and a client."
-  },
-  {
-    "term": "TTY/TDD",
-    "definition": "Teletypewriter / Telecommunications Device for the Deaf."
-  },
-  {
-    "term": "Warm transfer",
-    "definition": "A call transfer where the transferring telecommunicator remains on the line until the receiving party answers and the handoff is complete."
-  },
-  {
-    "term": "Work year",
-    "definition": "The number of hours in a standard work year used for FTE calculations. Common conventions are 2,080 hours (5 x 8-hour shifts) and 2,184 hours (12-hour / \"Pittman\" schedule)."
-  },
-  {
-    "term": "Wrap-up time",
-    "definition": "Post-call work performed by the telecommunicator after the call ends, before they are available for the next call. May include documentation, follow-up calls, or system updates."
-  }
+    {
+        "term": "10-Digit Emergency",
+        "definition": "Emergency calls received on a standard 10-digit phone line rather than through the 9-1-1 network.",
+        "source": "local"
+    },
+    {
+        "term": "988",
+        "definition": "The three-digit dialing code that directly connects individuals to the pre-existing National Suicide Prevention Lifeline network of crisis centers (now called the 988 Suicide & Crisis Lifeline).",
+        "source": "nena-kb",
+        "sourceRef": "988",
+        "sourceRetrieved": "2026-10-20",
+        "nenaTerm": "988"
+    },
+    {
+        "term": "ACD",
+        "definition": "Equipment that automatically distributes incoming calls to available PSAP attendants in the order the calls are received, or queues calls until an attendant becomes available.",
+        "source": "nena-kb",
+        "sourceRef": "ACD_(Automatic_Call_Distributor)",
+        "sourceRetrieved": "2026-10-20",
+        "nenaTerm": "ACD (Automatic Call Distributor)"
+    },
+    {
+        "term": "APCO",
+        "definition": "The world's oldest and largest not-for-profit professional organization dedicated to the enhancement of public safety communications.",
+        "source": "nena-kb",
+        "sourceRef": "APCO_(Association_of_Public_Safety_Communications_Officials)",
+        "sourceRetrieved": "2026-10-20",
+        "nenaTerm": "APCO (Association of Public Safety Communications Officials)"
+    },
+    {
+        "term": "Backup center",
+        "definition": "A PSAP or dispatch center that assumes call-taking or dispatch responsibilities when another center is unavailable or overwhelmed.",
+        "source": "local"
+    },
+    {
+        "term": "Busy hour",
+        "definition": "The hour each day with the greatest emergency call volume at a PSAP.",
+        "source": "nena-kb",
+        "sourceRef": "Busy_Hour",
+        "sourceRetrieved": "2026-10-20",
+        "nenaTerm": "Busy Hour"
+    },
+    {
+        "term": "CAD",
+        "definition": "A computer-based system that aids PSAP Telecommunicators by automating selected dispatching and record keeping activities.",
+        "source": "nena-kb",
+        "sourceRef": "CAD_(Computer-Aided_Dispatch)",
+        "sourceRetrieved": "2026-10-20",
+        "nenaTerm": "CAD (Computer-Aided Dispatch)"
+    },
+    {
+        "term": "Call handling",
+        "definition": "A Functional Element concerned with the details of the management of calls. It handles all communication from the caller. It includes the interfaces, devices, and applications utilized by the Agents to handle the call.",
+        "source": "nena-kb",
+        "sourceRef": "Call_Handling",
+        "sourceRetrieved": "2026-10-20",
+        "nenaTerm": "Call Handling"
+    },
+    {
+        "term": "Call processing time",
+        "definition": "The interval from when a call is answered until it is dispatched, or until the call is dispatchable — that is, until the telecommunicator has enough information to dispatch it.",
+        "source": "local"
+    },
+    {
+        "term": "CFAI",
+        "definition": "Commission on Fire Accreditation International.",
+        "source": "local"
+    },
+    {
+        "term": "Cold transfer",
+        "definition": "A call transfer where the transferring telecommunicator disconnects once the call is routed, without confirming the receiving party has answered.",
+        "source": "local"
+    },
+    {
+        "term": "Concurrent calls",
+        "definition": "The number of calls being handled simultaneously at a given moment. A key driver of NG9-1-1 system capacity and cost.",
+        "source": "local"
+    },
+    {
+        "term": "Contracted hours",
+        "definition": "The total hours a telecommunicator is scheduled to work in a year, per their employment agreement.",
+        "source": "local"
+    },
+    {
+        "term": "FTE",
+        "definition": "Full-Time Equivalent. A unit that indicates the workload of an employed person.",
+        "source": "local"
+    },
+    {
+        "term": "IAED",
+        "definition": "International Academies of Emergency Dispatch.",
+        "source": "local"
+    },
+    {
+        "term": "Incident",
+        "definition": "A real-world occurrence, or event, for which one or more calls may be received.",
+        "source": "nena-kb",
+        "sourceRef": "Incident",
+        "sourceRetrieved": "2026-10-20",
+        "nenaTerm": "Incident"
+    },
+    {
+        "term": "Mutual aid",
+        "definition": "An agreement between agencies or jurisdictions to provide assistance and resources during emergencies.",
+        "source": "local"
+    },
+    {
+        "term": "NCIC",
+        "definition": "National Crime Information Center. The FBI's criminal justice information system, used by PSAPs for warrant checks, stolen vehicle lookups, and other law-enforcement queries.",
+        "source": "local"
+    },
+    {
+        "term": "NENA",
+        "definition": "Referred to as \"The 9-1-1 Association\", it is fully dedicated to the continued improvement and modernization of the 9-1-1 emergency communication system. NENA's approach includes research, standards development, training, education, certification, outreach, and advocacy through communication with stakeholders. As an ANSI-accredited Standards Developer, NENA works with 9-1-1 professionals, public policy leaders, emergency services and telecommunications industry partners, like-minded public safety associations, and more. Current NENA activities center on awareness, documentation, and implementation for Next Generation 9-1-1 (NG9-1-1) and international three-digit emergency communication systems. NENA's worldwide members join with the emergency response community in striving to protect human life, preserve property, and maintain the security of all communities.",
+        "source": "nena-kb",
+        "sourceRef": "NENA_(National_Emergency_Number_Association)",
+        "sourceRetrieved": "2026-10-20",
+        "nenaTerm": "NENA (National Emergency Number Association)"
+    },
+    {
+        "term": "Net available hours",
+        "definition": "Contracted hours minus vacation, training, sick leave, and other non-operational time. Represents actual time available for call handling.",
+        "source": "local"
+    },
+    {
+        "term": "NG9-1-1",
+        "definition": "An IP-based system comprised of hardware, software, data, and operational policies and procedures that: (A) provides standardized interfaces from emergency call and message services to support emergency communications; (B) processes all types of emergency calls, including voice, data, and multimedia information; (C) acquires and integrates additional emergency call data useful to call routing and handling; (D) delivers the emergency calls, messages, and data to the appropriate public safety answering point and other appropriate emergency entities; (E) supports data or video communications needs for coordinated incident response and management.",
+        "source": "nena-kb",
+        "sourceRef": "NG9-1-1_(Next_Generation_9-1-1)",
+        "sourceRetrieved": "2026-10-20",
+        "nenaTerm": "NG9-1-1 (Next Generation 9-1-1)"
+    },
+    {
+        "term": "NGCS",
+        "definition": "Next Generation Core Services. The IP-based infrastructure that routes 9-1-1 calls in an NG9-1-1 environment.",
+        "source": "local"
+    },
+    {
+        "term": "PSAP",
+        "definition": "A physical or virtual entity where 9-1-1 calls are delivered by the 9-1-1 Service Provider.",
+        "source": "nena-kb",
+        "sourceRef": "PSAP_(Public_Safety_Answering_Point)",
+        "sourceRetrieved": "2026-10-20",
+        "nenaTerm": "PSAP (Public Safety Answering Point)"
+    },
+    {
+        "term": "QA",
+        "definition": "A process taken to ensure that standards and procedures are adhered to and that delivered products or services meet performance requirements.",
+        "source": "nena-kb",
+        "sourceRef": "QA_(Quality_Assurance)",
+        "sourceRetrieved": "2026-10-20",
+        "nenaTerm": "QA (Quality Assurance)"
+    },
+    {
+        "term": "QI",
+        "definition": "An organized system that assesses and evaluates the process to improve the quality of services provided.",
+        "source": "nena-kb",
+        "sourceRef": "QI_(Quality_Improvement)",
+        "sourceRetrieved": "2026-10-20",
+        "nenaTerm": "QI (Quality Improvement)"
+    },
+    {
+        "term": "Radio keyup",
+        "definition": "A transmission on a radio channel, typically initiated by pressing the push-to-talk button. Counted as a workload unit in dispatch operations.",
+        "source": "local"
+    },
+    {
+        "term": "RFA",
+        "definition": "Request for Assistance. A request from one agency to another for support or resources.",
+        "source": "local"
+    },
+    {
+        "term": "RTT",
+        "definition": "A text transmission that is character at a time, as in TTY. Technology that allows consumers to send and receive IETF RFC 4103 text characters, as they are typed, as well as audio simultaneously.",
+        "source": "nena-kb",
+        "sourceRef": "RTT_(Real-Time_Text)",
+        "sourceRetrieved": "2026-10-20",
+        "nenaTerm": "RTT (Real-Time Text)"
+    },
+    {
+        "term": "Satellite SOS",
+        "definition": "Emergency messaging via satellite, available on certain mobile devices when cellular service is unavailable.",
+        "source": "local"
+    },
+    {
+        "term": "SLA",
+        "definition": "A contract between a service provider (either internal or external) and the end user that defines the level of service expected from the service provider. SLAs are output-based in that their purpose is specifically to define what the customer will receive.",
+        "source": "nena-kb",
+        "sourceRef": "SLA_(Service_Level_Agreement)",
+        "sourceRetrieved": "2026-10-20",
+        "nenaTerm": "SLA (Service Level Agreement)"
+    },
+    {
+        "term": "Transfer",
+        "definition": "A feature that allows the PSAP Telecommunicator to redirect a 9-1-1 call to another location.",
+        "source": "nena-kb",
+        "sourceRef": "Transfer",
+        "sourceRetrieved": "2026-10-20",
+        "nenaTerm": "Transfer"
+    },
+    {
+        "term": "TTY/TDD",
+        "definition": "A device capable of information interchange between compatible units using a dial-up or private-line telephone network and VoIP (Voice over Internet Protocol) connections as the transmission mediums. ASCII tones or Baudot codes are used by these units (per EIA PN-1663).",
+        "source": "nena-kb",
+        "sourceRef": "TTY_(Teletypewriter)",
+        "sourceRetrieved": "2026-10-20",
+        "nenaTerm": "TTY (Teletypewriter)",
+        "localNote": "Related term: TDD (Telecommunications Device for the Deaf)."
+    },
+    {
+        "term": "Warm transfer",
+        "definition": "A call transfer where the transferring telecommunicator remains on the line until the receiving party answers and the handoff is complete.",
+        "source": "local"
+    },
+    {
+        "term": "Work year",
+        "definition": "The number of hours in a standard work year used for FTE calculations. Common conventions are 2,080 hours (5 x 8-hour shifts) and 2,184 hours (12-hour / \"Pittman\" schedule).",
+        "source": "local"
+    },
+    {
+        "term": "Wrap-up time",
+        "definition": "Post-call work performed by the telecommunicator after the call ends, before they are available for the next call. May include documentation, follow-up calls, or system updates.",
+        "source": "local"
+    }
 ]

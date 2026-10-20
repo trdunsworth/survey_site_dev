@@ -136,7 +136,7 @@ Every recommendation cites its source so the working group can verify intent bef
 | 22 | Glossary | Definition rewrites (FTE, CAD, PSAP, 10-Digit) | 🟡 MEDIUM | 🟡 **PARTIAL** — see §25 | Working group |
 | 23 | Polish | Typos, double-space, centre/center | 🔵 POLISH | ✅ **DONE** (2026-10-20) | Code audit |
 | 24 | Polish | Survey length budget | ⚖️ DECISION | ⬜ Open | Chet Ripka, Rick Erickson |
-| 25 | Glossary | NENA KB alignment + provenance metadata | 🟠 HIGH | 🟡 **PARTIAL** — see §25 | NENA KB, 2026-10-15 |
+| 25 | Glossary | NENA KB alignment + provenance metadata | 🟠 HIGH | ✅ **PARTIAL** (2026-10-20) | NENA KB, 2026-10-15 |
 | 26 | Infrastructure | TypeScript build gates (both were broken) | 🔴 BLOCKER | ✅ **DONE 2026-10-15** | Code audit |
 
 ---
