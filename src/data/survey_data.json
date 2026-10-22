@@ -6,7 +6,7 @@
       "questions": [
         {
           "id": 0,
-          "text": "The National Emergency Number Association (NENA) is conducting this survey to collect data from Public Safety Answering Points (PSAP) in the United States and Canada to evaluate and update call processing and staffing guidelines in response to evolving operational demands, emerging technologies, and increasing service complexity. The results will identify national trends, challenges, and effective practices to support data-driven decisions and the development of practical modern staffing recommendations that enhance efficiency, sustainability, and service quality. The survey takes approximately 20 to 30 minutes to complete. The deadline for completion is 07/31/2026. This initial phase focuses on core operations such as call processing, dispatching, and frontline Full Time Equivalent (FTE) staffing. Future phases will include support and administrative functions. Broad participation is essential to ensure representative results. All responses will be analyzed in aggregate to support research and guideline development.\n\n***Please coordinate within the center to ensure that there is only one response per PSAP***.\n\nOn submission you will be offered a copy of your own responses for your records, generated in your browser and never sent to any server.\n\nIf you have multiple PSAPs under the same governance, please complete a survey for each PSAP to ensure that we can capture the unique characteristics of each center.\n\nPlease ensure that you submit only one response per PSAP. If you need to coordinate between multiple people to get the data together, please coalesce the data prior to completing it.",
+          "text": "The National Emergency Number Association (NENA) is conducting this survey to collect data from Public Safety Answering Points (PSAP) in the United States and Canada to evaluate and update call processing and staffing guidelines in response to evolving operational demands, emerging technologies, and increasing service complexity. The results will identify national trends, challenges, and effective practices to support data-driven decisions and the development of practical modern staffing recommendations that enhance efficiency, sustainability, and service quality. The survey takes approximately 20 to 30 minutes to complete. The deadline for completion is 07/31/2026. This initial phase focuses on core operations such as call processing, dispatching, and frontline Full Time Equivalent (FTE) staffing. Future phases will include support and administrative functions. Broad participation is essential to ensure representative results. All responses will be analyzed in aggregate to support research and guideline development.\n\n***Please coordinate within the center to ensure that there is only one response per PSAP.\n\n If you have multiple PSAPs under the same governance, please complete a survey for each PSAP to ensure that we can capture the unique characteristics of each center.\n\nPlease ensure that you submit only one response per PSAP. If you need to coordinate between multiple people to get the data together, please coalesce the data prior to completing it.***.\n\nOn submission you will be offered a copy of your own responses for your records, generated in your browser and never sent to any server.",
           "type": "info"
         }
       ]
@@ -117,9 +117,9 @@
       "questions": [
         {
           "id": 2,
-          "text": "What is the base population serviced by the PSAP?",
+          "text": "What is the estimated base population serviced by the PSAP?",
           "description": "The base population allows us to see the population that is regularly serviced by the PSAP.",
-          "data_location": "This data can be gathered from your governing organization's census data",
+          "data_location": "This data can be gathered from your governing organization's census data, or if your area has a tourism board or business bureau, they may also be able to supply this data.",
           "options": [
             "Less than 10,000",
             "10,000 - 25,000",
@@ -134,9 +134,9 @@
         },
         {
           "id": 3,
-          "text": "What is the peak population serviced by the PSAP?",
+          "text": "What is the estimated peak population serviced by the PSAP?",
           "description": "The peak population allows us to see the influence of visitors and transient populations on PSAP operations.",
-          "data_location": "This data can be gathered from your governing organization's census data, or if your area has a tourism board or business bureau, they could also supply that data.",
+          "data_location": "This data can be gathered from your governing organization's census data, or if your area has a tourism board or business bureau, they may also be able to supply that data.",
           "options": [
             "Less than 10,000",
             "10,000 - 25,000",
@@ -184,7 +184,6 @@
           "options": [
             "Call Taking",
             "Dispatching",
-            "Walk Up",
             "SMS/Text"
           ],
           "type": "checkbox"
@@ -192,7 +191,7 @@
         {
           "id": 7,
           "text": "Please list any additional services that you provide beyond the options listed in question 6:",
-          "description": "We would like to know what services you provide to understand the variety of services provided by PSAPs and how that may influence operations and staffing.",
+          "description": "We would like to know what services you provide to understand the variety of services provided by PSAPs and how that may influence operations and staffing. Examples may include walk-up windows, matron duties, records checks, etc.",
           "options": [],
           "type": "textarea"
         },
@@ -201,43 +200,20 @@
           "text": "What is the PSAP operational governance:",
           "description": "This allows us to understand how to compare the same types of PSAPs and how their staffing needs may change due to other factors.",
           "options": [
-            "Federal Government (Airport, Tribal, LEO, Military, Other)",
-            "State Government (LEO, Other)",
-            "County Government (Sheriff, Fire, EMS, Other)",
-            "Municipal Government (Fire, EMS, LEO, Other)",
-            "Independent Tax Funded Authority",
+            "Federal Government",
+            "State Government",
+            "Tribal Government",
+            "County Government",
+            "Municipal Government",
+            "Independent Authority",
             "Private",
             "Other (Please Specify)"
           ],
           "type": "radio"
         },
         {
-          "id": 8.1,
-          "text": "Which specific agencies fall under this governance:",
-          "options": [
-            "Police",
-            "Sheriff",
-            "Fire",
-            "EMS",
-            "Airport",
-            "Tribal",
-            "Military",
-            "Other (Please Specify)"
-          ],
-          "type": "checkbox",
-          "showIf": {
-            "questionId": 8,
-            "anyOf": [
-              "Federal Government (Airport, Tribal, LEO, Military, Other)",
-              "State Government (LEO, Other)",
-              "County Government (Sheriff, Fire, EMS, Other)",
-              "Municipal Government (Fire, EMS, LEO, Other)"
-            ]
-          }
-        },
-        {
           "id": 9,
-          "text": "What agencies does the PSAP answer calls and dispatch for and how many of each?",
+          "text": "What agencies does the PSAP answer calls and/or dispatch for and the number of each agency type?",
           "description": "We would like to know how many agencies a PSAP handles during the course of their business",
           "options": [
             "Police",
@@ -277,62 +253,55 @@
         },
         {
           "id": 12,
-          "text": "Total of all 10-digit emergency calls answered in the last calendar year:",
-          "data_location": "If you have 10-digit emergency lines, the call volume will be found in your phone software. If you do not, them leave this blank",
-          "options": [],
-          "type": "number"
-        },
-        {
-          "id": 13,
-          "text": "Total of all non-emergency calls answered in the last calendar year:",
+          "text": "Total of all 10-digit line calls answered in the last calendar year:",
           "data_location": "This information should come from your phone software.",
           "options": [],
           "type": "number"
         },
         {
-          "id": 14,
+          "id": 13,
           "text": "Total of all SMS/Text sessions answered in the last calendar year:",
           "data_location": "This information should come from your phone software.",
           "options": [],
           "type": "number"
         },
         {
-          "id": 15,
+          "id": 14,
           "text": "Total of all TTY/TDD sessions answered in the last calendar year:",
           "data_location": "This information should come from your phone software.",
           "options": [],
           "type": "number"
         },
         {
-          "id": 16,
+          "id": 15,
           "text": "Total number of Law Enforcement incidents processed in the last calendar year:",
           "data_location": "This data should come from your Computer Aided Dispatch (CAD) software.",
           "options": [],
           "type": "number"
         },
         {
-          "id": 17,
+          "id": 16,
           "text": "Total number of Fire incidents processed in the last calendar year:",
           "data_location": "This data should come from your Computer Aided Dispatch (CAD) software.",
           "options": [],
           "type": "number"
         },
         {
-          "id": 18,
+          "id": 17,
           "text": "Total number of EMS incidents processed in the last calendar year:",
           "data_location": "This data should come from your Computer Aided Dispatch (CAD) software.",
           "options": [],
           "type": "number"
         },
         {
-          "id": 19,
+          "id": 18,
           "text": "Total number of other incidents processed in the last calendar year:",
           "data_location": "This data may come from your Computer Aided Dispatch (CAD) software or other relevant sources.",
           "options": [],
           "type": "number"
         },
         {
-          "id": 20,
+          "id": 19,
           "text": "Total number of NCIC transactions conducted in the last calendar year:",
           "data_location": "This data may come from your state NCIC provider. You may have to request this in advance of taking the survey.",
           "options": [],
@@ -340,14 +309,14 @@
           "type": "number-or-unknown"
         },
         {
-          "id": 21,
+          "id": 20,
           "text": "Total number of other incidents not covered elsewhere in this survey in the last calendar year:",
           "data_location": "This data can be found from your records",
           "options": [],
           "type": "number"
         },
         {
-          "id": 22,
+          "id": 21,
           "text": "Total number of radio keyups in the last calendar year (an estimate is acceptable):",
           "data_location": "This information should come from your radio communication logs or other relevant sources. If your center does not record radio keyups, select Unknown below.",
           "options": [],
@@ -355,37 +324,14 @@
           "type": "number-or-unknown"
         },
         {
-          "id": 23,
-          "text": "Average number of radio keyups per hour in the last calendar year:",
-          "data_location": "This information should come from your radio communication logs or other relevant sources.",
-          "options": [],
-          "type": "number"
-        },
-        {
-          "id": 24,
+          "id": 22,
           "text": "How many calls were transferred in the last calendar year?",
           "data_location": "This data should come from your Computer Aided Dispatch (CAD) software.",
           "options": [],
           "type": "number"
         },
         {
-          "id": 25,
-          "text": "Of the calls transferred, how many were internal transfers (transferred within your own center)?",
-          "data_location": "This data may be sourced from your Computer Aided Dispatch (CAD) software and/or your phone software.",
-          "responseEmphasis": "Internal transfers are those that stay inside your own center. External transfers are those handed to another PSAP or agency. These two should add up to your total in question 24.",
-          "options": [],
-          "type": "number"
-        },
-        {
-          "id": 26,
-          "text": "Of the calls transferred, how many were external transfers (transferred to another PSAP or agency)?",
-          "data_location": "This data may be sourced from your Computer Aided Dispatch (CAD) software and/or your phone software.",
-          "responseEmphasis": "Internal transfers are those that stay inside your own center. External transfers are those handed to another PSAP or agency. These two should add up to your total in question 24.",
-          "options": [],
-          "type": "number"
-        },
-        {
-          "id": 53,
+          "id": 23,
           "text": "Total number of outbound calls placed by your center in the last calendar year:",
           "description": "Outbound calls (callbacks, notifications to partner agencies, inter-PSAP coordination) consume telecommunicator time but are often not captured in inbound call counts.",
           "data_location": "This information may come from your phone software or Computer Aided Dispatch (CAD) software.",
@@ -399,42 +345,28 @@
       "title": "Telecommunicator staff numbers",
       "questions": [
         {
-          "id": 27,
+          "id": 24,
           "text": "Number of Funded Operational FTEs (Full Time Equivalents)",
           "description": "We would like to know the number of telecommunicator and supervisor positions you currently have in your budget.",
           "options": [],
           "type": "number"
         },
         {
-          "id": 28,
-          "text": "Number of Telecommunicator FTEs in use",
+          "id": 25,
+          "text": "Number of Telecommunicator FTEs filled",
           "description": "We also would like to know how many of those budgeted positions are currently hired and working.",
           "options": [],
           "type": "number"
         },
         {
-          "id": 29,
-          "text": "Number of Supervisor FTEs in use",
+          "id": 26,
+          "text": "Number of Supervisor FTEs filled",
           "description": "We also would like to know how many of those budgeted supervisor positions are currently hired and working.",
           "options": [],
           "type": "number"
         },
         {
-          "id": 30,
-          "text": "What is your optimum number of Telecommunicator FTEs (if fully staffed)?",
-          "description": "The number of Telecommunicator positions your center needs to meet its service commitments, independent of your current budget or vacancies. If your center is currently fully staffed, this will equal your funded Telecommunicator positions. This allows us to gauge the distribution of expected staffing levels when compared to the call volume and other operational factors.",
-          "options": [],
-          "type": "number"
-        },
-        {
-          "id": 31,
-          "text": "What is your optimum number of Supervisor FTEs (if fully staffed)?",
-          "description": "The number of Supervisor positions your center needs to meet its service commitments, independent of your current budget or vacancies. If your center is currently fully staffed, this will equal your funded Supervisor positions. This allows us to gauge the distribution of expected staffing levels when compared to the call volume and other operational factors.",
-          "options": [],
-          "type": "number"
-        },
-        {
-          "id": 32,
+          "id": 27,
           "text": "What is the length of shifts in hours?",
           "description": "This allows us to understand the distribution of shift lengths and how that may influence staffing needs and scheduling practices.",
           "responseEmphasis": "Please indicate the length of your base shifts. If you have multiple shift lengths, select the one that is most common.",
@@ -442,12 +374,13 @@
             "8",
             "10",
             "12",
+            "24",
             "Other (Please Specify)"
           ],
           "type": "radio"
         },
         {
-          "id": 33,
+          "id": 28,
           "text": "Minimum number of telecommunicator FTEs per shift",
           "description": "This allows us to understand what your center considers to be viable minimal staffing levels for telecommunicators and how that may influence scheduling practices and service quality.",
           "responseEmphasis": "Enter a whole-number headcount for your minimum staffing level for normal operations.",
@@ -455,7 +388,7 @@
           "type": "number"
         },
         {
-          "id": 34,
+          "id": 29,
           "text": "Minimum number of supervisor FTEs per shift",
           "description": "This allows us to understand what your center considers to be viable minimal staffing levels for supervisors and how that may influence scheduling practices and service quality.",
           "responseEmphasis": "Enter a whole-number headcount for your minimum staffing level to supervise normal operations.",
@@ -463,23 +396,7 @@
           "type": "number"
         },
         {
-          "id": 35,
-          "text": "Maximum number of telecommunicator FTEs per shift",
-          "description": "This allows us to understand what your center considers to be maximum staffing levels for telecommunicators and how that may influence scheduling practices and service quality.",
-          "responseEmphasis": "Enter a whole-number headcount for your maximum staffing level for normal operations.",
-          "options": [],
-          "type": "number"
-        },
-        {
-          "id": 36,
-          "text": "Maximum number of supervisor FTEs per shift",
-          "description": "This allows us to understand what your center considers to be maximum staffing levels for supervisors and how that may influence scheduling practices and service quality.",
-          "responseEmphasis": "Enter a whole-number headcount for your maximum staffing level to supervise normal operations.",
-          "options": [],
-          "type": "number"
-        },
-        {
-          "id": 37,
+          "id": 30,
           "text": "What work-year basis does your agency use to calculate Full-Time Equivalent (FTE) positions?",
           "description": "Your FTE counts above depend on how many hours count as a full-time year. Different agencies use 2,080 (standard 5 x 8-hour weeks), 2,184 (12-hour / Pittman schedules), or another figure. Without a shared basis the FTE counts are not comparable, which is why this question is asked here.",
           "data_location": "This should come from your agency's HR or scheduling policy documents.",
@@ -498,7 +415,7 @@
       "title": "Performance Metrics",
       "questions": [
         {
-          "id": 38,
+          "id": 31,
           "text": "What is your average phone answer time for 9-1-1 calls in seconds? (From presentation to answer)",
           "description": "This will allow us to understand how staffing levels may influence phone answer times and how that may influence service quality.",
           "data_location": "This information should come from your phone software.",
@@ -507,7 +424,7 @@
           "type": "number"
         },
         {
-          "id": 39,
+          "id": 32,
           "text": "What is your average phone answer time for non-emergency calls in seconds? (From presentation to answer)",
           "description": "This will allow us to understand how staffing levels may influence phone answer times and how that may influence service quality.",
           "data_location": "This information should come from your phone software.",
@@ -516,7 +433,7 @@
           "type": "number"
         },
         {
-          "id": 40,
+          "id": 33,
           "text": "What is your average call processing time for 9-1-1 calls in seconds? (From answer until the call is dispatchable)",
           "description": "This will allow us to understand how staffing levels may influence call processing times and how that may influence service quality.",
           "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
@@ -526,7 +443,7 @@
           "type": "number-or-unknown"
         },
         {
-          "id": 41,
+          "id": 34,
           "text": "What is your average call processing time for non-emergency calls in seconds? (From answer until the call is dispatchable)",
           "description": "This will allow us to understand how staffing levels may influence call processing times and how that may influence service quality.",
           "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
@@ -536,7 +453,7 @@
           "type": "number-or-unknown"
         },
         {
-          "id": 42,
+          "id": 35,
           "text": "What is the average total call handling time for 9-1-1 calls in seconds? (From answer until the telecommunicator is released back to take the next call, including any wrap-up time after the call ends)",
           "description": "This is the total time a telecommunicator is occupied on a call, which is a more complete measure of workload than call processing time alone. It helps us understand how much of a telecommunicator's time is spent on calls rather than on other duties.",
           "data_location": "This information should come from your phone software or your Computer Aided Dispatch (CAD) software.",
@@ -545,7 +462,7 @@
           "type": "number"
         },
         {
-          "id": 43,
+          "id": 36,
           "text": "What is the average number of calls handled per telecommunicator FTE per hour?",
           "description": "This will allow us to understand how staffing levels may influence the number of calls handled per telecommunicator and how that may influence service quality.",
           "data_location": "This information should come from your phone software or your Computer Aided Dispatch (CAD) software.",
@@ -555,7 +472,7 @@
           "type": "number-or-unknown"
         },
         {
-          "id": 44,
+          "id": 37,
           "text": "What is the average time to transfer a call to another PSAP in seconds? (From answer to transfer)",
           "description": "This allows us to understand the impact of outbound call transfers on telecommunicator workload and how that may influence staffing needs and service quality.",
           "data_location": "This information should come from your phone software. You will need to isolate transfer calls using your phone reporting software and calculate the average time from answer to transfer for those calls.",
@@ -564,7 +481,7 @@
           "type": "number"
         },
         {
-          "id": 45,
+          "id": 38,
           "text": "What is the average processing time for law enforcement service calls in seconds? (From answer until the call is dispatchable)",
           "description": "This will allow us to understand staffing needs to ensure that community expectations and partner agency SLAs are met",
           "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
@@ -574,7 +491,7 @@
           "type": "number-or-unknown"
         },
         {
-          "id": 46,
+          "id": 39,
           "text": "What is the average processing time for fire service calls in seconds? (From answer until the call is dispatchable)",
           "description": "This will allow us to understand staffing needs to ensure that community expectations and partner agency SLAs are met",
           "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
@@ -584,7 +501,7 @@
           "type": "number-or-unknown"
         },
         {
-          "id": 47,
+          "id": 40,
           "text": "What is the average processing time for EMS service calls in seconds? (From answer until the call is dispatchable)",
           "description": "This will allow us to understand staffing needs to ensure that community expectations and partner agency SLAs are met",
           "data_location": "This information should come from your Computer Aided Dispatch (CAD) software.",
@@ -599,7 +516,7 @@
       "title": "Closing",
       "questions": [
         {
-          "id": 48,
+          "id": 41,
           "text": "Thank you for completing the NENA 2026 PSAP Survey. Your participation is greatly appreciated and will help NENA better understand staffing and call processing standards. Your feedback is valuable throughout the industry and support meaningful solutions, advocacy, and future planning for the 9-1-1 community.",
           "type": "info"
         }

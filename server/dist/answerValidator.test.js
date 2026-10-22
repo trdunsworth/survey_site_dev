@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { validateAnswer } from './answerValidator';
+import { UNKNOWN_VALUE, getSchemaQuestionIds, validateAnswer } from './answerValidator';
 describe('validateAnswer', () => {
     it('rejects unknown question IDs', () => {
         const result = validateAnswer('9999', 'value');
@@ -29,24 +29,35 @@ describe('validateAnswer', () => {
             expect(result.reason).toContain('whole number');
         }
     });
-    it('requires positive numeric otherText for question 31 (shift length)', () => {
-        const validResult = validateAnswer('31', { option: 'Other (Please Specify)', otherText: '2' });
-        const invalidResult = validateAnswer('31', { option: 'Other (Please Specify)', otherText: '-1' });
+    it('requires positive numeric otherText for question 27 (shift length)', () => {
+        const validResult = validateAnswer('27', { option: 'Other (Please Specify)', otherText: '2' });
+        const invalidResult = validateAnswer('27', { option: 'Other (Please Specify)', otherText: '-1' });
         expect(validResult).toEqual({
             valid: true,
             sanitized: { option: 'Other (Please Specify)', otherText: '2' },
         });
         expect(invalidResult.valid).toBe(false);
     });
-    it('treats question 29 as a whole-number FTE count, not a radio', () => {
-        expect(validateAnswer('29', '4')).toEqual({ valid: true, sanitized: 4 });
-        expect(validateAnswer('29', 4.5).valid).toBe(false);
+    it('treats question 24 as a whole-number FTE count, not a radio', () => {
+        expect(validateAnswer('24', '4')).toEqual({ valid: true, sanitized: 4 });
+        expect(validateAnswer('24', 4.5).valid).toBe(false);
     });
-    it('accepts free text for question 22 (radio keyups) and rejects a bare number for question 20', () => {
-        expect(validateAnswer('22', 'approx 1.2 million')).toEqual({
-            valid: true,
-            sanitized: 'approx 1.2 million',
-        });
+    // Q21 was free text during Pass 1 and became numeric in Pass 7. The
+    // "an estimate is acceptable" qualifier lives in the question text, so
+    // the field itself only has to accept an integer — it does not have to
+    // be exact. Free-text answers are now rejected; centres that cannot
+    // produce a figure are directed to leave the field blank.
+    it('accepts an integer for question 21 (radio keyups) and rejects free text', () => {
+        expect(validateAnswer('21', '87600')).toEqual({ valid: true, sanitized: 87600 });
+        expect(validateAnswer('21', '43800000')).toEqual({ valid: true, sanitized: 43800000 });
+        // Beyond the 100,000,000/yr cap (roughly 11,400 keyups/hr sustained).
+        expect(validateAnswer('21', '100000001').valid).toBe(false);
+        // An "estimate" must still be written as a number.
+        expect(validateAnswer('21', 'approx 1.2 million').valid).toBe(false);
+        expect(validateAnswer('21', '12.5').valid).toBe(false);
+        expect(validateAnswer('21', '-5').valid).toBe(false);
+    });
+    it('rejects a bare non-number for question 20 but accepts digits', () => {
         expect(validateAnswer('20', 'n/a').valid).toBe(false);
         expect(validateAnswer('20', '4200')).toEqual({ valid: true, sanitized: 4200 });
     });
@@ -56,9 +67,10 @@ describe('validateAnswer', () => {
     });
     // Regression guard: question IDs in survey_data.json were renumbered at some
     // point and QUESTION_SCHEMA was not updated to match, which silently
-    // rejected 10 of 46 questions at POST /api/answers. This walks every
+    // rejected a batch of questions at POST /api/answers. This walks every
     // question declared in the survey and asserts the validator knows it and
-    // agrees with its declared type.
+    // agrees with its declared type. (It also catches orphaned schema keys — an
+    // entry in QUESTION_SCHEMA that no longer exists in the survey.)
     describe('schema coverage for survey_data.json', () => {
         const surveyPath = new URL('../src/data/survey_data.json', import.meta.url);
         const survey = JSON.parse(readFileSync(surveyPath, 'utf8'));
@@ -66,6 +78,7 @@ describe('validateAnswer', () => {
         const probeFor = (type, options) => {
             switch (type) {
                 case 'number': return '1'; // client posts numeric strings
+                case 'number-or-unknown': return '1'; // sentinel covered separately
                 case 'text': return 'probe';
                 case 'select':
                 case 'radio': return options?.[0] ?? 'probe';
@@ -76,6 +89,14 @@ describe('validateAnswer', () => {
         };
         it('declares at least one question to check', () => {
             expect(questions.length).toBeGreaterThan(0);
+        });
+        // The reverse direction: a renumbering/removal can leave stale keys in
+        // QUESTION_SCHEMA that silently accept answers for questions that no
+        // longer exist. Assert the validator knows no IDs the survey doesn't.
+        it('has no stale QUESTION_SCHEMA entries for removed questions', () => {
+            const surveyIds = new Set(questions.map((q) => String(q.id)));
+            const orphans = getSchemaQuestionIds().filter((id) => !surveyIds.has(id));
+            expect(orphans, `QUESTION_SCHEMA still knows question IDs absent from survey_data.json: ${orphans.join(', ')}`).toEqual([]);
         });
         it.each(questions.map((q) => [String(q.id), q.type, q.options]))('validator knows question %s and agrees it is a %s', (id, type, options) => {
             if (type === 'info') {
@@ -91,6 +112,36 @@ describe('validateAnswer', () => {
             const result = validateAnswer(id, probeFor(type, options));
             const reason = result.valid ? '' : result.reason;
             expect(result.valid, `question ${id} declared "${type}" but was rejected: ${reason}`).toBe(true);
+        });
+        // Every number-or-unknown question must carry an unknownOption, and it
+        // must equal the sentinel the validator accepts. The client sends this
+        // exact string, so drift here would silently reject every "Unknown".
+        const unknownQuestions = questions.filter((q) => q.type === 'number-or-unknown');
+        it('declares at least one number-or-unknown question', () => {
+            expect(unknownQuestions.length).toBeGreaterThan(0);
+        });
+        it.each(unknownQuestions.map((q) => [String(q.id), q.unknownOption]))('question %s unknownOption matches the accepted sentinel', (id, unknownOption) => {
+            expect(unknownOption).toBe(UNKNOWN_VALUE);
+            const result = validateAnswer(id, UNKNOWN_VALUE);
+            expect(result.valid, `question ${id} rejected the Unknown sentinel`).toBe(true);
+            if (result.valid) {
+                expect(result.sanitized).toBe(UNKNOWN_VALUE);
+            }
+            // A near-miss is a typo, not an "unknown".
+            expect(validateAnswer(id, 'unknown').valid).toBe(false);
+            expect(validateAnswer(id, 'N/A').valid).toBe(false);
+            expect(validateAnswer(id, 'UNKOWN').valid).toBe(false);
+            // Numeric behaviour is unchanged alongside the sentinel.
+            // (integerOnly is not asserted here: Q20/Q21 reject decimals,
+            // Q40 accepts them. That difference is covered by the
+            // per-question tests above.)
+            expect(validateAnswer(id, '0')).toEqual({ valid: true, sanitized: 0 });
+            expect(validateAnswer(id, '-1').valid).toBe(false);
+            expect(validateAnswer(id, '100000001').valid).toBe(false);
+            // Unchecking the box posts an empty string. That must clear
+            // the answer, not record a zero — `Number('') === 0`.
+            expect(validateAnswer(id, '')).toEqual({ valid: true, sanitized: null });
+            expect(validateAnswer(id, '   ')).toEqual({ valid: true, sanitized: null });
         });
     });
 });

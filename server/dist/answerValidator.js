@@ -22,6 +22,15 @@
 const MAX_TEXT_LENGTH = 2000;
 /** Identify the "other" option label used across the survey. */
 const OTHER_LABEL = 'Other (Please Specify)';
+/**
+ * Sentinel stored when a respondent ticks the explicit "unknown" box on a
+ * `number-or-unknown` question. Exported so analytics and tests can match
+ * on it rather than hard-coding the literal.
+ *
+ * Must equal the `unknownOption` on each affected question in
+ * src/data/survey_data.json; answerValidator.test.ts asserts that.
+ */
+export const UNKNOWN_VALUE = 'Unknown';
 function isOtherLabel(s) {
     return /\bother\b/i.test(s);
 }
@@ -47,11 +56,11 @@ function s(options) {
 // Keys match the `id` field in survey_data.json (always stored as strings after
 // JSON serialisation — "8.1" rather than 8.1).
 const QUESTION_SCHEMA = {
-    // ── ids 0, 0.1, 0.2, 45 — info blocks, no user input ─────────────────────
+    // ── ids 0, 0.1, 0.2, 41 — info blocks, no user input ─────────────────────
     '0': { kind: 'info' },
     '0.1': { kind: 'info' },
     '0.2': { kind: 'info' },
-    '45': { kind: 'info' },
+    '41': { kind: 'info' },
     // ── id 1 — state / province select ───────────────────────────────────────
     '1': {
         kind: 'select',
@@ -74,7 +83,7 @@ const QUESTION_SCHEMA = {
             OTHER_LABEL,
         ]),
     },
-    // ── id 2, 3 — base / peak population ────────────────────────────────────
+    // ── ids 2, 3 — base / peak population ────────────────────────────────────
     '2': {
         kind: 'select',
         options: s([
@@ -88,7 +97,7 @@ const QUESTION_SCHEMA = {
         options: s([
             'Less than 10,000', '10,000 - 25,000', '25,000 - 50,000',
             '50,000 - 100,000', '100,000 - 250,000', '250,000 - 500,000',
-            '500,000 - 1,000,000', 'Over 1,000,000',
+            '500,000 - 1,000,000', 'Over 1,000,000', 'Unknown',
         ]),
     },
     // ── id 4 — population variation factors (checkbox) ───────────────────────
@@ -98,7 +107,9 @@ const QUESTION_SCHEMA = {
             'Daytime Increase (Worker Influx)',
             'Seasonal Peaks',
             'Event Peaks',
+            'College/University Population',
             'None',
+            'Unknown',
             OTHER_LABEL,
         ]),
     },
@@ -110,7 +121,7 @@ const QUESTION_SCHEMA = {
     // ── id 6 — services provided (checkbox) ──────────────────────────────────
     '6': {
         kind: 'checkbox',
-        options: s(['Call Taking', 'Dispatching', 'Walk Up', 'SMS/Text']),
+        options: s(['Call Taking', 'Dispatching', 'SMS/Text']),
     },
     // ── id 7 — additional services (free text) ───────────────────────────────
     '7': { kind: 'text', maxLength: MAX_TEXT_LENGTH },
@@ -118,20 +129,13 @@ const QUESTION_SCHEMA = {
     '8': {
         kind: 'radio',
         options: s([
-            'Federal Government (Airport, Tribal, LEO, Miliary, Other)',
-            'State Government  (LEO, Other)',
-            'County Government (Sheriff, Fire, EMS, Other)',
-            'Municipal Government (Fire, EMS, LEO, Other)',
-            'Independent Tax Funded Authority',
+            'Federal Government',
+            'State Government',
+            'Tribal Government',
+            'County Government',
+            'Municipal Government',
+            'Independent Authority',
             'Private',
-            OTHER_LABEL,
-        ]),
-    },
-    // ── id 8.1 — agencies under governance (checkbox, conditional) ───────────
-    '8.1': {
-        kind: 'checkbox',
-        options: s([
-            'Police', 'Sheriff', 'Fire', 'EMS', 'Airport', 'Tribal', 'Military',
             OTHER_LABEL,
         ]),
     },
@@ -148,7 +152,7 @@ const QUESTION_SCHEMA = {
             OTHER_LABEL,
         ]),
     },
-    // ── ids 11–19 — yearly call / event counts ───────────────────────────────
+    // ── ids 11–18 — yearly call / incident counts ─────────────────────────────
     // Cap at 100 million: no PSAP realistically handles more than that.
     '11': { kind: 'number', min: 0, max: 100000000, integerOnly: true },
     '12': { kind: 'number', min: 0, max: 100000000, integerOnly: true },
@@ -158,54 +162,119 @@ const QUESTION_SCHEMA = {
     '16': { kind: 'number', min: 0, max: 100000000, integerOnly: true },
     '17': { kind: 'number', min: 0, max: 100000000, integerOnly: true },
     '18': { kind: 'number', min: 0, max: 100000000, integerOnly: true },
-    '19': { kind: 'number', min: 0, max: 100000000, integerOnly: true },
-    // ── id 20 — NCIC transactions ─────────────────────────────────────────────
+    // ── id 19 — NCIC transactions (numeric, or explicit "Unknown") ────────────
+    '19': {
+        kind: 'number-or-unknown',
+        min: 0,
+        max: 100000000,
+        integerOnly: true,
+        unknownValue: UNKNOWN_VALUE,
+    },
+    // ── id 20 — other incidents not covered elsewhere ────────────────────────
     '20': { kind: 'number', min: 0, max: 100000000, integerOnly: true },
-    // ── id 21 — other incidents not covered elsewhere ────────────────────────
-    '21': { kind: 'number', min: 0, max: 100000000, integerOnly: true },
-    // ── id 22 — estimated radio keyups (free text — see survey data) ─────────
-    '22': { kind: 'text', maxLength: MAX_TEXT_LENGTH },
-    // ── id 23 — average radio keyups per hour ────────────────────────────────
-    '23': { kind: 'number', min: 0, max: 100000, integerOnly: false },
-    // ── ids 24, 25 — transferred calls ───────────────────────────────────────
-    '24': { kind: 'number', min: 0, max: 100000000, integerOnly: true },
-    '25': { kind: 'number', min: 0, max: 100000000, integerOnly: true },
-    // ── ids 26–30 — FTE counts ────────────────────────────────────────────────
+    // ── id 21 — total radio keyups (numeric, or explicit "Unknown") ───────────
+    '21': {
+        kind: 'number-or-unknown',
+        min: 0,
+        max: 100000000,
+        integerOnly: true,
+        unknownValue: UNKNOWN_VALUE,
+    },
+    // ── id 22 — how many calls were transferred ─────────────────────────────────
+    '22': { kind: 'number', min: 0, max: 100000000, integerOnly: true },
+    // ── id 23 — total outbound calls placed (numeric, or explicit "Unknown") ───
+    '23': {
+        kind: 'number-or-unknown',
+        min: 0,
+        max: 100000000,
+        integerOnly: true,
+        unknownValue: UNKNOWN_VALUE,
+    },
+    // ── ids 24–26 — FTE counts ────────────────────────────────────────────────
+    '24': { kind: 'number', min: 0, max: 10000, integerOnly: true },
+    '25': { kind: 'number', min: 0, max: 10000, integerOnly: true },
     '26': { kind: 'number', min: 0, max: 10000, integerOnly: true },
-    '27': { kind: 'number', min: 0, max: 10000, integerOnly: true },
-    '28': { kind: 'number', min: 0, max: 10000, integerOnly: true },
-    '29': { kind: 'number', min: 0, max: 10000, integerOnly: true },
-    '30': { kind: 'number', min: 0, max: 10000, integerOnly: true },
-    // ── id 31 — shift length (radio, Other → positive numeric hours) ──────────
-    '31': {
+    // ── id 27 — shift length (radio, Other → positive numeric hours) ──────────
+    '27': {
         kind: 'radio',
-        options: s(['8', '10', '12', OTHER_LABEL]),
+        options: s(['8', '10', '12', '24', OTHER_LABEL]),
         otherIsNumeric: true,
     },
-    // ── ids 32–35 — min/max FTEs per shift ────────────────────────────────────
-    '32': { kind: 'number', min: 0, max: 10000, integerOnly: true },
-    '33': { kind: 'number', min: 0, max: 10000, integerOnly: true },
-    '34': { kind: 'number', min: 0, max: 10000, integerOnly: true },
-    '35': { kind: 'number', min: 0, max: 10000, integerOnly: true },
-    // ── ids 36, 37 — average phone answer time (seconds) ─────────────────────
+    // ── ids 28–29 — minimum FTEs per shift ────────────────────────────────────
+    '28': { kind: 'number', min: 0, max: 10000, integerOnly: true },
+    '29': { kind: 'number', min: 0, max: 10000, integerOnly: true },
+    // ── id 30 — work-year basis for FTE (radio) ──────────────────────────────
+    // Adds the basis for the FTE figures reported by the staffing block; the
+    // FTE counts themselves depend on this answer. "Unknown" is a real option
+    // rather than a sentinel so it survives pick-list validation.
+    '30': {
+        kind: 'radio',
+        options: s([
+            '2,080 hours (2,080 / 1,728 = standard full-time)',
+            '2,184 hours (12-hour / "Pittman" schedule)',
+            'Other (Please Specify)',
+            'Unknown',
+        ]),
+    },
+    // ── ids 31–37 — performance metrics ───────────────────────────────────────
     // No PSAP's average answer time is realistically above 3600 s (1 hour).
-    '36': { kind: 'number', min: 0, max: 3600, integerOnly: false },
-    '37': { kind: 'number', min: 0, max: 3600, integerOnly: false },
-    // ── ids 38, 39 — average call processing time (seconds) ──────────────────
+    '31': { kind: 'number', min: 0, max: 3600, integerOnly: false },
+    // No PSAP realistically goes an hour answering a non-emergency call either.
+    '32': { kind: 'number', min: 0, max: 3600, integerOnly: false },
+    // ── ids 33–34 — average call processing time (seconds, or "Unknown") ─────
     // Measured answer → dispatch, not talk time, so the same 1 hour ceiling holds.
-    '38': { kind: 'number', min: 0, max: 3600, integerOnly: false },
-    '39': { kind: 'number', min: 0, max: 3600, integerOnly: false },
-    // ── id 40 — average calls handled per telecommunicator FTE per hour ──────
-    '40': { kind: 'number', min: 0, max: 1000, integerOnly: false },
-    // ── id 41 — average time to transfer a call (seconds) ────────────────────
-    '41': { kind: 'number', min: 0, max: 3600, integerOnly: false },
-    // ── ids 42–44 — average processing time by service type (seconds) ────────
+    '33': {
+        kind: 'number-or-unknown',
+        min: 0,
+        max: 3600,
+        integerOnly: false,
+        unknownValue: UNKNOWN_VALUE,
+    },
+    '34': {
+        kind: 'number-or-unknown',
+        min: 0,
+        max: 3600,
+        integerOnly: false,
+        unknownValue: UNKNOWN_VALUE,
+    },
+    // ── id 35 — average total call handling time (occupancy) ────────────────
+    // Includes wrap-up time after the call ends.
+    '35': { kind: 'number', min: 0, max: 3600, integerOnly: false },
+    // ── id 36 — average calls handled per TCT FTE per hour (or "Unknown") ─────
+    '36': {
+        kind: 'number-or-unknown',
+        min: 0,
+        max: 1000,
+        integerOnly: false,
+        unknownValue: UNKNOWN_VALUE,
+    },
+    // ── id 37 — average time to transfer a call (seconds) ────────────────────
+    '37': { kind: 'number', min: 0, max: 3600, integerOnly: false },
+    // ── ids 38–40 — average processing time by service type (seconds, or "Unknown") ──
     // The working group noted some centers keep a telecommunicator on the line
     // through pre-arrival / post-dispatch instructions, which can push these
     // averages high. Raise this ceiling if real responses get rejected.
-    '42': { kind: 'number', min: 0, max: 3600, integerOnly: false },
-    '43': { kind: 'number', min: 0, max: 3600, integerOnly: false },
-    '44': { kind: 'number', min: 0, max: 3600, integerOnly: false },
+    '38': {
+        kind: 'number-or-unknown',
+        min: 0,
+        max: 3600,
+        integerOnly: false,
+        unknownValue: UNKNOWN_VALUE,
+    },
+    '39': {
+        kind: 'number-or-unknown',
+        min: 0,
+        max: 3600,
+        integerOnly: false,
+        unknownValue: UNKNOWN_VALUE,
+    },
+    '40': {
+        kind: 'number-or-unknown',
+        min: 0,
+        max: 3600,
+        integerOnly: false,
+        unknownValue: UNKNOWN_VALUE,
+    },
 };
 // ── Per-kind validators ───────────────────────────────────────────────────────
 function validateOtherVariant(raw, options, otherIsNumeric) {
@@ -299,6 +368,13 @@ function validateText(raw, schema) {
     return { valid: true, sanitized: sanitizeText(raw, schema.maxLength) };
 }
 function validateNumber(raw, schema) {
+    // An empty or whitespace-only input means "cleared", not zero.
+    // `Number('') === 0`, so without this a respondent who types a value and
+    // then backspaces it out — or unchecks the "Unknown" box — would have a
+    // genuine zero recorded in their place.
+    if (typeof raw === 'string' && raw.trim() === '') {
+        return { valid: true, sanitized: null };
+    }
     const num = typeof raw === 'string' ? Number(raw) : raw;
     if (typeof num !== 'number' || !Number.isFinite(num)) {
         return { valid: false, reason: 'Answer must be a finite number' };
@@ -316,6 +392,13 @@ function validateNumber(raw, schema) {
         return { valid: false, reason: 'Value must be a whole number' };
     }
     return { valid: true, sanitized: num };
+}
+function validateNumberOrUnknown(raw, schema) {
+    // Exact match only — a near-miss is a typo, not an "unknown".
+    if (raw === schema.unknownValue) {
+        return { valid: true, sanitized: schema.unknownValue };
+    }
+    return validateNumber(raw, schema);
 }
 function validateAgenciesWithCount(raw, schema) {
     if (!Array.isArray(raw)) {
@@ -369,6 +452,16 @@ function validateAgenciesWithCount(raw, schema) {
 }
 // ── Public API ────────────────────────────────────────────────────────────────
 /**
+ * Question IDs known to the validator.
+ *
+ * Exported for the schema-coverage test, which asserts that QUESTION_SCHEMA
+ * and survey_data.json stay in lock-step in both directions (no missing
+ * entries, no orphaned/stale entries left behind by a renumbering).
+ */
+export function getSchemaQuestionIds() {
+    return Object.keys(QUESTION_SCHEMA);
+}
+/**
  * Validate and sanitize a single answer for the given question ID.
  *
  * @param questionId - The question's `id` from survey_data.json. Both number
@@ -404,6 +497,8 @@ export function validateAnswer(questionId, rawAnswer) {
             return validateText(rawAnswer, schema);
         case 'number':
             return validateNumber(rawAnswer, schema);
+        case 'number-or-unknown':
+            return validateNumberOrUnknown(rawAnswer, schema);
         case 'agencies-with-count':
             return validateAgenciesWithCount(rawAnswer, schema);
     }

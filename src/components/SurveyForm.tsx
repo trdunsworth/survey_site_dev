@@ -30,15 +30,15 @@ import {
 const SURVEY_VERSIONS: Record<string, SurveyData> = {
     'default':   surveyData as SurveyData,
 };
-// Mirrors the validator's `otherIsNumeric` flag — question 32 (shift length)
+// Mirrors the validator's `otherIsNumeric` flag — question 27 (shift length)
 // is the only radio whose "Other" free text must parse as a positive number.
 // Stale entries here are silent: the guard only fires for type === 'radio',
 // so an ID pointing at a numeric question never runs and never errors.
-// Question 31 is "What is the length of shifts in hours?" — the only radio
+// Question 27 is "What is the length of shifts in hours?" — the only radio
 // whose "Other (Please Specify)" free text must parse as a positive number.
 // Keep this in sync with QUESTION_SCHEMA in server/answerValidator.ts and with
 // NUMERIC_OTHER_QUESTION_IDS in Question.tsx.
-const POSITIVE_NUMERIC_OTHER_QUESTION_IDS = new Set(['32', 32]);
+const POSITIVE_NUMERIC_OTHER_QUESTION_IDS = new Set(['27', 27]);
 
 /**
  * Whether the answer copy (downloaded .txt and printed PDF) includes the

@@ -11,11 +11,11 @@ interface QuestionProps {
 
 const typedGlossaryData = glossaryData as GlossaryItem[];
 const sortedGlossaryData = [...typedGlossaryData].sort((a, b) => b.term.length - a.term.length);
-// Question 31 asks "What is the length of shifts in hours?" with an "Other
+// Question 27 asks "What is the length of shifts in hours?" with an "Other
 // (Please Specify)" option. The validator treats that option's free-text value
 // as a positive number, so the input must render as a number field too.
 // Keep this in sync with QUESTION_SCHEMA in server/answerValidator.ts.
-const NUMERIC_OTHER_QUESTION_IDS = new Set(['32', 32]);
+const NUMERIC_OTHER_QUESTION_IDS = new Set(['27', 27]);
 
 const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
     const { id, text, description, data_location, type, options } = question;

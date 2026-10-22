@@ -161,11 +161,11 @@ function s(options: string[]): ReadonlySet<string> {
 
 const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
 
-    // ── ids 0, 0.1, 0.2, 48 — info blocks, no user input ─────────────────────
+    // ── ids 0, 0.1, 0.2, 41 — info blocks, no user input ─────────────────────
     '0':   { kind: 'info' },
     '0.1': { kind: 'info' },
     '0.2': { kind: 'info' },
-    '48':{ kind: 'info' },
+    '41': { kind: 'info' },
 
     // ── id 1 — state / province select ───────────────────────────────────────
     '1': {
@@ -190,7 +190,7 @@ const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
         ]),
     },
 
-    // ── id 2, 3 — base / peak population ────────────────────────────────────
+    // ── ids 2, 3 — base / peak population ────────────────────────────────────
     '2': {
         kind: 'select',
         options: s([
@@ -231,7 +231,7 @@ const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
     // ── id 6 — services provided (checkbox) ──────────────────────────────────
     '6': {
         kind: 'checkbox',
-        options: s(['Call Taking', 'Dispatching', 'Walk Up', 'SMS/Text']),
+        options: s(['Call Taking', 'Dispatching', 'SMS/Text']),
     },
 
     // ── id 7 — additional services (free text) ───────────────────────────────
@@ -241,21 +241,13 @@ const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
     '8': {
         kind: 'radio',
         options: s([
-            'Federal Government (Airport, Tribal, LEO, Military, Other)',
-            'State Government (LEO, Other)',
-            'County Government (Sheriff, Fire, EMS, Other)',
-            'Municipal Government (Fire, EMS, LEO, Other)',
-            'Independent Tax Funded Authority',
+            'Federal Government',
+            'State Government',
+            'Tribal Government',
+            'County Government',
+            'Municipal Government',
+            'Independent Authority',
             'Private',
-            OTHER_LABEL,
-        ]),
-    },
-
-    // ── id 8.1 — agencies under governance (checkbox, conditional) ───────────
-    '8.1': {
-        kind: 'checkbox',
-        options: s([
-            'Police', 'Sheriff', 'Fire', 'EMS', 'Airport', 'Tribal', 'Military',
             OTHER_LABEL,
         ]),
     },
@@ -275,7 +267,7 @@ const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
         ]),
     },
 
-    // ── ids 11–19 — yearly call / event counts ───────────────────────────────
+    // ── ids 11–18 — yearly call / incident counts ─────────────────────────────
     // Cap at 100 million: no PSAP realistically handles more than that.
     '11': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
     '12': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
@@ -285,10 +277,9 @@ const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
     '16': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
     '17': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
     '18': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
-    '19': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
 
-    // ── id 20 — NCIC transactions (numeric, or explicit "Unknown") ────────────
-    '20': {
+    // ── id 19 — NCIC transactions (numeric, or explicit "Unknown") ────────────
+    '19': {
         kind: 'number-or-unknown',
         min: 0,
         max: 100_000_000,
@@ -296,11 +287,11 @@ const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
         unknownValue: UNKNOWN_VALUE,
     },
 
-    // ── id 21 — other incidents not covered elsewhere ────────────────────────
-    '21': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
+    // ── id 20 — other incidents not covered elsewhere ────────────────────────
+    '20': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
 
-    // ── id 22 — total radio keyups (numeric, or explicit "Unknown") ───────────
-    '22': {
+    // ── id 21 — total radio keyups (numeric, or explicit "Unknown") ───────────
+    '21': {
         kind: 'number-or-unknown',
         min: 0,
         max: 100_000_000,
@@ -308,47 +299,39 @@ const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
         unknownValue: UNKNOWN_VALUE,
     },
 
-    // ── id 23 — average radio keyups per hour ────────────────────────────────
-    '23': { kind: 'number', min: 0, max: 100_000, integerOnly: false },
+    // ── id 22 — how many calls were transferred ─────────────────────────────────
+    '22': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
 
-    // ── ids 24, 25, 26 — transferred calls (total / internal / external) ────────
-    '24': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
-    '25': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
-    '26': { kind: 'number', min: 0, max: 100_000_000, integerOnly: true },
-
-    // ── id 53 — outbound calls placed (number-or-unknown) ─────────────────────
-    '53': {
+    // ── id 23 — total outbound calls placed (numeric, or explicit "Unknown") ───
+    '23': {
         kind: 'number-or-unknown',
         min: 0,
         max: 100_000_000,
         integerOnly: true,
         unknownValue: UNKNOWN_VALUE,
     },
-    // ── ids 27–31 — FTE counts ────────────────────────────────────────────────
-    '27': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
-    '28': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
-    '29': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
-    '30': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
-    '31': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
 
-    // ── id 32 — shift length (radio, Other → positive numeric hours) ──────────
-    '32':{
+    // ── ids 24–26 — FTE counts ────────────────────────────────────────────────
+    '24': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
+    '25': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
+    '26': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
+
+    // ── id 27 — shift length (radio, Other → positive numeric hours) ──────────
+    '27': {
         kind: 'radio',
-        options: s(['8', '10', '12', OTHER_LABEL]),
+        options: s(['8', '10', '12', '24', OTHER_LABEL]),
         otherIsNumeric: true,
     },
 
-    // ── ids 33–36 — min/max FTEs per shift ────────────────────────────────────
-    '33': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
-    '34': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
-    '35': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
-    '36': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
+    // ── ids 28–29 — minimum FTEs per shift ────────────────────────────────────
+    '28': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
+    '29': { kind: 'number', min: 0, max: 10_000, integerOnly: true },
 
-    // ── id 37 — what work-year basis for FTE (radio) ──────────────────────────
+    // ── id 30 — work-year basis for FTE (radio) ──────────────────────────────
     // Adds the basis for the FTE figures reported by the staffing block; the
     // FTE counts themselves depend on this answer. "Unknown" is a real option
     // rather than a sentinel so it survives pick-list validation.
-    '37': {
+    '30': {
         kind: 'radio',
         options: s([
             '2,080 hours (2,080 / 1,728 = standard full-time)',
@@ -358,21 +341,22 @@ const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
         ]),
     },
 
-    // ── ids 38, 39 — average phone answer time (seconds) ─────────────────────
+    // ── ids 31–37 — performance metrics ───────────────────────────────────────
     // No PSAP's average answer time is realistically above 3600 s (1 hour).
-    '38': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
-    '39': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
+    '31': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
+    // No PSAP realistically goes an hour answering a non-emergency call either.
+    '32': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
 
-    // ── ids 40, 41 — average call processing time (seconds) ──────────────────
+    // ── ids 33–34 — average call processing time (seconds, or "Unknown") ─────
     // Measured answer → dispatch, not talk time, so the same 1 hour ceiling holds.
-    '40': {
+    '33': {
         kind: 'number-or-unknown',
         min: 0,
         max: 3_600,
         integerOnly: false,
         unknownValue: UNKNOWN_VALUE,
     },
-    '41': {
+    '34': {
         kind: 'number-or-unknown',
         min: 0,
         max: 3_600,
@@ -380,12 +364,12 @@ const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
         unknownValue: UNKNOWN_VALUE,
     },
 
-    // ── id 42 — average total call handling time (occupancy) ────────────────
-    // Includes wrap-up time after the call ends. New question added for item 7.
-    '42': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
+    // ── id 35 — average total call handling time (occupancy) ────────────────
+    // Includes wrap-up time after the call ends.
+    '35': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
 
-    // ── id 43 — average calls handled per TCT FTE per hour (or "Unknown") ─────
-    '43': {
+    // ── id 36 — average calls handled per TCT FTE per hour (or "Unknown") ─────
+    '36': {
         kind: 'number-or-unknown',
         min: 0,
         max: 1_000,
@@ -393,28 +377,28 @@ const QUESTION_SCHEMA: Readonly<Record<string, SchemaEntry>> = {
         unknownValue: UNKNOWN_VALUE,
     },
 
-    // ── id 44 — average time to transfer a call (seconds) ────────────────────
-    '44': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
+    // ── id 37 — average time to transfer a call (seconds) ────────────────────
+    '37': { kind: 'number', min: 0, max: 3_600, integerOnly: false },
 
-    // ── ids 45–47 — average processing time by service type (seconds, or "Unknown") ──
+    // ── ids 38–40 — average processing time by service type (seconds, or "Unknown") ──
     // The working group noted some centers keep a telecommunicator on the line
     // through pre-arrival / post-dispatch instructions, which can push these
     // averages high. Raise this ceiling if real responses get rejected.
-    '45': {
+    '38': {
         kind: 'number-or-unknown',
         min: 0,
         max: 3_600,
         integerOnly: false,
         unknownValue: UNKNOWN_VALUE,
     },
-    '46': {
+    '39': {
         kind: 'number-or-unknown',
         min: 0,
         max: 3_600,
         integerOnly: false,
         unknownValue: UNKNOWN_VALUE,
     },
-    '47': {
+    '40': {
         kind: 'number-or-unknown',
         min: 0,
         max: 3_600,
@@ -645,6 +629,17 @@ function validateAgenciesWithCount(
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
+
+/**
+ * Question IDs known to the validator.
+ *
+ * Exported for the schema-coverage test, which asserts that QUESTION_SCHEMA
+ * and survey_data.json stay in lock-step in both directions (no missing
+ * entries, no orphaned/stale entries left behind by a renumbering).
+ */
+export function getSchemaQuestionIds(): string[] {
+    return Object.keys(QUESTION_SCHEMA);
+}
 
 /**
  * Validate and sanitize a single answer for the given question ID.
