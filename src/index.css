@@ -42,6 +42,15 @@ a:hover {
   text-decoration: underline;
 }
 
+.info-block a {
+  text-decoration: underline;
+}
+
+.info-block a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;

@@ -110,6 +110,7 @@ API_RATE_LIMIT_WINDOW_MS=900000
 API_RATE_LIMIT_MAX=300
 INCOMPLETE_PURGE_DAYS=7
 COMPLETED_ARCHIVE_DAYS=365
+SURVEY_DEFINITION_VERSION=default
 ```
 
 ### Start
@@ -198,6 +199,7 @@ COPY server/database.ts ./server/
 COPY server/db.ts ./server/
 COPY server/answerValidator.ts ./server/
 COPY server/email.ts ./server/
+COPY src/data/survey_data.json ./src/data/survey_data.json
 
 # Copy frontend build
 COPY dist/ ./dist/

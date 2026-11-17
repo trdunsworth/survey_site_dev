@@ -1,4 +1,5 @@
 import React from 'react';
+import logoOutline from '../assets/logo-outline.png';
 
 function isDashboardView(): boolean {
     const params = new URLSearchParams(window.location.search);

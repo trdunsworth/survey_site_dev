@@ -31,8 +31,7 @@ const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
     const isOtherOption = (opt: string): boolean => /\bother\b/i.test(opt);
     const selectedRadioValue = typeof value === 'object' && value !== null && 'option' in value ? value.option : value;
 
-    // Helper to highlight terms
-    const renderTextWithTooltips = (displayText: string): (string | ReactNode)[] => {
+    const renderPlainTextWithTooltips = (displayText: string, keyPrefix: string): (string | ReactNode)[] => {
         let parts: (string | ReactNode)[] = [displayText];
 
         sortedGlossaryData.forEach(item => {
@@ -55,7 +54,7 @@ const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
                             const segment = split[i];
                             if (i % 2 === 1 && segment.length > 0) {
                                 newParts.push(
-                                    <Tooltip key={`${id}-${term}-${i}`} text={definition}>
+                                    <Tooltip key={`${id}-${keyPrefix}-${term}-${i}`} text={definition}>
                                         <span className="tooltip-trigger">{segment}</span>
                                     </Tooltip>
                                 );
@@ -73,6 +72,40 @@ const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
             parts = newParts;
         });
 
+        return parts;
+    };
+
+    const renderTextWithTooltips = (displayText: string): (string | ReactNode)[] => {
+        const parts: (string | ReactNode)[] = [];
+        const markdownLinkPattern = /\[([^\]]+)\]\(([^)\s]+)\)/g;
+        let lastIndex = 0;
+        let match: RegExpExecArray | null;
+
+        while ((match = markdownLinkPattern.exec(displayText)) !== null) {
+            parts.push(...renderPlainTextWithTooltips(displayText.slice(lastIndex, match.index), `text-${lastIndex}`));
+
+            const [, label, href] = match;
+            let isHttpsLink = false;
+            try {
+                isHttpsLink = new URL(href).protocol === 'https:';
+            } catch {
+                isHttpsLink = false;
+            }
+
+            if (isHttpsLink) {
+                parts.push(
+                    <a key={`${id}-link-${match.index}`} href={href}>
+                        {label}
+                    </a>
+                );
+            } else {
+                parts.push(...renderPlainTextWithTooltips(match[0], `invalid-link-${match.index}`));
+            }
+
+            lastIndex = match.index + match[0].length;
+        }
+
+        parts.push(...renderPlainTextWithTooltips(displayText.slice(lastIndex), `text-${lastIndex}`));
         return parts;
     };
 

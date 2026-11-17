@@ -1,5 +1,6 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { existsSync, readFileSync } from 'fs';
 import { DuckDBConnection, DuckDBInstance } from '@duckdb/node-api';
 import { getCompletedSubmissionsWithAnswers } from './database.js';
 
@@ -9,8 +10,25 @@ const __dirname = path.dirname(__filename);
 const DUCKDB_PATH = process.env.DUCKDB_PATH ?? path.join(__dirname, 'survey_analytics.duckdb');
 const MOTHERDUCK_DB = process.env.MOTHERDUCK_DB;
 const MOTHERDUCK_TOKEN = process.env.MOTHERDUCK_TOKEN;
+const SURVEY_DEFINITION_VERSION = process.env.SURVEY_DEFINITION_VERSION ?? 'default';
 const LOAD_QUACK = process.env.DUCKDB_LOAD_QUACK !== 'false';
 const REQUIRE_MOTHERDUCK = process.env.ANALYTICS_REQUIRE_MOTHERDUCK === 'true';
+
+interface SurveyDefinitionQuestion {
+  id: string | number;
+  text: string;
+  type: string;
+  description?: string;
+  data_location?: string;
+  options?: unknown[];
+}
+
+interface SurveyDefinition {
+  sections: Array<{
+    title: string;
+    questions: SurveyDefinitionQuestion[];
+  }>;
+}
 
 let _conn: DuckDBConnection | null = null;
 let _targetCatalog = 'local';
@@ -78,6 +96,24 @@ async function ensureAnalyticsObjects(connection: DuckDBConnection): Promise<voi
       answer_json JSON,
       answer_type VARCHAR,
       synced_at TIMESTAMP
+    )`,
+  );
+
+  await connection.run(
+    `CREATE TABLE IF NOT EXISTS ${tableRef('survey_questions')} (
+      survey_version VARCHAR NOT NULL,
+      section_index INTEGER NOT NULL,
+      question_index INTEGER NOT NULL,
+      section_title VARCHAR NOT NULL,
+      question_id VARCHAR NOT NULL,
+      question_text VARCHAR NOT NULL,
+      question_type VARCHAR NOT NULL,
+      description VARCHAR,
+      data_location VARCHAR,
+      options_json JSON,
+      question_json JSON NOT NULL,
+      loaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (survey_version, question_id)
     )`,
   );
 
@@ -187,6 +223,77 @@ async function ensureCuratedKpiViews(connection: DuckDBConnection): Promise<void
   );
 }
 
+function getSurveyDefinitionPath(): string {
+  const candidates = [
+    process.env.SURVEY_DEFINITION_PATH,
+    path.join(__dirname, '../src/data/survey_data.json'),
+    path.join(__dirname, '../../src/data/survey_data.json'),
+  ].filter((candidate): candidate is string => Boolean(candidate));
+  const definitionPath = candidates.find((candidate) => existsSync(candidate));
+
+  if (!definitionPath) {
+    throw new Error('[analytics] Survey definition JSON was not found');
+  }
+
+  return definitionPath;
+}
+
+export async function syncSurveyDefinition(): Promise<number> {
+  const connection = getConnection();
+  const survey = JSON.parse(readFileSync(getSurveyDefinitionPath(), 'utf8')) as SurveyDefinition;
+
+  if (!Array.isArray(survey.sections)) {
+    throw new Error('[analytics] Survey definition must contain a sections array');
+  }
+
+  const questions = survey.sections.flatMap((section, sectionIndex) =>
+    section.questions.map((question, questionIndex) => ({
+      sectionIndex,
+      questionIndex,
+      sectionTitle: section.title,
+      question,
+    })),
+  );
+
+  await connection.run('BEGIN TRANSACTION');
+
+  try {
+    await connection.run(
+      `DELETE FROM ${tableRef('survey_questions')} WHERE survey_version = ?`,
+      [SURVEY_DEFINITION_VERSION],
+    );
+
+    for (const { sectionIndex, questionIndex, sectionTitle, question } of questions) {
+      await connection.run(
+        `INSERT INTO ${tableRef('survey_questions')} (
+          survey_version, section_index, question_index, section_title, question_id,
+          question_text, question_type, description, data_location, options_json, question_json
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CAST(? AS JSON), CAST(? AS JSON))`,
+        [
+          SURVEY_DEFINITION_VERSION,
+          sectionIndex,
+          questionIndex,
+          sectionTitle,
+          String(question.id),
+          question.text,
+          question.type,
+          question.description ?? null,
+          question.data_location ?? null,
+          JSON.stringify(question.options ?? null),
+          JSON.stringify(question),
+        ],
+      );
+    }
+
+    await connection.run('COMMIT');
+  } catch (error) {
+    await connection.run('ROLLBACK');
+    throw error;
+  }
+
+  return questions.length;
+}
+
 async function attachMotherDuck(connection: DuckDBConnection): Promise<void> {
   _motherDuckAttempted = false;
   _lastMotherDuckError = null;
@@ -258,6 +365,7 @@ export async function initAnalyticsStore(): Promise<void> {
   }
 
   await ensureAnalyticsObjects(connection);
+  await syncSurveyDefinition();
   await ensureCuratedKpiViews(connection);
   console.log(`[analytics] DuckDB analytics store ready at ${DUCKDB_PATH}`);
 }

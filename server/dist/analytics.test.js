@@ -27,9 +27,11 @@ async function loadAnalyticsModule(options = {}) {
     }
     process.env.DUCKDB_LOAD_QUACK = 'false';
     const executedSql = [];
+    const runCalls = [];
     const connection = {
-        run: vi.fn(async (sql) => {
+        run: vi.fn(async (sql, params) => {
             executedSql.push(sql);
+            runCalls.push({ sql, params });
             if (options.failAttach && sql.startsWith('ATTACH ')) {
                 throw new Error('attach failed');
             }
@@ -67,6 +69,7 @@ async function loadAnalyticsModule(options = {}) {
     return {
         analytics,
         executedSql,
+        runCalls,
     };
 }
 describe('analytics table qualification', () => {
@@ -112,6 +115,16 @@ describe('analytics table qualification', () => {
         expect(createCompletedSubmissions).toContain('"main"."completed_submissions"');
         expect(createCompletedSubmissions).not.toContain('"main"."main"."completed_submissions"');
     });
+    it('loads all survey questions with JSON metadata into the local table', async () => {
+        const { runCalls } = await loadAnalyticsModule();
+        const questionInserts = runCalls.filter(({ sql }) => sql.includes('INSERT INTO') && sql.includes('survey_questions'));
+        expect(questionInserts).toHaveLength(44);
+        expect(questionInserts[0]?.params?.[0]).toBe('default');
+        expect(questionInserts[0]?.params?.[4]).toBe('0');
+        expect(questionInserts[0]?.params?.[6]).toBe('info');
+        expect(JSON.parse(String(questionInserts[0]?.params?.[10]))).toHaveProperty('id', 0);
+        expect(runCalls.some(({ sql }) => sql === 'COMMIT')).toBe(true);
+    });
     it('uses catalog-qualified table names when MotherDuck is attached', async () => {
         const { executedSql } = await loadAnalyticsModule({
             motherDuckDb: 'survey_prod',
@@ -119,9 +132,11 @@ describe('analytics table qualification', () => {
         });
         const attachSql = executedSql.find((sql) => sql.startsWith('ATTACH '));
         const createCompletedSubmissions = executedSql.find((sql) => sql.includes('CREATE TABLE IF NOT EXISTS') && sql.includes('completed_submissions'));
+        const createSurveyQuestions = executedSql.find((sql) => sql.includes('CREATE TABLE IF NOT EXISTS') && sql.includes('survey_questions'));
         expect(attachSql).toContain("ATTACH 'md:survey_prod");
         expect(attachSql).toContain("AS md");
         expect(createCompletedSubmissions).toContain('"md"."main"."completed_submissions"');
+        expect(createSurveyQuestions).toContain('"md"."main"."survey_questions"');
     });
     it('falls back to local table qualification when MotherDuck attach fails', async () => {
         const { analytics, executedSql } = await loadAnalyticsModule({
