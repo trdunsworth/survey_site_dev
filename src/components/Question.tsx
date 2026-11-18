@@ -77,35 +77,88 @@ const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
 
     const renderTextWithTooltips = (displayText: string): (string | ReactNode)[] => {
         const parts: (string | ReactNode)[] = [];
-        const markdownLinkPattern = /\[([^\]]+)\]\(([^)\s]+)\)/g;
+        
+        // First, handle markdown bold/italic: ***text*** (bold+italic), **text** (bold), *text* (italic)
+        const markdownEmphasisPattern = /(\*{3}([^*]+)\*{3}|\*{2}([^*]+)\*{2}|\*([^*]+)\*)/g;
         let lastIndex = 0;
         let match: RegExpExecArray | null;
 
-        while ((match = markdownLinkPattern.exec(displayText)) !== null) {
-            parts.push(...renderPlainTextWithTooltips(displayText.slice(lastIndex, match.index), `text-${lastIndex}`));
+        while ((match = markdownEmphasisPattern.exec(displayText)) !== null) {
+            // Process text before the match (which may contain links)
+            const beforeMatch = displayText.slice(lastIndex, match.index);
+            parts.push(...renderTextWithLinksAndTooltips(beforeMatch, `text-${lastIndex}`));
 
-            const [, label, href] = match;
-            let isHttpsLink = false;
-            try {
-                isHttpsLink = new URL(href).protocol === 'https:';
-            } catch {
-                isHttpsLink = false;
+            // Process the emphasis match
+            const fullMatch = match[0];
+            const boldItalicContent = match[2];  // ***text***
+            const boldContent = match[3];         // **text**
+            const italicContent = match[4];       // *text*
+
+            if (boldItalicContent) {
+                parts.push(
+                    <span key={`${id}-emphasis-${match.index}`} style={{ fontWeight: 'bold', fontStyle: 'italic' }}>
+                        {boldItalicContent}
+                    </span>
+                );
+            } else if (boldContent) {
+                parts.push(
+                    <span key={`${id}-bold-${match.index}`} style={{ fontWeight: 'bold' }}>
+                        {boldContent}
+                    </span>
+                );
+            } else if (italicContent) {
+                parts.push(
+                    <span key={`${id}-italic-${match.index}`} style={{ fontStyle: 'italic' }}>
+                        {italicContent}
+                    </span>
+                );
             }
 
-            if (isHttpsLink) {
+            lastIndex = match.index + fullMatch.length;
+        }
+
+        // Process remaining text after last emphasis match
+        const remainingText = displayText.slice(lastIndex);
+        parts.push(...renderTextWithLinksAndTooltips(remainingText, `text-${lastIndex}`));
+
+        return parts;
+    };
+
+    // Helper to process links and tooltips in text segments
+    const renderTextWithLinksAndTooltips = (segmentText: string, keyPrefix: string): (string | ReactNode)[] => {
+        const parts: (string | ReactNode)[] = [];
+        const markdownLinkPattern = /\[([^\]]+)\]\(([^)\s]+)\)/g;
+        let linkLastIndex = 0;
+        let linkMatch: RegExpExecArray | null;
+
+        while ((linkMatch = markdownLinkPattern.exec(segmentText)) !== null) {
+            parts.push(...renderPlainTextWithTooltips(segmentText.slice(linkLastIndex, linkMatch.index), `${keyPrefix}-${linkLastIndex}`));
+
+            const [, label, href] = linkMatch;
+            let isValidLink = false;
+            try {
+                // Accept both absolute HTTPS URLs and root-relative paths (starting with /)
+                const url = new URL(href, 'https://example.com');
+                isValidLink = url.protocol === 'https:' || href.startsWith('/');
+            } catch {
+                // If URL parsing fails, check if it's a root-relative path
+                isValidLink = href.startsWith('/');
+            }
+
+            if (isValidLink) {
                 parts.push(
-                    <a key={`${id}-link-${match.index}`} href={href}>
+                    <a key={`${id}-link-${keyPrefix}-${linkMatch.index}`} href={href}>
                         {label}
                     </a>
                 );
             } else {
-                parts.push(...renderPlainTextWithTooltips(match[0], `invalid-link-${match.index}`));
+                parts.push(...renderPlainTextWithTooltips(linkMatch[0], `${keyPrefix}-invalid-link-${linkMatch.index}`));
             }
 
-            lastIndex = match.index + match[0].length;
+            linkLastIndex = linkMatch.index + linkMatch[0].length;
         }
 
-        parts.push(...renderPlainTextWithTooltips(displayText.slice(lastIndex), `text-${lastIndex}`));
+        parts.push(...renderPlainTextWithTooltips(segmentText.slice(linkLastIndex), `${keyPrefix}-${linkLastIndex}`));
         return parts;
     };
 
@@ -353,14 +406,34 @@ const Question: React.FC<QuestionProps> = ({ question, value, onChange }) => {
                         />
                         <label
                             className="unknown-option"
-                            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.375rem',
+                                marginTop: '0.625rem',
+                                paddingLeft: '0.125rem',
+                                cursor: 'pointer',
+                            }}
                         >
                             <input
                                 type="checkbox"
                                 checked={isUnknown}
                                 onChange={(e) => onChange(id, e.target.checked ? unknownLabel : '')}
+                                style={{
+                                    width: '18px',
+                                    height: '18px',
+                                    flexShrink: 0,
+                                    accentColor: 'var(--nena-red)',
+                                    cursor: 'pointer',
+                                }}
                             />
-                            {unknownLabel}
+                            <span style={{
+                                fontSize: '0.9rem',
+                                color: 'var(--text-secondary)',
+                                userSelect: 'none',
+                            }}>
+                                {unknownLabel}
+                            </span>
                         </label>
                     </>
                 );

@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NENA 2026 PSAP Survey - Printable Data Collection Worksheet</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 11pt;
+            line-height: 1.5;
+            color: #333;
+            max-width: 8.5in;
+            margin: 0 auto;
+            padding: 0.75in;
+            background: white;
+        }
+        @page {
+            margin: 0.75in;
+        }
+        @media print {
+            body { padding: 0; }
+            .page-break { page-break-before: always; }
+            .no-print { display: none !important; }
+            table { page-break-inside: avoid; }
+            tr { page-break-inside: avoid; }
+        }
+        h1 {
+            text-align: center;
+            color: #1a3c5e;
+            font-size: 22pt;
+            margin-bottom: 0.25in;
+            border-bottom: 3px solid #1a3c5e;
+            padding-bottom: 0.15in;
+        }
+        h2 {
+            color: #2c5f8a;
+            font-size: 14pt;
+            margin-top: 0.3in;
+            margin-bottom: 0.15in;
+            border-bottom: 1px solid #2c5f8a;
+            padding-bottom: 0.05in;
+        }
+        h3 {
+            color: #3a7ab5;
+            font-size: 11pt;
+            margin-top: 0.2in;
+            margin-bottom: 0.05in;
+        }
+        .subtitle {
+            text-align: center;
+            color: #555;
+            font-size: 11pt;
+            margin-bottom: 0.3in;
+        }
+        .reference-note {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 4px;
+            padding: 0.15in;
+            margin-bottom: 0.25in;
+            font-size: 10pt;
+        }
+        .reference-note strong { color: #856404; }
+        .section {
+            margin-bottom: 0.3in;
+        }
+        .question {
+            margin-bottom: 0.2in;
+            page-break-inside: avoid;
+        }
+        .question-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.15in;
+            margin-bottom: 0.05in;
+        }
+        .question-id {
+            font-weight: bold;
+            color: #1a3c5e;
+            font-size: 10pt;
+            white-space: nowrap;
+            min-width: 2.5em;
+        }
+        .question-text {
+            flex: 1;
+            font-weight: 500;
+        }
+        .question-type {
+            font-size: 8pt;
+            color: #666;
+            background: #f0f4f8;
+            padding: 2px 6px;
+            border-radius: 3px;
+            white-space: nowrap;
+            margin-left: 0.1in;
+        }
+        .question-meta {
+            margin-left: 2.8em;
+            font-size: 9pt;
+            color: #555;
+        }
+        .meta-label {
+            font-weight: bold;
+            color: #333;
+        }
+        .options-list {
+            margin-left: 2.8em;
+            margin-top: 0.05in;
+            margin-bottom: 0.1in;
+        }
+        .option-item {
+            display: flex;
+            align-items: baseline;
+            gap: 0.1in;
+            margin-bottom: 0.05in;
+        }
+        .checkbox, .radio {
+            width: 14px;
+            height: 14px;
+            border: 1px solid #999;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .radio { border-radius: 50%; }
+        .option-text { font-size: 10pt; }
+        .input-field {
+            margin-left: 2.8em;
+            margin-top: 0.05in;
+            margin-bottom: 0.1in;
+        }
+        .input-line {
+            border-bottom: 1px solid #ccc;
+            height: 1.5em;
+            width: 100%;
+            max-width: 5in;
+        }
+        .input-line.short { max-width: 2in; }
+        .input-line.medium { max-width: 3in; }
+        .textarea-field {
+            margin-left: 2.8em;
+            margin-top: 0.05in;
+            margin-bottom: 0.1in;
+        }
+        .textarea-box {
+            border: 1px solid #ccc;
+            width: 100%;
+            max-width: 6in;
+            height: 3em;
+        }
+        .agencies-table {
+            margin-left: 2.8em;
+            margin-top: 0.05in;
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 5in;
+            font-size: 10pt;
+        }
+        .agencies-table th, .agencies-table td {
+            border: 1px solid #ccc;
+            padding: 0.1in 0.15in;
+            text-align: left;
+        }
+        .agencies-table th { background: #f0f4f8; }
+        .info-box {
+            background: #e8f4fd;
+            border: 1px solid #bee5eb;
+            border-radius: 4px;
+            padding: 0.15in;
+            margin-left: 2.8em;
+            margin-top: 0.05in;
+            margin-bottom: 0.1in;
+            font-size: 10pt;
+            color: #0c5460;
+        }
+        .footer {
+            margin-top: 0.5in;
+            text-align: center;
+            font-size: 9pt;
+            color: #888;
+            border-top: 1px solid #ddd;
+            padding-top: 0.1in;
+        }
+        .required-note {
+            color: #dc3545;
+            font-size: 9pt;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="text-align: right; margin-bottom: 0.2in; font-size: 9pt; color: #888;">
+        <button onclick="window.print()" style="padding: 6px 12px; background: #1a3c5e; color: white; border: none; border-radius: 4px; cursor: pointer;">Print / Save as PDF</button>
+    </div>
+
+    <h1>NENA 2026 PSAP Survey</h1>
+    <p class="subtitle">Printable Data Collection Worksheet</p>
+
+    <div class="reference-note">
+        <strong>⚠ IMPORTANT - REFERENCE YEAR:</strong> All volume, staffing, and performance data in this survey should be reported for <strong>calendar year 2025 (January 1 - December 31, 2025)</strong>. This reference year will not change mid-collection.
+    </div>
+
+    <div class="reference-note">
+        <strong>📋 Instructions:</strong> Use this worksheet to gather all required data <em>before</em> completing the online survey. Coordinate within your center to ensure only one response per PSAP. If you have multiple PSAPs under the same governance, complete a separate worksheet for each PSAP.
+    </div>
+
+    <!-- Section: Welcome -->
+    <div class="section">
+        <h2>Welcome & Survey Overview</h2>
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">INFO</span>
+                <span class="question-text">The National Emergency Number Association (NENA) is conducting this survey to collect data from Public Safety Answering Points (PSAP) in the United States and Canada to evaluate and update call processing and staffing guidelines in response to evolving operational demands, emerging technologies, and increasing service complexity.</span>
+            </div>
+            <div class="question-meta">
+                <span class="meta-label">Survey Duration:</span> ~20-30 minutes | 
+                <span class="meta-label">Deadline:</span> 03/01/2027 | 
+                <span class="meta-label">Reference Year:</span> Calendar Year 2025
+            </div>
+            <div class="info-box">
+                <strong>Key Reminders:</strong>
+                • Only one response per PSAP<br>
+                • Multiple PSAPs under same governance = separate survey each<br>
+                • Coordinate data gathering across team members before starting<br>
+                • On submission, you'll get a copy of your responses for your records (browser-generated, never sent to server)
+            </div>
+        </div>
+    </div>
+
+    <!-- Section: Data Requirements -->
+    <div class="section page-break">
+        <h2>Data Requirements Checklist</h2>
+        <p>Gather the following data before starting the survey:</p>
+        <ul style="margin-left: 1.5in; font-size: 10pt; line-height: 1.8;">
+            <li>☐ Census and demographic data for your PSAP's service area</li>
+            <li>☐ Call volume data for calendar year 2025</li>
+            <li>☐ Staffing data (telecommunicators and supervisors)</li>
+            <li>☐ Shift length, count, and staffing per shift</li>
+            <li>☐ Average phone answer times</li>
+            <li>☐ Call processing times</li>
+            <li>☐ Census data available at <a href="https://census.gov">census.gov</a></li>
+        </ul>
+        <div class="info-box">
+            <strong>Progress Saving:</strong> Use the 'Save & Get Code' button in the online survey to save progress and return later. The code is valid for 7 days from generation.
+        </div>
+    </div>
+
+    <!-- Section: Data Privacy -->
+    <div class="section">
+        <h2>Data Privacy and Usage</h2>
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">INFO</span>
+                <span class="question-text">All data collected will be treated with strict confidentiality and used solely for developing staffing guidelines, call processing standards, and industry analytics for PSAPs. Data will be aggregated and anonymized so no specific PSAP can be identified in reports or publications.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section: Location Information -->
+    <div class="section page-break">
+        <h2>Location Information</h2>
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">1</span>
+                <span class="question-text">Please select your state or province:</span>
+                <span class="question-type">SELECT</span>
+            </div>
+            <div class="question-meta">
+                <span class="meta-label">Purpose:</span> Used for state/provincial level data analysis (survey is anonymous)
+            </div>
+            <div class="options-list">
+                <div class="option-item"><span class="radio"></span><span class="option-text">Alabama</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Alaska</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">American Samoa</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Arizona</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Arkansas</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">British Columbia</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">California</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Colorado</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Connecticut</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Delaware</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">District of Columbia</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Florida</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Georgia</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Guam</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Hawaii</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Idaho</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Illinois</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Indiana</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Iowa</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Kansas</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Kentucky</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Louisiana</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Maine</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Manitoba</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Maryland</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Massachusetts</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Michigan</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Minnesota</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Mississippi</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Missouri</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Montana</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Nebraska</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Nevada</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">New Brunswick</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Newfoundland and Labrador</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">New Hampshire</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">New Jersey</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">New Mexico</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">New York</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">North Carolina</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">North Dakota</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Northern Mariana Islands</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Northwest Territories</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Nova Scotia</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Nunavut</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Ohio</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Oklahoma</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Ontario</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Oregon</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Pennsylvania</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Prince Edward Island</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Puerto Rico</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Quebec</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Rhode Island</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Saskatchewan</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">South Carolina</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">South Dakota</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Tennessee</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Texas</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">U.S. Virgin Islands</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Utah</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Vermont</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Virginia</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Washington</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">West Virginia</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Wisconsin</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Wyoming</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Other (Please Specify) ___________________</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section: PSAP Classification -->
+    <div class="section page-break">
+        <h2>PSAP Classification</h2>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">2</span>
+                <span class="question-text">Estimated base population serviced by the PSAP:</span>
+                <span class="question-type">SELECT</span>
+            </div>
+            <div class="question-meta">
+                <span class="meta-label">Data Source:</span> Governing organization's census data, tourism board, or business bureau
+            </div>
+            <div class="options-list">
+                <div class="option-item"><span class="radio"></span><span class="option-text">Less than 10,000</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">10,000 - 25,000</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">25,000 - 50,000</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">50,000 - 100,000</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">100,000 - 250,000</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">250,000 - 500,000</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">500,000 - 1,000,000</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Over 1,000,000</span></div>
+            </div>
+            <div class="input-field"><input type="text" class="input-line short" placeholder="Your selection:"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">3</span>
+                <span class="question-text">Estimated peak population serviced by the PSAP:</span>
+                <span class="question-type">SELECT</span>
+            </div>
+            <div class="question-meta">
+                <span class="meta-label">Purpose:</span> Influence of visitors/transient populations on operations
+            </div>
+            <div class="options-list">
+                <div class="option-item"><span class="radio"></span><span class="option-text">Less than 10,000</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">10,000 - 25,000</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">25,000 - 50,000</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">50,000 - 100,000</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">100,000 - 250,000</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">250,000 - 500,000</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">500,000 - 1,000,000</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Over 1,000,000</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Unknown</span></div>
+            </div>
+            <div class="input-field"><input type="text" class="input-line short" placeholder="Your selection:"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">4</span>
+                <span class="question-text">Most common factors contributing to population variation (select all that apply):</span>
+                <span class="question-type">CHECKBOX</span>
+            </div>
+            <div class="question-meta">
+                <span class="meta-label">Data Source:</span> Governing organization's demographic knowledge
+            </div>
+            <div class="options-list">
+                <div class="option-item"><span class="checkbox"></span><span class="option-text">Daytime Increase (Worker Influx)</span></div>
+                <div class="option-item"><span class="checkbox"></span><span class="option-text">Seasonal Peaks</span></div>
+                <div class="option-item"><span class="checkbox"></span><span class="option-text">Event Peaks</span></div>
+                <div class="option-item"><span class="checkbox"></span><span class="option-text">College/University Population</span></div>
+                <div class="option-item"><span class="checkbox"></span><span class="option-text">None</span></div>
+                <div class="option-item"><span class="checkbox"></span><span class="option-text">Unknown</span></div>
+                <div class="option-item"><span class="checkbox"></span><span class="option-text">Other (Please Specify) ___________________</span></div>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">5</span>
+                <span class="question-text">PSAP Classification:</span>
+                <span class="question-type">RADIO</span>
+            </div>
+            <div class="question-meta">
+                <span class="meta-label">Purpose:</span> Determine differences in operations/staffing between classifications
+            </div>
+            <div class="options-list">
+                <div class="option-item"><span class="radio"></span><span class="option-text">Primary</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Secondary</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Other</span></div>
+            </div>
+            <div class="input-field"><input type="text" class="input-line short" placeholder="Your selection:"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">6</span>
+                <span class="question-text">Services provided by the PSAP (select one or more):</span>
+                <span class="question-type">CHECKBOX</span>
+            </div>
+            <div class="question-meta">
+                <span class="meta-label">Purpose:</span> Understand variety of services and influence on operations/staffing
+            </div>
+            <div class="options-list">
+                <div class="option-item"><span class="checkbox"></span><span class="option-text">Call Taking</span></div>
+                <div class="option-item"><span class="checkbox"></span><span class="option-text">Dispatching</span></div>
+                <div class="option-item"><span class="checkbox"></span><span class="option-text">SMS/Text</span></div>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">7</span>
+                <span class="question-text">Additional services beyond Question 6:</span>
+                <span class="question-type">TEXTAREA</span>
+            </div>
+            <div class="question-meta">
+                <span class="meta-label">Examples:</span> Walk-up windows, matron duties, records checks, etc.
+            </div>
+            <div class="textarea-field">
+                <textarea class="textarea-box" placeholder="List additional services here..."></textarea>
+            </div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">8</span>
+                <span class="question-text">PSAP Operational Governance:</span>
+                <span class="question-type">RADIO</span>
+            </div>
+            <div class="question-meta">
+                <span class="meta-label">Purpose:</span> Compare similar PSAP types and understand staffing influences
+            </div>
+            <div class="options-list">
+                <div class="option-item"><span class="radio"></span><span class="option-text">Federal Government</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">State Government</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Tribal Government</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">County Government</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Municipal Government</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Independent Authority</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Private</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Other (Please Specify) ___________________</span></div>
+            </div>
+            <div class="input-field"><input type="text" class="input-line short" placeholder="Your selection:"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">9</span>
+                <span class="question-text">Agencies answered/dispatched for and count of each type:</span>
+                <span class="question-type">AGENCIES WITH COUNT</span>
+            </div>
+            <div class="question-meta">
+                <span class="meta-label">Purpose:</span> Number of agencies handled during business operations
+            </div>
+            <table class="agencies-table">
+                <thead>
+                    <tr><th>Agency Type</th><th>Number of Agencies</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Police</td><td><input type="text" class="input-line short" style="width: 60px;"></td></tr>
+                    <tr><td>Fire</td><td><input type="text" class="input-line short" style="width: 60px;"></td></tr>
+                    <tr><td>EMS</td><td><input type="text" class="input-line short" style="width: 60px;"></td></tr>
+                    <tr><td>Sheriff</td><td><input type="text" class="input-line short" style="width: 60px;"></td></tr>
+                    <tr><td>Animal Control</td><td><input type="text" class="input-line short" style="width: 60px;"></td></tr>
+                    <tr><td>Other (Specify): ___________________</td><td><input type="text" class="input-line short" style="width: 60px;"></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">10</span>
+                <span class="question-text">Types of calls answered by PSAP (select all that apply):</span>
+                <span class="question-type">CHECKBOX</span>
+            </div>
+            <div class="question-meta">
+                <span class="meta-label">Purpose:</span> Traffic type for creating operational models
+            </div>
+            <div class="options-list">
+                <div class="option-item"><span class="checkbox"></span><span class="option-text">9-1-1</span></div>
+                <div class="option-item"><span class="checkbox"></span><span class="option-text">Admin</span></div>
+                <div class="option-item"><span class="checkbox"></span><span class="option-text">10-digit Emergency</span></div>
+                <div class="option-item"><span class="checkbox"></span><span class="option-text">SMS/Text</span></div>
+                <div class="option-item"><span class="checkbox"></span><span class="option-text">TTY/TDD</span></div>
+                <div class="option-item"><span class="checkbox"></span><span class="option-text">Other (Please Specify) ___________________</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section: Yearly Call Counts -->
+    <div class="section page-break">
+        <h2>Yearly Call Counts (Calendar Year 2025)</h2>
+        <p style="font-size: 10pt; color: #555; margin-bottom: 0.15in;"><strong>Data Source:</strong> Phone software, CAD software, or other relevant sources as noted.</p>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">11</span>
+                <span class="question-text">Total 9-1-1 calls answered:</span>
+                <span class="question-type">NUMBER</span>
+            </div>
+            <div class="question-meta"><span class="meta-label">Source:</span> Phone software</div>
+            <div class="input-field"><input type="text" class="input-line medium" placeholder="_______"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">12</span>
+                <span class="question-text">Total 10-digit line calls answered:</span>
+                <span class="question-type">NUMBER</span>
+            </div>
+            <div class="question-meta"><span class="meta-label">Source:</span> Phone software</div>
+            <div class="input-field"><input type="text" class="input-line medium" placeholder="_______"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">13</span>
+                <span class="question-text">Total SMS/Text sessions answered:</span>
+                <span class="question-type">NUMBER</span>
+            </div>
+            <div class="question-meta"><span class="meta-label">Source:</span> Phone software</div>
+            <div class="input-field"><input type="text" class="input-line medium" placeholder="_______"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">14</span>
+                <span class="question-text">Total TTY/TDD sessions answered:</span>
+                <span class="question-type">NUMBER</span>
+            </div>
+            <div class="question-meta"><span class="meta-label">Source:</span> Phone software</div>
+            <div class="input-field"><input type="text" class="input-line medium" placeholder="_______"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">15</span>
+                <span class="question-text">Total Law Enforcement incidents processed:</span>
+                <span class="question-type">NUMBER</span>
+            </div>
+            <div class="question-meta"><span class="meta-label">Source:</span> CAD software</div>
+            <div class="input-field"><input type="text" class="input-line medium" placeholder="_______"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">16</span>
+                <span class="question-text">Total Fire incidents processed:</span>
+                <span class="question-type">NUMBER</span>
+            </div>
+            <div class="question-meta"><span class="meta-label">Source:</span> CAD software</div>
+            <div class="input-field"><input type="text" class="input-line medium" placeholder="_______"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">17</span>
+                <span class="question-text">Total EMS incidents processed:</span>
+                <span class="question-type">NUMBER</span>
+            </div>
+            <div class="question-meta"><span class="meta-label">Source:</span> CAD software</div>
+            <div class="input-field"><input type="text" class="input-line medium" placeholder="_______"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">18</span>
+                <span class="question-text">Total other incidents processed:</span>
+                <span class="question-type">NUMBER</span>
+            </div>
+            <div class="question-meta"><span class="meta-label">Source:</span> CAD software or other relevant sources</div>
+            <div class="input-field"><input type="text" class="input-line medium" placeholder="_______"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">19</span>
+                <span class="question-text">Total NCIC transactions conducted:</span>
+                <span class="question-type">NUMBER OR UNKNOWN</span>
+            </div>
+            <div class="question-meta"><span class="meta-label">Source:</span> State NCIC provider (may need advance request)</div>
+            <div class="input-field"><input type="text" class="input-line medium" placeholder="_______ or ☐ Unknown"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">20</span>
+                <span class="question-text">Total other incidents not covered elsewhere:</span>
+                <span class="question-type">NUMBER</span>
+            </div>
+            <div class="question-meta"><span class="meta-label">Source:</span> Your records</div>
+            <div class="input-field"><input type="text" class="input-line medium" placeholder="_______"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">21</span>
+                <span class="question-text">Total radio keyups (estimate acceptable):</span>
+                <span class="question-type">NUMBER OR UNKNOWN</span>
+            </div>
+            <div class="question-meta"><span class="meta-label">Source:</span> Radio communication logs or other sources</div>
+            <div class="input-field"><input type="text" class="input-line medium" placeholder="_______ or ☐ Unknown"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">22</span>
+                <span class="question-text">Calls transferred to another PSAP:</span>
+                <span class="question-type">NUMBER</span>
+            </div>
+            <div class="question-meta"><span class="meta-label">Source:</span> CAD software</div>
+            <div class="input-field"><input type="text" class="input-line medium" placeholder="_______"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">23</span>
+                <span class="question-text">Total outbound calls placed by center:</span>
+                <span class="question-type">NUMBER OR UNKNOWN</span>
+            </div>
+            <div class="question-meta">
+                <span class="meta-label">Description:</span> Callbacks, notifications to partner agencies, inter-PSAP coordination
+                <span class="meta-label"> | Source:</span> Phone software or CAD software
+            </div>
+            <div class="input-field"><input type="text" class="input-line medium" placeholder="_______ or ☐ Unknown"></div>
+        </div>
+    </div>
+
+    <!-- Section: Telecommunicator Staff Numbers -->
+    <div class="section page-break">
+        <h2>Telecommunicator Staff Numbers</h2>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">24</span>
+                <span class="question-text">Number of Funded Operational FTEs (Full Time Equivalents):</span>
+                <span class="question-type">NUMBER</span>
+            </div>
+            <div class="question-meta"><span class="meta-label">Purpose:</span> Budgeted telecommunicator and supervisor positions</div>
+            <div class="input-field"><input type="text" class="input-line short" placeholder="_______"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">25</span>
+                <span class="question-text">Number of Telecommunicator FTEs filled:</span>
+                <span class="question-type">NUMBER</span>
+            </div>
+            <div class="question-meta"><span class="meta-label">Purpose:</span> Budgeted positions currently hired and working</div>
+            <div class="input-field"><input type="text" class="input-line short" placeholder="_______"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">26</span>
+                <span class="question-text">Number of Supervisor FTEs filled:</span>
+                <span class="question-type">NUMBER</span>
+            </div>
+            <div class="question-meta"><span class="meta-label">Purpose:</span> Budgeted supervisor positions currently hired and working</div>
+            <div class="input-field"><input type="text" class="input-line short" placeholder="_______"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">27</span>
+                <span class="question-text">Length of shifts in hours:</span>
+                <span class="question-type">RADIO</span>
+            </div>
+            <div class="question-meta"><span class="meta-label">Note:</span> Indicate base shift length; if multiple, select most common</div>
+            <div class="options-list">
+                <div class="option-item"><span class="radio"></span><span class="option-text">8 hours</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">10 hours</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">12 hours</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">24 hours</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Other (Please Specify) ___________________</span></div>
+            </div>
+            <div class="input-field"><input type="text" class="input-line short" placeholder="Your selection:"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">28</span>
+                <span class="question-text">Minimum telecommunicator FTEs per shift:</span>
+                <span class="question-type">NUMBER</span>
+            </div>
+            <div class="question-meta"><span class="meta-label">Note:</span> Whole-number headcount for minimum staffing level for normal operations</div>
+            <div class="input-field"><input type="text" class="input-line short" placeholder="_______"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">29</span>
+                <span class="question-text">Minimum supervisor FTEs per shift:</span>
+                <span class="question-type">NUMBER</span>
+            </div>
+            <div class="question-meta"><span class="meta-label">Note:</span> Whole-number headcount for minimum staffing level to supervise normal operations</div>
+            <div class="input-field"><input type="text" class="input-line short" placeholder="_______"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">30</span>
+                <span class="question-text">Work-year basis for FTE calculation:</span>
+                <span class="question-type">RADIO</span>
+            </div>
+            <div class="question-meta"><span class="meta-label">Source:</span> Agency HR or scheduling policy documents</div>
+            <div class="options-list">
+                <div class="option-item"><span class="radio"></span><span class="option-text">2,080 hours (standard 5 × 8-hour weeks)</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">2,184 hours (12-hour / "Pittman" schedule)</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Other (Please Specify) ___________________</span></div>
+                <div class="option-item"><span class="radio"></span><span class="option-text">Unknown</span></div>
+            </div>
+            <div class="input-field"><input type="text" class="input-line short" placeholder="Your selection:"></div>
+        </div>
+    </div>
+
+    <!-- Section: Performance Metrics -->
+    <div class="section page-break">
+        <h2>Performance Metrics (Calendar Year 2025)</h2>
+        <p style="font-size: 10pt; color: #555; margin-bottom: 0.15in;">Use the last calendar year of data for all averages. Report in <strong>seconds</strong> unless otherwise noted.</p>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">31</span>
+                <span class="question-text">Average phone answer time for 9-1-1 calls (presentation to answer):</span>
+                <span class="question-type">NUMBER</span>
+            </div>
+            <div class="question-meta"><span class="meta-label">Source:</span> Phone software</div>
+            <div class="input-field"><input type="text" class="input-line short" placeholder="_______ seconds"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">32</span>
+                <span class="question-text">Average phone answer time for non-emergency calls (presentation to answer):</span>
+                <span class="question-type">NUMBER</span>
+            </div>
+            <div class="question-meta"><span class="meta-label">Source:</span> Phone software</div>
+            <div class="input-field"><input type="text" class="input-line short" placeholder="_______ seconds"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">33</span>
+                <span class="question-text">Average call processing time for 9-1-1 calls (answer to dispatchable):</span>
+                <span class="question-type">NUMBER OR UNKNOWN</span>
+            </div>
+            <div class="question-meta">
+                <span class="meta-label">Source:</span> CAD software
+                <span class="meta-label"> | Note:</span> Dispatchable = enough info to dispatch
+            </div>
+            <div class="input-field"><input type="text" class="input-line short" placeholder="_______ seconds or ☐ Unknown"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">34</span>
+                <span class="question-text">Average call processing time for non-emergency calls (answer to dispatchable):</span>
+                <span class="question-type">NUMBER OR UNKNOWN</span>
+            </div>
+            <div class="question-meta">
+                <span class="meta-label">Source:</span> CAD software
+                <span class="meta-label"> | Note:</span> Dispatchable = enough info to dispatch
+            </div>
+            <div class="input-field"><input type="text" class="input-line short" placeholder="_______ seconds or ☐ Unknown"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">35</span>
+                <span class="question-text">Average total call handling time for 9-1-1 calls (answer to release + wrap-up):</span>
+                <span class="question-type">NUMBER</span>
+            </div>
+            <div class="question-meta">
+                <span class="meta-label">Source:</span> Phone software or CAD software
+                <span class="meta-label"> | Note:</span> Includes wrap-up/documentation time before next call
+            </div>
+            <div class="input-field"><input type="text" class="input-line short" placeholder="_______ seconds"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">36</span>
+                <span class="question-text">Average calls handled per telecommunicator FTE per hour:</span>
+                <span class="question-type">NUMBER OR UNKNOWN</span>
+            </div>
+            <div class="question-meta">
+                <span class="meta-label">Source:</span> Phone or CAD software
+                <span class="meta-label"> | Calculation:</span> Avg calls ÷ Avg telecommunicators per day
+            </div>
+            <div class="input-field"><input type="text" class="input-line short" placeholder="_______ or ☐ Unknown"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">37</span>
+                <span class="question-text">Average time to transfer a call to another PSAP (answer to transfer):</span>
+                <span class="question-type">NUMBER</span>
+            </div>
+            <div class="question-meta">
+                <span class="meta-label">Source:</span> Phone software
+                <span class="meta-label"> | Calculation:</span> Total seconds for transfer calls ÷ Number of transfer calls
+            </div>
+            <div class="input-field"><input type="text" class="input-line short" placeholder="_______ seconds"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">38</span>
+                <span class="question-text">Average processing time for Law Enforcement service calls (answer to dispatchable):</span>
+                <span class="question-type">NUMBER OR UNKNOWN</span>
+            </div>
+            <div class="question-meta"><span class="meta-label">Source:</span> CAD software (isolate LE calls)</div>
+            <div class="input-field"><input type="text" class="input-line short" placeholder="_______ seconds or ☐ Unknown"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">39</span>
+                <span class="question-text">Average processing time for Fire service calls (answer to dispatchable):</span>
+                <span class="question-type">NUMBER OR UNKNOWN</span>
+            </div>
+            <div class="question-meta"><span class="meta-label">Source:</span> CAD software (isolate Fire calls)</div>
+            <div class="input-field"><input type="text" class="input-line short" placeholder="_______ seconds or ☐ Unknown"></div>
+        </div>
+
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">40</span>
+                <span class="question-text">Average processing time for EMS service calls (answer to dispatchable):</span>
+                <span class="question-type">NUMBER OR UNKNOWN</span>
+            </div>
+            <div class="question-meta"><span class="meta-label">Source:</span> CAD software (isolate Medical calls)</div>
+            <div class="input-field"><input type="text" class="input-line short" placeholder="_______ seconds or ☐ Unknown"></div>
+        </div>
+    </div>
+
+    <!-- Section: Closing -->
+    <div class="section">
+        <h2>Survey Completion</h2>
+        <div class="question">
+            <div class="question-header">
+                <span class="question-id">41</span>
+                <span class="question-text">Thank you for completing the NENA 2026 PSAP Survey. Your participation is greatly appreciated and will help NENA better understand staffing and call processing standards.</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>NENA 2026 PSAP Survey — Printable Data Collection Worksheet</p>
+        <p>Reference Year: Calendar Year 2025 (January 1 – December 31, 2025) | Deadline: 03/01/2027</p>
+        <p>Generated from survey_data.json | For data gathering purposes only — submit responses online</p>
+    </div>
+</body>
+</html>

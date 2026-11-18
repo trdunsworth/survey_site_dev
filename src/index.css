@@ -77,9 +77,14 @@ button.primary:hover {
 }
 
 button.secondary {
-  background-color: white;
-  color: var(--nena-red);
-  border: 2px solid var(--nena-red);
+  background-color: var(--nena-red);
+  color: white;
+  border: 2px solid var(--nena-dark-red);
+}
+
+button.secondary:hover {
+  background-color: var(--nena-dark-red);
+  border-color: var(--nena-dark-red);
 }
 
 input,

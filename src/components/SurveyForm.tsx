@@ -637,10 +637,10 @@ const [showReceipt, setShowReceipt] = useState<boolean>(false);
                             <button type="button" className="primary" onClick={handleDownloadAnswers}>
                                 Download (.txt)
                             </button>
-                            <button type="button" onClick={handlePrintAnswers}>
+                            <button type="button" className="secondary" onClick={handlePrintAnswers}>
                                 Print / Save as PDF
                             </button>
-                            <button type="button" onClick={() => setShowReceipt(false)}>
+                            <button type="button" className="secondary" onClick={() => setShowReceipt(false)}>
                                 Close
                             </button>
                         </div>

@@ -16,7 +16,7 @@
       "questions": [
         {
           "id": 0.1,
-          "text": "To complete this survey, you will need to have the following data available to you:\n\u2022Census and demographic data for your PSAP's service area\n\u2022Call volume data for the last calendar year\n\u2022Staffing data including the number of telecommunicators and supervisors\n\u2022Shift length, count, and staffing per shift.\n\u2022Average phone answer times.\n\u2022Call processing times.\n\u2022 You can find some of your census data at [census.gov](https://census.gov).\n\n\u26a0\ufe0f IMPORTANT - REFERENCE YEAR: All volume, staffing, and performance data in this survey should be reported for calendar year 2025 (January 1 - December 31, 2025). This reference year will not change mid-collection.\n\nYou may use the 'Save & Get Code' button at any time to save your progress and return later if you need to gather additional information. The code can be used for 7 days from the time it is generated.",
+          "text": "To complete this survey, you will need to have the following data available to you:\n\u2022Census and demographic data for your PSAP's service area\n\u2022Call volume data for the last calendar year\n\u2022Staffing data including the number of telecommunicators and supervisors\n\u2022Shift length, count, and staffing per shift.\n\u2022Average phone answer times.\n\u2022Call processing times.\n\u2022 You can find some of your census data at [census.gov](https://census.gov).\n\n\u26a0\ufe0f IMPORTANT - REFERENCE YEAR: All volume, staffing, and performance data in this survey should be reported for calendar year 2025 (January 1 - December 31, 2025). This reference year will not change mid-collection.\n\n\u2022 **Printable Data Collection Worksheet**: A printable version of this survey is available to help you gather all required data before starting. You can [download the worksheet here](/survey-printable-worksheet.html) to print or save as PDF.\n\nYou may use the **'Save & Get Code'** button in the upper right corner of the survey at any time to save your progress and return later if you need to gather additional information. The code can be used for 7 days from the time it is generated.",
           "type": "info"
         }
       ]
@@ -26,7 +26,7 @@
       "questions": [
         {
           "id": 0.2,
-          "text": "All data collected through this survey will be treated with strict confidentiality and used solely for the purpose of developing staffing guidelines, call processing standards, and industry analytics for PSAPs. The data will be aggregated and anonymized to ensure that no specific PSAP can be identified in any reports or publications resulting from this survey. By participating in this survey, you consent to the use of your data for these purposes.",
+          "text": "All data collected through this survey will be treated with strict confidentiality and used solely for the purpose of developing staffing guidelines, call processing standards, and industry analytics for PSAPs. The data will be aggregated and anonymized to ensure that no specific PSAP can be identified in any reports or publications resulting from this survey. \n\n*By participating in this survey, you consent to the use of your data for these purposes.*",
           "type": "info"
         }
       ]
@@ -325,8 +325,9 @@
         },
         {
           "id": 22,
-          "text": "How many calls were transferred in the last calendar year?",
-          "data_location": "This data should come from your Computer Aided Dispatch (CAD) software.",
+          "text": "How many 9-1-1 and 10-digit calls were transferred in the last calendar year?",
+          "data_location": "This data should come from your Call Handling (CHFE)software.",
+          "responseEmphasis": "Please report the best estimate for your center. If you do not have the exact number.",
           "options": [],
           "type": "number"
         },

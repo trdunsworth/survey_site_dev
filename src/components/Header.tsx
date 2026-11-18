@@ -13,8 +13,14 @@ const Header: React.FC = () => {
         <header style={styles.header}>
             <div className="container" style={styles.container}>
                 <div style={styles.logo}>
-                    <span style={styles.nenaText}>NENA</span>
-                    <span style={styles.surveyText}> | 9-1-1 OPERATION SURVEY</span>
+                    <div style={styles.logoWrapper}>
+                        <img 
+                            src={logoOutline} 
+                            alt="NENA" 
+                            style={styles.logoImage} 
+                        />
+                    </div>
+                    <span style={styles.surveyText}>9-1-1 OPERATION SURVEY</span>
                 </div>
                 <nav style={styles.nav} aria-label="Primary">
                     <a href="/" style={dashboard ? styles.navLink : styles.navLinkActive}>Survey</a>
@@ -60,17 +66,27 @@ const styles: { [key: string]: React.CSSProperties } = {
         textDecoration: 'none',
     },
     logo: {
-        fontSize: '1.5rem',
-        fontWeight: 'bold',
         display: 'flex',
+        alignItems: 'center',
         gap: '0.5rem'
     },
-    nenaText: {
-        color: 'white'
+    logoImage: {
+        height: '40px',
+        width: 'auto',
+        display: 'block',
+    },
+    logoWrapper: {
+        backgroundColor: 'white',
+        borderRadius: '4px',
+        padding: '4px 8px',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     surveyText: {
         color: 'white',
-        fontWeight: 'normal'
+        fontWeight: 'normal',
+        fontSize: '1rem',
     }
 };
 
