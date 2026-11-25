@@ -29,3 +29,5 @@ server/survey_responses.db
 .vscode/
 .idea/
 server/survey_analytics.duckdb
+server/survey_analytics.duckdb.wal
+server/survey_analytics.duckdb.wal
