@@ -111,13 +111,13 @@ async function ensureAnalyticsObjects(connection) {
 async function ensureCuratedKpiViews(connection) {
     await connection.run(`CREATE OR REPLACE VIEW ${tableRef('kpi_overview')} AS
      WITH answers_per_submission AS (
-       SELECT submission_id, COUNT(*) AS answered_questions
+       SELECT submission_id, CAST(COUNT(*) AS INTEGER) AS answered_questions
        FROM ${tableRef('completed_answers_long')}
        GROUP BY submission_id
      )
      SELECT
-       COUNT(*) AS total_completed_surveys,
-       COUNT(DISTINCT survey_version) AS survey_versions,
+       CAST(COUNT(*) AS INTEGER) AS total_completed_surveys,
+       CAST(COUNT(DISTINCT survey_version) AS INTEGER) AS survey_versions,
        COALESCE(
          (SELECT AVG(answered_questions)::DOUBLE FROM answers_per_submission),
          0
@@ -126,37 +126,37 @@ async function ensureCuratedKpiViews(connection) {
          (SELECT median(answered_questions)::DOUBLE FROM answers_per_submission),
          0
        ) AS median_answered_questions,
-       COUNT(*) FILTER (
+       CAST(COUNT(*) FILTER (
          WHERE completed_at >= (NOW() - INTERVAL '24 hours')
-       ) AS completed_last_24h,
-       COUNT(*) FILTER (
+       ) AS INTEGER) AS completed_last_24h,
+       CAST(COUNT(*) FILTER (
          WHERE completed_at >= (NOW() - INTERVAL '7 days')
-       ) AS completed_last_7d
+       ) AS INTEGER) AS completed_last_7d
      FROM ${tableRef('completed_submissions')}`);
     await connection.run(`CREATE OR REPLACE VIEW ${tableRef('kpi_daily_completions_30d')} AS
      SELECT
        DATE_TRUNC('day', completed_at) AS completion_day,
-       COUNT(*) AS completed_surveys
+       CAST(COUNT(*) AS INTEGER) AS completed_surveys
      FROM ${tableRef('completed_submissions')}
      WHERE completed_at >= (NOW() - INTERVAL '30 days')
      GROUP BY 1
      ORDER BY 1`);
     await connection.run(`CREATE OR REPLACE VIEW ${tableRef('kpi_question_completion')} AS
      WITH total AS (
-       SELECT COUNT(*)::DOUBLE AS total_completed
+       SELECT CAST(COUNT(*) AS INTEGER) AS total_completed
        FROM ${tableRef('completed_submissions')}
      ),
      answered AS (
-       SELECT question_id, COUNT(*)::DOUBLE AS answered_count
+       SELECT question_id, CAST(COUNT(*) AS INTEGER) AS answered_count
        FROM ${tableRef('completed_answers_long')}
        GROUP BY question_id
      )
      SELECT
        a.question_id,
-       a.answered_count::BIGINT AS answered_count,
+       a.answered_count AS answered_count,
        CASE
          WHEN t.total_completed = 0 THEN 0
-         ELSE ROUND((a.answered_count / t.total_completed) * 100, 2)
+         ELSE ROUND((a.answered_count::DOUBLE / t.total_completed) * 100, 2)
        END AS completion_rate_pct
      FROM answered a
      CROSS JOIN total t
@@ -164,8 +164,8 @@ async function ensureCuratedKpiViews(connection) {
     await connection.run(`CREATE OR REPLACE VIEW ${tableRef('kpi_answer_type_mix')} AS
      SELECT
        answer_type,
-       COUNT(*) AS answer_count,
-       ROUND((COUNT(*)::DOUBLE / NULLIF(SUM(COUNT(*)) OVER (), 0)) * 100, 2) AS pct_of_answers
+       CAST(COUNT(*) AS INTEGER) AS answer_count,
+       ROUND((CAST(COUNT(*) AS DOUBLE) / NULLIF(SUM(CAST(COUNT(*) AS DOUBLE)) OVER (), 0)) * 100, 2) AS pct_of_answers
      FROM ${tableRef('completed_answers_long')}
      GROUP BY answer_type
      ORDER BY answer_count DESC, answer_type ASC`);
@@ -434,7 +434,7 @@ export async function getCompletedSurveyDataframe(limit = 250) {
      FROM ${tableRef('self_updating_completed_surveys_df')}
      ORDER BY completed_at DESC
      LIMIT ?`, [safeLimit]);
-    return reader.getRowObjectsJS();
+    return reader.getRowObjectsJS().map(convertBigInts);
 }
 export async function getAnalyticsHealth() {
     const connection = getConnection();
@@ -446,6 +446,11 @@ export async function getAnalyticsHealth() {
      FROM ${tableRef('elt_runs')}
      ORDER BY completed_at DESC
      LIMIT 1`);
+    const counts = convertBigInts(summaryReader.getRowObjectsJS()[0] ?? {
+        completed_submissions: 0,
+        completed_answers: 0,
+    });
+    const lastRun = runReader.getRowObjectsJS()[0] ?? null;
     return {
         duckdbPath: DUCKDB_PATH,
         targetCatalog: _targetCatalog,
@@ -455,12 +460,28 @@ export async function getAnalyticsHealth() {
         motherduckConnected: _targetCatalog === 'md',
         motherduckLastError: _lastMotherDuckError,
         quackRequested: LOAD_QUACK,
-        counts: summaryReader.getRowObjectsJS()[0] ?? {
-            completed_submissions: 0,
-            completed_answers: 0,
-        },
-        lastRun: runReader.getRowObjectsJS()[0] ?? null,
+        counts,
+        lastRun: lastRun ? convertBigInts(lastRun) : null,
     };
+}
+// Helper to convert BigInt values to Number for JSON serialization
+function convertBigInts(obj) {
+    const result = {};
+    for (const [key, value] of Object.entries(obj)) {
+        if (typeof value === 'bigint') {
+            result[key] = Number(value);
+        }
+        else if (Array.isArray(value)) {
+            result[key] = value.map(v => typeof v === 'bigint' ? Number(v) : v);
+        }
+        else if (value && typeof value === 'object') {
+            result[key] = convertBigInts(value);
+        }
+        else {
+            result[key] = value;
+        }
+    }
+    return result;
 }
 export async function getAnalyticsKpiSnapshot() {
     const connection = getConnection();
@@ -468,17 +489,21 @@ export async function getAnalyticsKpiSnapshot() {
     const dailyReader = await connection.runAndReadAll(`SELECT * FROM ${tableRef('kpi_daily_completions_30d')}`);
     const questionReader = await connection.runAndReadAll(`SELECT * FROM ${tableRef('kpi_question_completion')} LIMIT 100`);
     const answerTypeReader = await connection.runAndReadAll(`SELECT * FROM ${tableRef('kpi_answer_type_mix')}`);
+    const overview = overviewReader.getRowObjectsJS()[0] ?? {
+        total_completed_surveys: 0,
+        survey_versions: 0,
+        avg_answered_questions: 0,
+        median_answered_questions: 0,
+        completed_last_24h: 0,
+        completed_last_7d: 0,
+    };
+    const dailyCompletions30d = dailyReader.getRowObjectsJS();
+    const questionCompletion = questionReader.getRowObjectsJS();
+    const answerTypeMix = answerTypeReader.getRowObjectsJS();
     return {
-        overview: overviewReader.getRowObjectsJS()[0] ?? {
-            total_completed_surveys: 0,
-            survey_versions: 0,
-            avg_answered_questions: 0,
-            median_answered_questions: 0,
-            completed_last_24h: 0,
-            completed_last_7d: 0,
-        },
-        dailyCompletions30d: dailyReader.getRowObjectsJS(),
-        questionCompletion: questionReader.getRowObjectsJS(),
-        answerTypeMix: answerTypeReader.getRowObjectsJS(),
+        overview: convertBigInts(overview),
+        dailyCompletions30d: dailyCompletions30d.map(convertBigInts),
+        questionCompletion: questionCompletion.map(convertBigInts),
+        answerTypeMix: answerTypeMix.map(convertBigInts),
     };
 }

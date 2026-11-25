@@ -26,15 +26,19 @@ function duckPlaceholders(count) {
     return Array.from({ length: count }, () => '?').join(', ');
 }
 function rowToSubmission(row) {
+    const completedVal = row['completed'];
+    const completed = completedVal === true || completedVal === 1 || completedVal === 1n;
+    const sectionIndexVal = row['current_section_index'];
+    const current_section_index = typeof sectionIndexVal === 'bigint' ? Number(sectionIndexVal) : sectionIndexVal;
     return {
         submission_id: row['submission_id'],
         created_at: row['created_at'],
-        completed: row['completed'] === true || row['completed'] === 1,
+        completed,
         lifecycle_state: row['lifecycle_state'] ?? 'active',
         completed_at: row['completed_at'] ?? null,
         archived_at: row['archived_at'] ?? null,
         survey_version: row['survey_version'],
-        current_section_index: row['current_section_index'],
+        current_section_index,
         last_question_id: row['last_question_id'],
         updated_at: row['updated_at'],
     };
@@ -45,12 +49,16 @@ function sha256(raw) {
 // ── Answers ───────────────────────────────────────────────────────────────────
 export const saveResponse = async (submissionId, questionId, answer) => {
     const now = new Date().toISOString();
-    // Upsert answer (DuckDB UPSERT syntax)
-    await run(`INSERT INTO answers (submission_id, question_id, answer_json, created_at)
-     VALUES (?, ?, ?, ?)
-     ON CONFLICT(submission_id, question_id) DO UPDATE SET
-       answer_json = EXCLUDED.answer_json,
-       created_at  = EXCLUDED.created_at`, [submissionId, questionId, JSON.stringify(answer), now]);
+    const answerJson = JSON.stringify(answer);
+    // Manual upsert: check if exists, then INSERT or UPDATE
+    // DuckDB node-api doesn't support ON CONFLICT or INSERT OR REPLACE
+    const existing = await queryOne(`SELECT 1 FROM answers WHERE submission_id = ? AND question_id = ?`, [submissionId, questionId]);
+    if (existing) {
+        await run(`UPDATE answers SET answer_json = ?, created_at = ? WHERE submission_id = ? AND question_id = ?`, [answerJson, now, submissionId, questionId]);
+    }
+    else {
+        await run(`INSERT INTO answers (submission_id, question_id, answer_json, created_at) VALUES (?, ?, ?, ?)`, [submissionId, questionId, answerJson, now]);
+    }
     // Keep last_question_id and updated_at fresh on the parent submission
     await run(`UPDATE submissions
      SET last_question_id = ?, updated_at = ?

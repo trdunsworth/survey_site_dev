@@ -28,3 +28,4 @@ server/survey_responses.db
 # IDE
 .vscode/
 .idea/
+server/survey_analytics.duckdb
