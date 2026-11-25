@@ -1,18 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  fetchAnalyticsHealth,
-  fetchAnalyticsKpis,
-  refreshAnalytics,
-} from '../services/surveyService';
-import type {
-  AnalyticsAnswerTypeMix,
-  AnalyticsDailyCompletion,
-  AnalyticsHealthResponse,
-  AnalyticsKpiSnapshot,
-  AnalyticsQuestionCompletion,
-} from '../types';
+import { useMotherDuck } from '../hooks/useMotherDuck';
+import { createMotherDuckService, type AnalyticsData } from '../services/motherduckService';
+import { MotherDuckConnect } from './MotherDuckConnect';
 
-const POLL_INTERVAL_MS = 30_000;
+const POLL_INTERVAL_MS = 60_000;
 
 function toNumber(value: unknown): number {
   if (typeof value === 'number') return value;
@@ -20,6 +11,7 @@ function toNumber(value: unknown): number {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : 0;
   }
+  if (typeof value === 'bigint') return Number(value);
   return 0;
 }
 
@@ -37,22 +29,22 @@ function shortDay(value: string): string {
 }
 
 const AnalyticsDashboard: React.FC = () => {
-  const [health, setHealth] = useState<AnalyticsHealthResponse | null>(null);
-  const [kpis, setKpis] = useState<AnalyticsKpiSnapshot | null>(null);
+  const motherDuck = useMotherDuck();
+  const mdService = createMotherDuckService(() => motherDuck);
+
+  const [data, setData] = useState<AnalyticsData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [lastLoadedAt, setLastLoadedAt] = useState<string | null>(null);
 
   const loadDashboard = useCallback(async () => {
+    if (!motherDuck.isConnected) return;
+
     try {
       setError(null);
-      const [healthPayload, kpiPayload] = await Promise.all([
-        fetchAnalyticsHealth(),
-        fetchAnalyticsKpis(),
-      ]);
-      setHealth(healthPayload);
-      setKpis(kpiPayload);
+      const analytics = await mdService.fetchAnalytics();
+      setData(analytics);
       setLastLoadedAt(new Date().toISOString());
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load analytics data';
@@ -60,23 +52,26 @@ const AnalyticsDashboard: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [motherDuck.isConnected, mdService]);
 
   useEffect(() => {
-    void loadDashboard();
-
-    const timer = window.setInterval(() => {
+    if (motherDuck.isConnected) {
       void loadDashboard();
-    }, POLL_INTERVAL_MS);
 
-    return () => window.clearInterval(timer);
-  }, [loadDashboard]);
+      const timer = window.setInterval(() => {
+        void loadDashboard();
+      }, POLL_INTERVAL_MS);
+
+      return () => window.clearInterval(timer);
+    }
+  }, [loadDashboard, motherDuck.isConnected]);
 
   const handleRefresh = async (): Promise<void> => {
+    if (!motherDuck.isConnected) return;
+
     try {
       setIsRefreshing(true);
       setError(null);
-      await refreshAnalytics();
       await loadDashboard();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to refresh analytics data';
@@ -87,24 +82,58 @@ const AnalyticsDashboard: React.FC = () => {
   };
 
   const overviewCards = useMemo(() => {
-    if (!kpis) return [];
+    if (!data) return [];
 
-    const o = kpis.overview;
     return [
-      { label: 'Completed Surveys', value: toNumber(o.total_completed_surveys) },
-      { label: 'Completed (24h)', value: toNumber(o.completed_last_24h) },
-      { label: 'Completed (7d)', value: toNumber(o.completed_last_7d) },
-      { label: 'Survey Versions', value: toNumber(o.survey_versions) },
-      { label: 'Avg Questions Answered', value: toNumber(o.avg_answered_questions).toFixed(2) },
-      { label: 'Median Questions Answered', value: toNumber(o.median_answered_questions).toFixed(2) },
+      { label: 'Completed Surveys', value: toNumber(data.totalCompleted) },
+      { label: 'Completed (24h)', value: toNumber(data.dailyCompletions.filter(d => {
+        const day = new Date(d.day).getTime();
+        const now = Date.now();
+        return now - day <= 24 * 60 * 60 * 1000;
+      }).reduce((sum, d) => sum + toNumber(d.count), 0)) },
+      { label: 'Completed (7d)', value: toNumber(data.dailyCompletions.filter(d => {
+        const day = new Date(d.day).getTime();
+        const now = Date.now();
+        return now - day <= 7 * 24 * 60 * 60 * 1000;
+      }).reduce((sum, d) => sum + toNumber(d.count), 0)) },
+      { label: 'Survey Versions', value: toNumber(data.surveyVersions.length) },
+      { 
+        label: 'Avg Questions Answered', 
+        value: data.questionCompletion.length > 0 
+          ? (data.questionCompletion.reduce((sum, q) => sum + toNumber(q.count), 0) / data.totalCompleted).toFixed(2)
+          : '0'
+      },
+      { 
+        label: 'Median Questions Answered', 
+        value: data.questionCompletion.length > 0
+          ? toNumber(data.questionCompletion.sort((a, b) => toNumber(a.count) - toNumber(b.count))[Math.floor(data.questionCompletion.length / 2)].count)
+          : '0'
+      },
     ];
-  }, [kpis]);
+  }, [data]);
 
-  const dailySeries: AnalyticsDailyCompletion[] = kpis?.dailyCompletions30d ?? [];
-  const questionCompletion: AnalyticsQuestionCompletion[] = kpis?.questionCompletion ?? [];
-  const answerTypeMix: AnalyticsAnswerTypeMix[] = kpis?.answerTypeMix ?? [];
+  const dailySeries = data?.dailyCompletions ?? [];
+  const questionCompletion = data?.questionCompletion ?? [];
+  const surveyVersions = data?.surveyVersions ?? [];
 
-  const peakDaily = Math.max(1, ...dailySeries.map((row) => toNumber(row.completed_surveys)));
+  const peakDaily = Math.max(1, ...dailySeries.map((row) => toNumber(row.count)));
+
+  // Show connection UI if not connected
+  if (!motherDuck.isConnected) {
+    return (
+      <section className="analytics-dashboard" aria-live="polite">
+        <header className="analytics-dashboard__header">
+          <div>
+            <h2 className="analytics-dashboard__title">Analytics Dashboard</h2>
+            <p className="analytics-dashboard__subtitle">
+              Connect to MotherDuck to view centralized survey analytics
+            </p>
+          </div>
+        </header>
+        <MotherDuckConnect onConnect={loadDashboard} />
+      </section>
+    );
+  }
 
   return (
     <section className="analytics-dashboard" aria-live="polite">
@@ -112,19 +141,18 @@ const AnalyticsDashboard: React.FC = () => {
         <div>
           <h2 className="analytics-dashboard__title">Analytics Dashboard</h2>
           <p className="analytics-dashboard__subtitle">
-            Self-updating KPI views from completed surveys in DuckDB/MotherDuck
+            Live KPI views from MotherDuck (synced from completed surveys)
           </p>
         </div>
         <div className="analytics-dashboard__actions">
+          <MotherDuckConnect compact onConnect={loadDashboard} />
           <button
             type="button"
             className="analytics-dashboard__refresh-btn"
-            onClick={() => {
-              void handleRefresh();
-            }}
+            onClick={() => { void handleRefresh(); }}
             disabled={isRefreshing}
           >
-            {isRefreshing ? 'Refreshing...' : 'Refresh ELT'}
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
           </button>
         </div>
       </header>
@@ -136,10 +164,7 @@ const AnalyticsDashboard: React.FC = () => {
       ) : (
         <>
           <section className="analytics-dashboard__meta">
-            <div><strong>Catalog:</strong> {health?.targetCatalog ?? 'N/A'}</div>
-            <div><strong>MotherDuck configured:</strong> {health?.motherduckConfigured ? 'Yes' : 'No'}</div>
-            <div><strong>Quack requested:</strong> {health?.quackRequested ? 'Yes' : 'No'}</div>
-            <div><strong>Last ELT run:</strong> {formatDateTime(health?.lastRun?.completed_at ?? null)}</div>
+            <div><strong>Source:</strong> MotherDuck (WASM)</div>
             <div><strong>Last dashboard load:</strong> {formatDateTime(lastLoadedAt)}</div>
           </section>
 
@@ -160,11 +185,11 @@ const AnalyticsDashboard: React.FC = () => {
                   <p className="analytics-panel__empty">No completion activity in the last 30 days.</p>
                 ) : (
                   dailySeries.map((row) => {
-                    const count = toNumber(row.completed_surveys);
+                    const count = toNumber(row.count);
                     const width = (count / peakDaily) * 100;
                     return (
-                      <div key={`${row.completion_day}`} className="analytics-bar-row">
-                        <span>{shortDay(String(row.completion_day))}</span>
+                      <div key={`${row.day}`} className="analytics-bar-row">
+                        <span>{shortDay(String(row.day))}</span>
                         <div className="analytics-bar-track">
                           <div className="analytics-bar-fill" style={{ width: `${width}%` }} />
                         </div>
@@ -190,8 +215,8 @@ const AnalyticsDashboard: React.FC = () => {
                   {questionCompletion.slice(0, 15).map((row) => (
                     <tr key={row.question_id}>
                       <td>{row.question_id}</td>
-                      <td>{toNumber(row.answered_count)}</td>
-                      <td>{toNumber(row.completion_rate_pct).toFixed(2)}%</td>
+                      <td>{toNumber(row.count)}</td>
+                      <td>{data && data.totalCompleted > 0 ? ((toNumber(row.count) / data.totalCompleted) * 100).toFixed(2) : '0'}%</td>
                     </tr>
                   ))}
                 </tbody>
@@ -199,21 +224,19 @@ const AnalyticsDashboard: React.FC = () => {
             </article>
 
             <article className="analytics-panel">
-              <h3>Answer Type Mix</h3>
+              <h3>Survey Versions</h3>
               <table className="analytics-table">
                 <thead>
                   <tr>
-                    <th>Type</th>
-                    <th>Count</th>
-                    <th>% of Answers</th>
+                    <th>Version</th>
+                    <th>Completed</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {answerTypeMix.map((row) => (
-                    <tr key={row.answer_type}>
-                      <td>{row.answer_type}</td>
-                      <td>{toNumber(row.answer_count)}</td>
-                      <td>{toNumber(row.pct_of_answers).toFixed(2)}%</td>
+                  {surveyVersions.map((row) => (
+                    <tr key={row.survey_version}>
+                      <td>{row.survey_version}</td>
+                      <td>{toNumber(row.count)}</td>
                     </tr>
                   ))}
                 </tbody>

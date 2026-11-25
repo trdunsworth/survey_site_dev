@@ -24,7 +24,7 @@
 
 ## Low Priority
 
-- [ ] Add optional responder-facing progress indicator enhancements (section and completion percentage).
+- [X] Add optional responder-facing progress indicator enhancements (section and completion percentage).
 - [X] Evaluate admin/reporting dashboard for DuckDB outputs and trend analysis.
 - [X] Evaluate archival strategy for old survey versions and cross-version analytics harmonization.
 

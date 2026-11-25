@@ -15,12 +15,36 @@ export default defineConfig(({ mode }) => {
         build: {
             outDir: isStaticMode ? 'static' : 'dist',
             emptyOutDir: true,
+            // Separate MotherDuck WASM client into its own chunk for lazy loading
+            rollupOptions: {
+                output: {
+                    manualChunks: {
+                        'motherduck-wasm': ['@motherduck/wasm-client'],
+                    },
+                },
+            },
+            // Ensure WASM files are handled correctly
+            target: 'esnext',
         },
         test: {
             globals: true,
             environment: 'jsdom',
             setupFiles: ['./src/test/setup.ts'],
             include: ['src/**/*.test.{ts,tsx}', 'server/**/*.test.{ts,tsx}'],
+        },
+        // Dev server headers required for WASM SharedArrayBuffer
+        server: {
+            headers: {
+                'Cross-Origin-Embedder-Policy': 'require-corp',
+                'Cross-Origin-Opener-Policy': 'same-origin',
+            },
+        },
+        // Preview server (for `npm run preview`) also needs headers
+        preview: {
+            headers: {
+                'Cross-Origin-Embedder-Policy': 'require-corp',
+                'Cross-Origin-Opener-Policy': 'same-origin',
+            },
         },
     };
 });

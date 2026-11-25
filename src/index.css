@@ -638,3 +638,128 @@ textarea {
     align-items: stretch;
   }
 }
+
+/* MotherDuck Connection Styles */
+.motherduck-connect {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: var(--spacing-lg);
+  max-width: 480px;
+  margin: var(--spacing-lg) auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.motherduck-connect h3 {
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-primary);
+}
+
+.motherduck-connect > p {
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-lg);
+  font-size: 0.95rem;
+}
+
+.motherduck-connect__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.motherduck-connect__label {
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.motherduck-connect__btn {
+  padding: 0.63rem 1.25rem;
+  font-size: 0.95rem;
+  align-self: flex-start;
+  min-width: 140px;
+}
+
+.motherduck-connect__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.motherduck-connect__error {
+  color: var(--nena-red);
+  font-size: 0.88rem;
+  padding: var(--spacing-sm);
+  background: var(--nena-light-red);
+  border-radius: 4px;
+}
+
+.motherduck-connect__help {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid #eee;
+}
+
+.motherduck-connect__help summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.motherduck-connect__help ol {
+  margin-top: var(--spacing-md);
+  padding-left: 1.5rem;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+
+.motherduck-connect__help code {
+  background: #f5f5f5;
+  padding: 0.13rem 0.38rem;
+  border-radius: 3px;
+  font-family: monospace;
+}
+
+.motherduck-connect__note {
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background: #fffbe6;
+  border: 1px solid #ffe58f;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  color: #856d00;
+}
+
+.motherduck-connect__note strong {
+  color: #614700;
+}
+
+/* Compact variant for Analytics Dashboard header */
+.motherduck-connect--compact {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  max-width: none;
+}
+
+.motherduck-connect--compact input {
+  width: 220px;
+  padding: 0.38rem 0.63rem;
+  font-size: 0.82rem;
+}
+
+.motherduck-connect--compact .motherduck-connect__btn {
+  padding: 0.38rem 0.88rem;
+  font-size: 0.82rem;
+  min-width: auto;
+}
+
+.motherduck-connect--compact .motherduck-connect__error {
+  font-size: 0.75rem;
+  padding: 0.13rem 0.38rem;
+  white-space: nowrap;
+}

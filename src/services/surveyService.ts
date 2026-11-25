@@ -65,7 +65,7 @@ function defaultStore(): StaticStore {
   return { submissions: {}, tokens: {} };
 }
 
-function loadStaticStore(): StaticStore {
+export function loadStaticStore(): StaticStore {
   if (!STATIC_MODE) return defaultStore();
   try {
     const raw = localStorage.getItem(STATIC_STORE_KEY);

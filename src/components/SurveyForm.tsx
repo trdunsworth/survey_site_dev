@@ -13,8 +13,11 @@ import {
     saveProgress,
     networkStatus$,
     OfflineSaveQueue,
+    loadStaticStore,
     type AnswerChange,
 } from '../services/surveyService';
+import { useMotherDuck } from '../hooks/useMotherDuck';
+import { createMotherDuckService, type SurveySubmission } from '../services/motherduckService';
 
 /**
  * Map of version keys to their corresponding survey data.
@@ -82,6 +85,10 @@ const [showReceipt, setShowReceipt] = useState<boolean>(false);
 
     // Network status
     const isOnline = useObservable(networkStatus$, navigator.onLine);
+
+    // MotherDuck integration
+    const motherDuck = useMotherDuck();
+    const mdService = createMotherDuckService(() => motherDuck);
 
     const activeSurveyData = useMemo(
         () => SURVEY_VERSIONS[surveyVersion] ?? SURVEY_VERSIONS['default'],
@@ -439,6 +446,10 @@ const [showReceipt, setShowReceipt] = useState<boolean>(false);
                 next: (result) => {
                     setIsSaving(false);
                     if (result.success) {
+                        // Sync to MotherDuck (non-blocking, best effort)
+                        if (motherDuck.isConnected) {
+                            syncToMotherDuck(submissionId);
+                        }
                         // Clear localStorage on successful submission
                         localStorage.removeItem('survey_submission_id');
                         localStorage.removeItem(`survey_section_${submissionId}`);
@@ -457,6 +468,36 @@ const [showReceipt, setShowReceipt] = useState<boolean>(false);
             // Note: In production, you might want to store this subscription
             // to unsubscribe if component unmounts during submission
         }
+    };
+
+    // Sync completed survey to MotherDuck
+    const syncToMotherDuck = (completedSubmissionId: string): void => {
+        if (!motherDuck.isConnected) return;
+
+        // Retrieve the completed submission from localStorage
+        const store = loadStaticStore();
+        const submission = store.submissions[completedSubmissionId];
+        if (!submission) {
+            console.warn('MotherDuck sync: submission not found in localStorage');
+            return;
+        }
+
+        // Prepare submission data for MotherDuck
+        const mdSubmission: SurveySubmission = {
+            submission_id: submission.submission_id,
+            created_at: submission.created_at,
+            completed_at: submission.completed_at ?? submission.updated_at,
+            survey_version: submission.survey_version,
+            current_section_index: submission.current_section_index,
+            last_question_id: submission.last_question_id,
+            updated_at: submission.updated_at,
+            answers: submission.answers,
+        };
+
+        // Fire-and-forget with error logging
+        mdService.submitSurvey(mdSubmission)
+            .then(() => console.log('✅ Synced to MotherDuck:', completedSubmissionId))
+            .catch(err => console.warn('⚠️ MotherDuck sync failed (data safe in localStorage):', err));
     };
     
     // Issue a one-time resume token and display it as a save code
